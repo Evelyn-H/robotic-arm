@@ -4,7 +4,8 @@ import numpy as np
 from InverseKinematicsNN import KerasNet
 import os
 #os.environ['PYTHONHASHSEED'] = '0'
-from fabrik import fabrik
+from fabrik import fabrik3d
+from fabrik import fabrik_rotation
 
 np.random.seed(535)
 # Creates a forward kinematics solver with the following parameters:
@@ -22,14 +23,18 @@ fk = ForwardKinematics([0, 0.5*pi, 0, 0],
                        [0.5*pi, 0, 0, 0.5*pi],
                        np.array([0, 0, 1, 1]))
 
-new_joints = fabrik(np.array([[0, 0, 0],
-                              [0, 0, 10.7],
+angles = fabrik3d(np.array([[0, 0, 10.7],
                               [0, 0, 21.1],
                               [0, 0, 33.9],
-                              [0, 0, 40]]), np.array([5,5,23]), [10.7, 10.4, 12.8, 6.1])
+                              [0, 0, 40]]), np.array([5,5,23]), [10.4, 12.8, 6.1])
 
-print(new_joints)
+angles2 = fabrik_rotation(np.array([[0, 0, 10.7],
+                              [0, 0, 21.1],
+                              [0, 0, 33.9],
+                              [0, 0, 40]]), np.array([5,5,23]), [10.4, 12.8, 6.1])
+
+#print(new_joints)
 #net = KerasNet()
 #net.run(fk)
 # result = net.predict(fk)
-# fk.move([(result[0,0]*(0.5*pi)), (result[0,1]*(0.5*pi)), (result[0,2]*(0.5*pi)), (result[0,3]*(0.5*pi))])
+fk.move([angles[0], angles[1], angles[2], angles[3]])
