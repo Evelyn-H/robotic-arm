@@ -1,7 +1,7 @@
-from math import pi
+from math import pi, atan
 from ForwardKinamatics import ForwardKinematics
 import numpy as np
-# from InverseKinematicsNN import KerasNet
+from InverseKinematicsNN import KerasNet
 import os
 #os.environ['PYTHONHASHSEED'] = '0'
 from fabrik import fabrik3d
@@ -19,22 +19,27 @@ np.random.seed(535)
 # Schematics can be found in the repository. (NOT YET)
 fk = ForwardKinematics([0, 0.5*pi, 0, 0],
                        [10.7, 0, 0, 0],
-                       [0, 10.4, 12.8, 0],
-                       [0.5*pi, 0, 0, 0.5*pi],
-                       np.array([0, 0, 0, 1]))
+                       [0, 10.4, 12.8, 6.1],
+                       [0.5*pi, 0, 0, -0.5*pi],
+                       np.array([0, 0, 5, 1]))
 
 angles = fabrik3d(np.array([[0, 0, 10.7],
                               [0, 0, 21.1],
                               [0, 0, 33.9],
-                              [0, 0, 0.001]]), np.array([5,8,23]), [10.4, 12.8, 0.001])
+                              [0, 5, 40]]), np.array([5, 8, 23]), [10.4, 12.8, 7.887331614684399])
 
-angles2 = fabrik_rotation(np.array([[0, 0, 10.7],
-                              [0, 0, 21.1],
-                              [0, 0, 33.9],
-                              [0, 0, 0.001]]), np.array([5,5,23]), [10.4, 12.8, 0.001])
+# angles2 = fabrik_rotation(np.array([[0, 0, 10.7],
+#                              [0, 0, 21.1],
+#                              [0, 0, 33.9],
+#                              [0, 5, 40]]), np.array([5,8,23]), [10.4, 12.8, 7.887331614684399])
 
 #print(new_joints)
 #net = KerasNet()
 #net.run(fk)
 # result = net.predict(fk)
-fk.move([-angles[0], -angles[1], angles[2], angles[3]])
+
+# ## DON'T FORGET TO ADJUST THE ATAN!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ## (IN CASE THE END EFFECTOR DIMENSIONS CHANGE)
+# ## DON'T FORGET TO ADJUST THE ATAN!!!!!!!!!!!!!!!!!!!!!!!!!!!
+fk.move([angles[0], -angles[1], angles[2], angles[3]-atan(5/6.1)])
+# fk.move([angles2[0], angles2[1], angles2[2], angles2[3]])
