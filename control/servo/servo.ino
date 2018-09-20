@@ -40,16 +40,6 @@ int limit_high[]= { 80,  80,  80,  45};
 // current angles of servos
 int current_angles[] = {0, 0, 0, 0};
 
-void setup() {
-  Serial.begin(9600);
-  
-  pinMode(LED_BUILTIN, OUTPUT);
-  
-  pwm.begin();
-  pwm.setPWMFreq(50);  // Analog servos run at ~60 Hz updates
-  delay(10);
-}
-
 void go_to_angle(int pin, int angle) {
   if(angle < limit_low[pin] || angle > limit_high[pin]){
     digitalWrite(LED_BUILTIN, HIGH);
@@ -60,20 +50,6 @@ void go_to_angle(int pin, int angle) {
   digitalWrite(LED_BUILTIN, LOW);
   int pulse = map(angle, -90, 90, SERVO_MIN[pin], SERVO_MAX[pin]);
   pwm.setPWM(pin, 0, pulse);
-}
-
-void move_pen(float target_h, int a2, int a3){
-  float a1 = -acos((target_h-cos(a2*PI/180)*joint_2) / joint_1)*180/PI - a2;
-  float a0 = -90 - (a1+a2);
-  Serial.println("--");
-  Serial.println(a1);
-  Serial.println(a0);
-  
-  go_to_angle(0, -a3);
-  go_to_angle(1, -a2);
-  go_to_angle(2, -a1);
-  go_to_angle(3, -a0);
-  delay(200);
 }
 
 void set_all_angles(int a0, int a1, int a2, int a3){
@@ -91,7 +67,7 @@ void move_to_slow(int a0_to, int a1_to, int a2_to, int a3_to){
     a3_to - current_angles[3]
   };
 
-  float max_inc = max(increments[0], max(increments[1], max(increments[2], increments[3])));
+  float max_inc = max(abs(increments[0]), max(abs(increments[1]), max(abs(increments[2]), abs(increments[3]))));
   int steps = max_inc;
 
   float original[] = {current_angles[0], current_angles[1], current_angles[2], current_angles[3]};
@@ -112,49 +88,72 @@ void move_to_slow(int a0_to, int a1_to, int a2_to, int a3_to){
   delay(100);
 }
 
+void move_pen(float target_h, int a1, int a0){
+  float a2 = acos((target_h-cos(-a1*PI/180)*joint_2) / joint_1)*180/PI - a1;
+  float a3 = 90 - (a2+a1);
+  Serial.println("--");
+  Serial.println(a2);
+  Serial.println(a3);
+  
+//  go_to_angle(0, -a0);
+//  go_to_angle(1, -a1);
+//  go_to_angle(2, -a2);
+//  go_to_angle(3, -a3);
+  move_to_slow(a0, a1, a2, a3);
+  delay(200);
+}
+
+
+void setup() {
+  Serial.begin(9600);
+  
+  pinMode(LED_BUILTIN, OUTPUT);
+  
+  pwm.begin();
+  pwm.setPWMFreq(50);
+  delay(10);
+
+  
+  set_all_angles(0,0,0,0);
+}
 
 void loop() {
-  int a3f = -20;
-  int a3t = 20;
-  int a2f = -45;
-  int a2t = -10;
+  int a0f = 20;
+  int a0t = -20;
+  int a1f = 45;
+  int a1t = 20;
 
-  int h = pen_h + 2;
+  int h = pen_h + 1;
 
-  set_all_angles(0,0,0,0);
-  move_to_slow(0, 45, 45, -45);
-  delay(2000);
-  move_to_slow(0, 0, 0, 0);
+  move_pen(h, a1f, a0f); 
+  move_pen(h, a1f, a0t);
+  move_pen(h, a1t, a0t);
+  move_pen(h, a1t, a0f);
 
-//  for(int a3 = a3f; a3 < a3t; a3++){
-//    move_pen(h, a2f, a3);
-//  }
-//  for(int a2 = a2f; a2 < a2t; a2++){
-//    move_pen(h, a2, a3t); 
-//  }
-//  delay(2000);
-//  for(int a3 = a3t; a3 > a3f; a3--){
-//    move_pen(h, a2t, a3);
-//  }
-//  for(int a2 = a2t; a2 > a2f; a2--){
-//    move_pen(h, a2, a3f); 
-//  }
-//  delay(2000);
 
 //  move_pen(h, -45, 0);
   
 
+
+//  set_all_angles(0,0,0,0);
+//  move_to_slow(0, 45, 45, -45);
+//  delay(2000);
+//  move_to_slow(0, 0, 0, 0);
   
   
 //  go_to_angle(3, 0);
 //  go_to_angle(2, 0);
 //  go_to_angle(1, 0);
 //  go_to_angle(0, 0);
+//  int angles[4];
 //  while(1){
 //    if(Serial.available() > 0){
 //      int pin = Serial.parseInt();
 //      int angle = Serial.parseInt();
-//      go_to_angle(pin, angle);
+//      angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
+//      angles[pin] = angle;
+////      go_to_angle(pin, angle);
+//      move_to_slow(angles[0], angles[1], angles[2], angles[3]);
 //      Serial.print(pin);
 //      Serial.print(" set to ");
 //      Serial.println(angle);
