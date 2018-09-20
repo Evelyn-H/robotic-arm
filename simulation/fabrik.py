@@ -249,11 +249,11 @@ def get_joint_angles(joints, d):
     link2vec = joints[2,:]-joints[1,:]
     link3vec = joints[3,:] - joints[2,:]
 
-    costheta1 = get_angle_between_vectors(link1vec, basevec)
-    costheta2 = get_angle_between_vectors(link2vec, link1vec)
-    costheta3 = get_angle_between_vectors(link3vec, link2vec)
+    theta1 = get_angle_between_vectors(link1vec, basevec)
+    theta2 = get_angle_between_vectors(link2vec, link1vec)
+    theta3 = get_angle_between_vectors(link3vec, link2vec)
 
-    return costheta1, costheta2, costheta3
+    return theta1, theta2, theta3
 
 
 # finds the angle between the plane in which the new joint positions lie and the x-z-plane,
@@ -272,9 +272,8 @@ def find_angle_to_plane(planecoeffs):
 
     return theta
 
+
 # calculates an angle between two vectors
-
-
 def get_angle_between_vectors(v1, v2):
     dn = numpy.linalg.norm(numpy.cross(v1, v2))
     n = numpy.linalg.norm(v1)*numpy.linalg.norm(v2)

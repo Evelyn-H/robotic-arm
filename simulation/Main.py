@@ -21,20 +21,20 @@ fk = ForwardKinematics([0, 0.5*pi, 0, 0],
                        [10.7, 0, 0, 0],
                        [0, 10.4, 12.8, 0],
                        [0.5*pi, 0, 0, 0.5*pi],
-                       np.array([0, 0, 1, 1]))
+                       np.array([0, 0, 0, 1]))
 
 angles = fabrik3d(np.array([[0, 0, 10.7],
                               [0, 0, 21.1],
                               [0, 0, 33.9],
-                              [0, 0, 40]]), np.array([5,5,23]), [10.4, 12.8, 6.1])
+                              [0, 0, 34.9]]), np.array([5,5,23]), [10.4, 12.8, 1])
 
 angles2 = fabrik_rotation(np.array([[0, 0, 10.7],
                               [0, 0, 21.1],
                               [0, 0, 33.9],
-                              [0, 0, 40]]), np.array([5,5,23]), [10.4, 12.8, 6.1])
+                              [0, 0, 34.9]]), np.array([5,5,23]), [10.4, 12.8, 1])
 
 #print(new_joints)
 #net = KerasNet()
 #net.run(fk)
 # result = net.predict(fk)
-fk.move([angles[0], angles[1], angles[2], angles[3]])
+fk.move([angles[0], -angles[1], angles[2], angles[3]])

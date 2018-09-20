@@ -18,12 +18,12 @@ class ForwardKinematics(object):
         matrices = [ForwardKinematics.dh_matrix(theta[x] + self.theta_add[x], self.a[x], self.d[x], self.r[x])
                     for x in range(len(theta))]
 
-        result = matrices[-1].dot(self.actuator)
-        result = matrices[-2].dot(result)
-        result = matrices[-3].dot(result)
-        result = matrices[-4].dot(result)
+        result = matrices[3].dot(self.actuator)
+        result = matrices[2].dot(result)
+        result = matrices[1].dot(result)
+        result = matrices[0].dot(result)
 
-        #print("Result: " + str(result))
+        print("Result: " + str(result))
         return result
 
     @staticmethod
