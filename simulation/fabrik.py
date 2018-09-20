@@ -188,7 +188,7 @@ def fabrik_rotation(joints, target, d):
 
     # applies FABRIK on the 2D-data
     j = get_new_joints2d(joints_in_plane, target_in_plane, d)
-    print("FABRIK 3D version by rotating the target point into the x-z-plane")
+    print("FABRIK 3D version by rotating the target point onto the x-z-plane")
     print(j)
 
     # add the y-components back to the joints
@@ -275,6 +275,6 @@ def find_angle_to_plane(planecoeffs):
 
 # calculates an angle between two vectors
 def get_angle_between_vectors(v1, v2):
-    dn = numpy.linalg.norm(numpy.cross(v1, v2))
+    dn = numpy.dot(v1, v2)
     n = numpy.linalg.norm(v1)*numpy.linalg.norm(v2)
     return math.acos( (dn / n) )
