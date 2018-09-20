@@ -1,7 +1,7 @@
 from math import pi
 from ForwardKinamatics import ForwardKinematics
 import numpy as np
-from InverseKinematicsNN import KerasNet
+# from InverseKinematicsNN import KerasNet
 import os
 #os.environ['PYTHONHASHSEED'] = '0'
 from fabrik import fabrik3d
