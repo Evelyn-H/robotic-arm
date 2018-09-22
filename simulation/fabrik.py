@@ -174,17 +174,17 @@ def fabrik_rotation(joints, target, d):
     baseangle = get_base_angle(joints, target)
 
     # rotation matrix to rotate the target onto the x-z-plane
-    rotmat = rotation_matrix(-baseangle)
+    rotmat = rotation_matrix(baseangle)
     rotated_target = numpy.dot(rotmat, target)
 
     # removes the y-component from the target
     target_in_plane = numpy.array([rotated_target[0], rotated_target[2]])
 
     # removes the y-components from the joints
-    joints_in_plane = numpy.array([[0, 10.7],
-                                   [0, 21.1],
-                                   [0, 33.9],
-                                   [0, 40]])
+    joints_in_plane = numpy.array([[joints[0,0], joints[0,2]],
+                                   [joints[0, 0], joints[0, 2]],
+                                   [joints[0, 0], joints[0, 2]],
+                                   [joints[0, 0], joints[0, 2]]])
 
     # applies FABRIK on the 2D-data
     j = get_new_joints2d(joints_in_plane, target_in_plane, d)
@@ -198,7 +198,7 @@ def fabrik_rotation(joints, target, d):
     j4 = numpy.array([j[3, 0], 0, j[3, 1]])
 
     # rotation matrix to rotate back to the original target point
-    rotmat = rotation_matrix(baseangle)
+    rotmat = rotation_matrix(-baseangle)
 
     # rotates the joint positions to the correct positions
     j1 = numpy.dot(rotmat, j1)
@@ -232,9 +232,9 @@ def get_base_angle(joints, target):
     b = numpy.array([1,0])
     t = target[0:2]
     if numpy.min(t) < 0:
-        return -1*(2*math.pi-get_angle_between_vectors(t,b))
-    else:
         return get_angle_between_vectors(t,b)
+    else:
+        return -get_angle_between_vectors(t,b)
 
 
 def rotation_matrix(theta):
