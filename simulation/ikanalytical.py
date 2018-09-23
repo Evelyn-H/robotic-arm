@@ -13,16 +13,6 @@ def ik(target, d, phi):
     # whether the target is behind or in front of the arm
     sign = numpy.sign(target[1])
 
-    ###
-    # HOTFIX FOR BUG
-    ###
-    print(target[2])
-    print(target[2]+sign*10.9)
-    target[2] = target[2]+sign*10.9
-    print(sign*10.9)
-    print(target[2])
-
-
     # rotation matrix to rotate the target onto the y-z-plane
     rotmat = numpy.array([[math.cos(baseangle), -math.sin(baseangle), 0], [math.sin(baseangle), math.cos(baseangle), 0],
                           [0, 0, 1]])
@@ -34,15 +24,15 @@ def ik(target, d, phi):
         try:
             # ignores the x-component since the target is rotated onto the y-z-plane
             angles = get_angles((rotated_target[0], rotated_target[2]), d, phi)
-            print("Found two solutions for phi = " + str(math.degrees(phi)) + ".\n")
+            print("Found solutions for phi = " + str(math.degrees(phi)) + ".\n")
             found_solution = True
         except ValueError as e:
-            if phi >= math.radians(20):
+            if phi >= math.radians(45):
                 print("No solution possible.")
                 return None
-            phi = phi + math.radians(1)
-            print("Could not find a solution for phi = " + str(math.degrees(phi)-1)
-                  + ". Trying phi = " + str(math.degrees(phi)) + " now.")
+            phi = phi + math.radians(0.1)
+            #print("Could not find a solution for phi = " + str(math.degrees(phi)-1)
+            #      + ". Trying phi = " + str(math.degrees(phi)) + " now.")
 
     solution = [[baseangle, a[0], a[1], a[2], sign] for a in angles]
     return solution
@@ -59,15 +49,20 @@ def get_angles(target, d, phi):
 
     s2 = [-math.sqrt(1-c2**2), math.sqrt(1-c2**2)]
 
-    theta2 = [atan2(x, c2) for x in s2]
+    theta2_unbounded = [atan2(x, c2) for x in s2]
+    theta2 = [x for x in theta2_unbounded if -0.5*math.pi<x<0.5*math.pi]
 
     s1 = [((d[0] + d[1]*c2) * wy - d[1] * var * wx) / delta for var in s2]
 
     c1 = [((d[0] + d[1]*c2) * wx + d[1] * var * wy) / delta for var in s2]
 
-    theta1 = [atan2(x, y) for x, y in zip(s1, c1)]
+    theta1_unbounded = [atan2(x, y) for x, y in zip(s1, c1)]
+    theta1 = [x for x in theta1_unbounded if 0.5*math.pi<x or x<-0.5*math.pi]
 
-    all_angles = [[th1, th2, phi-th2-th1] for th1, th2 in zip(theta1, theta2)]
+    all_angles = [[th1, th2, phi-th2-th1] for th1, th2 in zip(theta1, theta2) if -0.5*math.pi < phi-th1-th2< 0.5*math.pi]
+
+    if len(all_angles) == 0:
+        raise ValueError
 
     return all_angles
 

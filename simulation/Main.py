@@ -11,11 +11,24 @@ from ikanalytical import ik
 # alpha0 = 1/2 pi, alpha1 = 0, alpha2 = 0, alpha3 = 1/2 pi
 # actuator position = [0, 0, 5]
 
-target = [12, -5, 0]
+target = [16, 5, 0]
 
+###
+# HOTFIX FOR A BUG
+###
+
+target[2] = -np.sign(target[1])*target[2] + np.sign(target[1])*10.7
+
+###
+# /HOTFIX
+###
+
+###
+# TO IMPLEMENT: SEARCH THE PHI-SPACE OUTWARDS FROM 0
+###
 LINKS = [10.4, 12.8, 7.887331614684399]
 PEN_ANGLE = -atan(5/6.1)
-INIT_PHI = -20
+INIT_PHI = -30
 
 fk = ForwardKinematics([0, 0.5*pi, 0, 0],
                        [10.7, 0, 0, 0],
