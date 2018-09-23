@@ -5,3 +5,4 @@ void    serial_putchar   (const int fd, const unsigned char c);
 void    serial_puts      (const int fd, const char *s);
 int     serial_available (const int fd);
 int     serial_getchar   (const int fd);
+char*   serial_readline  (const int fd, char* buffer);

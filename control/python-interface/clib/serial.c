@@ -79,7 +79,7 @@ int serial_open (const char *device, const int baud) {
     options.c_oflag &= ~OPOST;
 
     options.c_cc [VMIN]  =   0;
-    options.c_cc [VTIME] = 100;	// Ten seconds (100 deciseconds)
+    options.c_cc [VTIME] =   0;
 
     tcsetattr (fd, TCSANOW, &options);
 
@@ -148,15 +148,6 @@ int serial_getchar (const int fd) {
     return ((int)x) & 0xFF;
 }
 
-// int serial_readline(const int fd) {
-//     int buf_len = 256;
-//     char buffer[buf_len] = {0};
-//     int pos = 0;
-//
-//     while (pos < buf_len - 1) {
-//         if (read(fd, buffer+pos, 1) == -1)
-//             return -1;
-//         if (buffer[pos++] == '\n')
-//             break;
-//     }
-// }
+char*  serial_readline(const int fd, char* buffer) {
+    return 0;
+}
