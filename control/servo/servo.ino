@@ -99,6 +99,11 @@ void setup() {
 }
 
 void loop() {
+    
+    /* * * * * * * * * 
+     * This moves the arm and draws a sort of 'square'
+     * * * * * * * * */
+    
     // int a0f = 20;
     // int a0t = -20;
     // int a1f = 45;
@@ -117,16 +122,10 @@ void loop() {
     //     Serial.println(s);
     // }
 
-
-    //  move_pen(h, -45, 0);
-
-
-
-    //  set_all_angles(0,0,0,0);
-    //  move_to_slow(0, 45, 45, -45);
-    //  delay(2000);
-    //  move_to_slow(0, 0, 0, 0);
-
+     /* * * * * * * * * 
+     * This looks at the serial monitor and waits for a command to change the position of a servo
+     * format: <servo number (0 -> 3)> <angle (-90 -> 90)>
+     * * * * * * * * */
 
      go_to_angle(3, 0);
      go_to_angle(2, 0);
