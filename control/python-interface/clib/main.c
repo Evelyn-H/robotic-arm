@@ -4,11 +4,18 @@
 
 int fd = -1;
 
+void command_reset(){
+    serial_printf(fd, "reset\n");
+}
+
+void command_set(int servo, float a){
+    serial_printf(fd, "set %i %i\n", servo, (int) round(a));
+}
 void command_set_all(float a0, float a1, float a2, float a3){
     serial_printf(fd, "set_all %i %i %i %i\n", (int) round(a0), (int) round(a1), (int) round(a2), (int) round(a3));
 }
-void command_set_one(int servo, float a){
-    serial_printf(fd, "set_one %i %i\n", servo, (int) round(a));
+void command_move_to(float a0, float a1, float a2, float a3, int duration){
+    serial_printf(fd, "move_to %i %i %i %i %i\n", (int) round(a0), (int) round(a1), (int) round(a2), (int) round(a3), duration);
 }
 
 
