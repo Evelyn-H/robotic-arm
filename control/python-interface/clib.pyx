@@ -1,43 +1,24 @@
-# cdef extern from "serial.h":
-#     int     serial_open      (const char *device, const int baud)
-#     void    serial_close     (const int fd)
-#     void    serial_flush     (const int fd)
-#     void    serial_putchar   (const int fd, const unsigned char c)
-#     void    serial_puts      (const int fd, const char *s)
-#     int     serial_available (const int fd)
-#     # int     serial_getchar   (const int fd)
-#     int     serial_readline  (const int fd, char* buffer, int buffer_size);
-#     char*   serial_readline2 (const int fd);
-#
-# class Serial():
-#     def __init__(self, bytes device, int baud):
-#         self._fd = serial_open(device, baud)
-#         if self._fd == -1:
-#             raise Exception('Serial: Couldn\'t open device')
-#
-#         self._buffer_size = 256
-#         self._buffer = bytearray(self._buffer_size)
-#
-#     def close(self):
-#         serial_close(self._fd)
-#
-#     def flush(self):
-#         serial_flush(self._fd)
-#
-#     def putchar(self, char c):
-#         serial_putchar(self._fd, c)
-#
-#     def write(self, bytes s):
-#         serial_puts(self._fd, s)
-#
-#     def available(self):
-#         return serial_available(self._fd)
-#
-#     # def getchar(self):
-#         # return serial_getchar(self._fd)
-#
-#     def readline(self):
-#         # serial_readline(self._fd, self._buffer, self._buffer_size)
-#         b = serial_readline2(self._fd)
-#         print('.')
-#         return b.decode("ascii")
+cdef extern from "main.h":
+    void serial_init(char* port, int baud)
+    void command_reset()
+    void command_set(int servo, float a)
+    void command_set_all(float a0, float a1, float a2, float a3)
+    void command_move_to(float a0, float a1, float a2, float a3, int duration)
+
+class Arm():
+    def __init__(self, device, int baud):
+        fd = serial_init(device.encode('ascii'), baud)
+        if fd == -1:
+            raise Exception('Couldn\'t open serial communication')
+
+    def reset_position(self):
+        command_reset()
+
+    def set(self, servo, angle):
+        command_set(servo, angle)
+
+    def set_all(self, a0, a1, a2, a3):
+        command_set_all(a0, a1, a2, a3);
+
+    def move_to(self, a0, a1, a2, a3, duration):
+        command_move_to(a0, a1, a2, a3, duration);

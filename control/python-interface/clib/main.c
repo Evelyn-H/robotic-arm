@@ -1,13 +1,18 @@
 #include <stdio.h>
 #include <math.h>
+#include "main.h"
 #include "serial.h"
 
 int fd = -1;
 
+int serial_init(char* port, int baud){
+    fd = serial_open(port, baud);
+    return fd;
+}
+
 void command_reset(){
     serial_printf(fd, "reset\n");
 }
-
 void command_set(int servo, float a){
     serial_printf(fd, "set %i %i\n", servo, (int) round(a));
 }
@@ -21,7 +26,7 @@ void command_move_to(float a0, float a1, float a2, float a3, int duration){
 
 int main(){
 
-    fd = serial_open("/dev/ttyACM0", 9600);
+    serial_init("/dev/ttyACM0", 9600);
     if (fd == -1){
         printf("Couldn't open communication\n");
         return -1;
