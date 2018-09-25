@@ -69,6 +69,26 @@ void move_to_slow(int a0_to, int a1_to, int a2_to, int a3_to){
     delay(100);
 }
 
+void move_to_time(int a0_target, int a1_target, int a2_target, int a3_target, int duration){
+    // this function doesn't work with delays and instead sets the angles by
+    // continuously linearly interpolating between the start and end angles
+    float original[] = {current_angles[0], current_angles[1], current_angles[2], current_angles[3]};
+    int t0 = millis();
+    do {
+        int t = millis();
+        // d is a value between 0 and 1 that tells us how far along
+        // the duration we are: 0 -> start, 1-> end
+        float d = (float)(t - t0) / (float) duration;
+        // linear interpolations
+        float a0 = (1-d) * original[0] + d * a0_target;
+        float a1 = (1-d) * original[1] + d * a1_target;
+        float a2 = (1-d) * original[2] + d * a2_target;
+        float a3 = (1-d) * original[3] + d * a3_target;
+        // and set all the angles
+        set_all_angles(a0, a1, a2, a3);
+    } while(t - t0 < duration);
+}
+
 void move_pen(float target_h, int a1, int a0){
     float a2 = acos((target_h-cos(-a1*PI/180)*joint_2) / joint_1)*180/PI - a1;
     float a3 = 90 - (a2+a1);
@@ -127,26 +147,46 @@ void loop() {
     //  delay(2000);
     //  move_to_slow(0, 0, 0, 0);
 
+    go_to_angle(3, 0);
+    go_to_angle(2, 0);
+    go_to_angle(1, 0);
+    go_to_angle(0, 0);
+    int angles[4];
+    while(1){
+        if(Serial.available() > 0){
+            int a0 = Serial.parseInt();
+            int a1 = Serial.parseInt();
+            int a2 = Serial.parseInt();
+            int a3 = Serial.parseInt();
+            // go_to_angle(pin, angle);
+            move_to_slow(a0, a1, a2, a3);
+            // Serial.print(pin);
+            Serial.print(" set to ");
+            // Serial.println(angle);
+        }
+        delay(100);
+    }
 
-     go_to_angle(3, 0);
-     go_to_angle(2, 0);
-     go_to_angle(1, 0);
-     go_to_angle(0, 0);
-     int angles[4];
-     while(1){
-       if(Serial.available() > 0){
-         int pin = Serial.parseInt();
-         int angle = Serial.parseInt();
-         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
-         angles[pin] = angle;
-         go_to_angle(pin, angle);
-         // move_to_slow(angles[0], angles[1], angles[2], angles[3]);
-         Serial.print(pin);
-         Serial.print(" set to ");
-         Serial.println(angle);
-       }
-       delay(100);
-     }
+
+    // go_to_angle(3, 0);
+    // go_to_angle(2, 0);
+    // go_to_angle(1, 0);
+    // go_to_angle(0, 0);
+    // int angles[4];
+    // while(1){
+    //     if(Serial.available() > 0){
+    //         int pin = Serial.parseInt();
+    //         int angle = Serial.parseInt();
+    //         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
+    //         angles[pin] = angle;
+    //         // go_to_angle(pin, angle);
+    //         move_to_slow(angles[0], angles[1], angles[2], angles[3]);
+    //         Serial.print(pin);
+    //         Serial.print(" set to ");
+    //         Serial.println(angle);
+    //     }
+    //     delay(100);
+    // }
 
     //  int servonum = 1;
     //  int minangle = -45;

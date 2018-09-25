@@ -1,12 +1,23 @@
 #include <stdio.h>
+#include <math.h>
 #include "serial.h"
 
+int fd = -1;
+
+void command_set_all(float a0, float a1, float a2, float a3){
+    serial_printf(fd, "set_all %i %i %i %i\n", (int) round(a0), (int) round(a1), (int) round(a2), (int) round(a3));
+}
+void command_set_one(int servo, float a){
+    serial_printf(fd, "set_one %i %i\n", servo, (int) round(a));
+}
+
+
 int main(){
-    
-    int fd = serial_open("/dev/ttyACM0", 9600);
+
+    fd = serial_open("/dev/ttyACM0", 9600);
     if (fd == -1){
         printf("Couldn't open communication\n");
-        return;
+        return -1;
     }
 
     while(1){
@@ -24,6 +35,5 @@ int main(){
             printf(">> %s", buffer);
         }
     }
-
     return 0;
 }
