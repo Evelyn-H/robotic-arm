@@ -119,6 +119,11 @@ void setup() {
 }
 
 void loop() {
+
+    /* * * * * * * * *
+     * This moves the arm and draws a sort of 'square'
+     * * * * * * * * */
+
     // int a0f = 20;
     // int a0t = -20;
     // int a1f = 45;
@@ -138,55 +143,35 @@ void loop() {
     // }
 
 
-    //  move_pen(h, -45, 0);
+     /* * * * * * * * *
+     * This looks at the serial monitor and waits for a command to change the position of a servo
+     * format: <servo number (0 -> 3)> <angle (-90 -> 90)>
+     * * * * * * * * */
+
+     go_to_angle(3, 0);
+     go_to_angle(2, 0);
+     go_to_angle(1, 0);
+     go_to_angle(0, 0);
+     int angles[4];
+     while(1){
+       if(Serial.available() > 0){
+         int pin = Serial.parseInt();
+         int angle = Serial.parseInt();
+         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
+         angles[pin] = angle;
+         go_to_angle(pin, angle);
+         // move_to_slow(angles[0], angles[1], angles[2], angles[3]);
+         Serial.print(pin);
+         Serial.print(" set to ");
+         Serial.println(angle);
+       }
+       delay(100);
+     }
 
 
-
-    //  set_all_angles(0,0,0,0);
-    //  move_to_slow(0, 45, 45, -45);
-    //  delay(2000);
-    //  move_to_slow(0, 0, 0, 0);
-
-    go_to_angle(3, 0);
-    go_to_angle(2, 0);
-    go_to_angle(1, 0);
-    go_to_angle(0, 0);
-    int angles[4];
-    while(1){
-        if(Serial.available() > 0){
-            int a0 = Serial.parseInt();
-            int a1 = Serial.parseInt();
-            int a2 = Serial.parseInt();
-            int a3 = Serial.parseInt();
-            // go_to_angle(pin, angle);
-            move_to_slow(a0, a1, a2, a3);
-            // Serial.print(pin);
-            Serial.print(" set to ");
-            // Serial.println(angle);
-        }
-        delay(100);
-    }
-
-
-    // go_to_angle(3, 0);
-    // go_to_angle(2, 0);
-    // go_to_angle(1, 0);
-    // go_to_angle(0, 0);
-    // int angles[4];
-    // while(1){
-    //     if(Serial.available() > 0){
-    //         int pin = Serial.parseInt();
-    //         int angle = Serial.parseInt();
-    //         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
-    //         angles[pin] = angle;
-    //         // go_to_angle(pin, angle);
-    //         move_to_slow(angles[0], angles[1], angles[2], angles[3]);
-    //         Serial.print(pin);
-    //         Serial.print(" set to ");
-    //         Serial.println(angle);
-    //     }
-    //     delay(100);
-    // }
+    /* * * * * * * * *
+     * This moves one servo back and forth, used for calibration only
+     * * * * * * * * */
 
     //  int servonum = 1;
     //  int minangle = -45;
