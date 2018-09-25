@@ -1,5 +1,5 @@
 cdef extern from "main.h":
-    void serial_init(char* port, int baud)
+    int serial_init(char* port, int baud)
     void command_reset()
     void command_set(int servo, float a)
     void command_set_all(float a0, float a1, float a2, float a3)

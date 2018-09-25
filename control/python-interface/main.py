@@ -7,15 +7,21 @@
 #     print('.')
     # print(">> " + s.readline().decode('ascii'))
 
+
 import clib
 
-s = clib.Serial(b'/dev/ttyACM0', 9600)
+a = clib.Arm('/dev/ttyACM0', 9600)
+a.set_all(0, 0, 0, 0);
 
-while True:
-    s.write(input().encode('ascii'))
-    while not s.available():
-        pass
-    if s.available():
-        print('.')
-        line = s.readline()
-        print('>>', line)
+# import clib
+#
+# s = clib.Serial(b'/dev/ttyACM0', 9600)
+#
+# while True:
+#     s.write(input().encode('ascii'))
+#     while not s.available():
+#         pass
+#     if s.available():
+#         print('.')
+#         line = s.readline()
+#         print('>>', line)
