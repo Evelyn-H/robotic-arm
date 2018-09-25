@@ -122,6 +122,7 @@ void loop() {
     //     Serial.println(s);
     // }
 
+    
      /* * * * * * * * * 
      * This looks at the serial monitor and waits for a command to change the position of a servo
      * format: <servo number (0 -> 3)> <angle (-90 -> 90)>
@@ -146,6 +147,11 @@ void loop() {
        }
        delay(100);
      }
+    
+    
+    /* * * * * * * * * 
+     * This moves one servo back and forth, used for calibration only
+     * * * * * * * * */
 
     //  int servonum = 1;
     //  int minangle = -45;
