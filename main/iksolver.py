@@ -13,7 +13,7 @@ class NotReachable(Exception):
         Exception.__init__(self, *args, **kwargs)
 
 
-class ik(object):
+class IKSolver(object):
 
     # our parameters are: __init([11.9, 10.5, 15], [[-90, 90], [-90, 90], [-90, 90]], [12.5, 9], -90, 90, 0.1)
     def __init__(self, links, joint_constraints, effector_dims, min_phi, max_phi, phi_increments):
@@ -42,7 +42,7 @@ class ik(object):
             self.joint_constraints[i][1] = radians(self.joint_constraints[i][1])
 
     """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
-    def ik(self, target):
+    def find_angles(self, target):
         phi = self.min_phi
 
         # calculates the angle by which the target has to be rotated to land on the y-z-plane

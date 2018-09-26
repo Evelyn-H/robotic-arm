@@ -7,12 +7,12 @@ name = "pypi"
 
 [packages]
 
+cython = "*"
 numpy = "*"
 
 
 [dev-packages]
 
-python-language-server = {extras = ["all"]}
 
 
 [requires]
