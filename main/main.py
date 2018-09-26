@@ -3,7 +3,7 @@ import clib
 from iksolver import IKSolver, NotReachable
 
 arm = clib.Arm('/dev/ttyACM0', 9600)
-ik = IKSolver([11.9, 10.5, 15], [[-90, 90], [-90, 90], [-90, 90]], [12.5, 9], -90, 90, 0.1)
+ik = IKSolver([11.9, 10.5, 11.5], [[-90, 90], [-90, 90], [-90, 90]], [8.6, 9], -90, 90, 0.1)
 
 
 def move_to(target, duration=1000):
@@ -26,9 +26,10 @@ def move_interpolated(start, end, duration=1000, steps=10):
 
 # move_to(10, 10)
 # move_to(10, -10)
+h = -0.5
 
 while True:
-    move_interpolated([15, 5, 0], [15, -5, 0], 5000, 50)
-    move_interpolated([15, -5, 0], [20, -5, 0], 5000, 50)
-    move_interpolated([20, -5, 0], [20, 5, 0], 5000, 50)
-    move_interpolated([20, 5, 0], [15, 5, 0], 5000, 50)
+    move_interpolated([15, 5, h], [15, -5, h], 5000, 50)
+    move_interpolated([15, -5, h], [20, -5, h], 5000, 50)
+    move_interpolated([20, -5, h], [20, 5, h], 5000, 50)
+    move_interpolated([20, 5, h], [15, 5, h], 5000, 50)
