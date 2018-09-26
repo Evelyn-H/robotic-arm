@@ -17,11 +17,15 @@ float joint_0 = 12.8;
 float joint_1 = 10.4;
 float joint_2 = 10.7;
 
+float float_map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 // current angles of servos
-int current_angles[] = {0, 0, 0, 0};
+float current_angles[] = {0, 0, 0, 0};
 
-void go_to_angle(int pin, int angle) {
+void go_to_angle(int pin, float angle) {
     if(angle < limit_low[pin] || angle > limit_high[pin]){
         digitalWrite(LED_BUILTIN, HIGH);
         delay(100);
@@ -29,53 +33,24 @@ void go_to_angle(int pin, int angle) {
     }
     current_angles[pin] = angle;
     digitalWrite(LED_BUILTIN, LOW);
-    int pulse = map(angle, -90, 90, SERVO_MIN[pin], SERVO_MAX[pin]);
+    // int pulse = map(angle, -90, 90, SERVO_MIN[pin], SERVO_MAX[pin]);
+    float pulse = float_map(angle, -90, 90, SERVO_MIN[pin], SERVO_MAX[pin]);
+
     pwm.setPWM(pin, 0, pulse);
 }
 
-void set_all_angles(int a0, int a1, int a2, int a3){
+void set_all_angles(float a0, float a1, float a2, float a3){
     go_to_angle(0, a0);
     go_to_angle(1, a1);
     go_to_angle(2, a2);
     go_to_angle(3, a3);
 }
 
-void move_to_slow(int a0_to, int a1_to, int a2_to, int a3_to){
-    float increments[] = {
-        a0_to - current_angles[0],
-        a1_to - current_angles[1],
-        a2_to - current_angles[2],
-        a3_to - current_angles[3]
-    };
-
-    float max_inc = max(abs(increments[0]), max(abs(increments[1]), max(abs(increments[2]), abs(increments[3]))));
-    int steps = max_inc;
-
-    float original[] = {current_angles[0], current_angles[1], current_angles[2], current_angles[3]};
-
-    int i = 0;
-    while(i < steps){
-        set_all_angles(
-            original[0] + increments[0] / steps * i,
-            original[1] + increments[1] / steps * i,
-            original[2] + increments[2] / steps * i,
-            original[3] + increments[3] / steps * i
-        );
-        delay(100);
-        i++;
-    }
-
-    set_all_angles(a0_to, a1_to, a2_to, a3_to);
-    delay(100);
-}
-
-void move_to_time(int a0_target, int a1_target, int a2_target, int a3_target, int duration){
+void move_to_smooth(float a0_target, float a1_target, float a2_target, float a3_target, float duration){
     // this function doesn't work with delays and instead sets the angles by
     // continuously linearly interpolating between the start and end angles
-    if(duration < 20){
-        set_all_angles(a0_target, a1_target, a2_target, a3_target);
-        Serial.println("duration too small, moving right away");
-        return;
+    if(duration < 100){
+        duration = 100;
     }
 
     float original[] = {current_angles[0], current_angles[1], current_angles[2], current_angles[3]};
@@ -97,7 +72,7 @@ void move_to_time(int a0_target, int a1_target, int a2_target, int a3_target, in
     set_all_angles(a0_target, a1_target, a2_target, a3_target);
 }
 
-void move_pen(float target_h, int a1, int a0){
+void move_pen(float target_h, float a1, float a0){
     float a2 = acos((target_h-cos(-a1*PI/180)*joint_2) / joint_1)*180/PI - a1;
     float a3 = 90 - (a2+a1);
     Serial.println("--");
@@ -108,7 +83,7 @@ void move_pen(float target_h, int a1, int a0){
     //  go_to_angle(1, -a1);
     //  go_to_angle(2, -a2);
     //  go_to_angle(3, -a3);
-    move_to_slow(a0, a1, a2, a3);
+    move_to_smooth(a0, a1, a2, a3, 1000);
     delay(200);
 }
 
@@ -163,7 +138,7 @@ void read_commands(){
         int a3 = substrings[4].toInt();
         int duration = substrings[5].toInt();
         Serial.println("started movement...");
-        move_to_time(a0, a1, a2, a3, duration);
+        move_to_smooth(a0, a1, a2, a3, duration);
 
     }
 }
@@ -226,7 +201,7 @@ void loop() {
     //         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
     //         angles[pin] = angle;
     //         go_to_angle(pin, angle);
-    //         // move_to_slow(angles[0], angles[1], angles[2], angles[3]);
+    //         // move_to_smooth(angles[0], angles[1], angles[2], angles[3]);
     //         Serial.print(pin);
     //         Serial.print(" set to ");
     //         Serial.println(angle);
