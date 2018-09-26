@@ -1,5 +1,5 @@
 import math
-import numpy
+import numpy as np
 
 # Tolerance for the final result, unit is centimeters
 TOLERANCE = 0.05
@@ -7,167 +7,161 @@ TOLERANCE = 0.05
 # into C++ later on.
 
 
-def get_new_joints2d(joints, target, d):
+class IKSolver(object):
+    # our parameters are: __init([11.9, 10.5, 11.5], [[-90, 90], [-90, 90], [-90, 90]], [8.6, 9], -90, 90)
+    def __init__(self, links, joint_constraints, effector_dims):
+        '''
+            Keyword arguments:
+            links = The lengths of the robot links (1x3 vector)
+            joint_constraints = The minimal and maximal angle each joint can have (3x2 vector)
+            effector_dims = The size of the end effector ([x, y] vector)
+        '''
+        self.links = links
+        self.joint_constraints = joint_constraints
+        self.effector_dims = effector_dims
+        self.ee_angle = math.atan(effector_dims[1] / effector_dims[0])
 
-    # calculates distance from root to target
-    dist = math.sqrt(math.pow(joints[0, 0] - target[0], 2) + math.pow(joints[0, 1] - target[1], 2))
+        for constraint in self.joint_constraints:
+            constraint[0] = math.radians(constraint[0])
+            constraint[1] = math.radians(constraint[1])
 
-    # columns is number of joints
-    num_joints = joints.shape[0]
+    def find_angles(self, target):
+        '''Takes a x-y-z target array and returns a solution'''
+        # wrangle the data into the right input for FABRIK
 
-    # checks if target is reachable
-    if dist > sum(d):
-        # target is unreachable
-        for i in range(num_joints - 1):
-            # finds distance between each target and each joint, except the last joint
-            r = math.sqrt(math.pow(joints[i, 0] - target[0], 2) + math.pow(joints[i, 1] - target[1], 2))
-            kappa = d[i] / r
+        # angle the base has to have to face the target
+        base_angle = angle_between_vectors(target[0:2], np.array([1, 0]))
 
-            # updates joint positions
-            joints[i + 1, 0] = (1 - kappa) * joints[i, 0] + kappa * target[0]
-            joints[i + 1, 1] = (1 - kappa) * joints[i, 1] + kappa * target[1]
-    else:
-        # target is reachable
-        b = numpy.zeros((2,))
-        b[0] = joints[0, 0]
-        b[1] = joints[0, 1]
+        # rotation matrix to rotate the target onto the x-z-plane
+        target_x = math.sqrt(target[0]**2 + target[1]**2)
+        target_xz = np.array([target_x, target[2]])
 
-        # Check whether the distance between end effector and the target is greater
-        # than some tolerance
+        joints = np.array([
+            [0, 0],
+            [0, self.links[0]],
+            [0, self.links[0] + self.links[1]],
+            [0, self.links[0] + self.links[1] + self.links[2]],
+        ])
+        print(joints)
 
-        difA = math.sqrt(math.pow(joints[num_joints - 1, 0] - target[0], 2) + math.pow(joints[num_joints - 1, 1] - target[1], 2))
+        # applies FABRIK on the 2D-data
+        joints = self._get_new_joints2d(joints, target_xz, self.links)
+        print(joints)
 
-        while difA > TOLERANCE:
-            # STAGE 1: FORWARD REACHING
-            # Set the end effector as target t
-            joints[num_joints - 1, 0] = target[0]
-            joints[num_joints - 1, 1] = target[1]
+        angles = [base_angle]
+        angles.extend(self._joints_to_angles(joints))
+        print(angles)
 
-            for i in reversed(range(num_joints - 1)):
-                # finds distances between the new joint positions of the next joint
-                # and the current position of the lower joint
-                r = math.sqrt(math.pow(joints[i, 0] - joints[i + 1, 0], 2) + math.pow(joints[i, 1] - joints[i + 1, 1], 2))
+        angles_degrees = [math.degrees(x) for x in angles]
+        print(angles_degrees)
+        return angles
 
+    def _joints_to_angles(self, joints):
+        link_vecs = [joints[0]]
+        for i in range(1, len(joints)):
+            link_vecs.append(joints[i] - joints[i - 1])
+        link_vecs[0] = [0, 1]  # replace the first link_vecs ([0, 0]) with the up vector for calculating the angles
+        angles = []
+        for i in range(len(link_vecs) - 1):
+            angles.append(angle_between_vectors(link_vecs[i], link_vecs[i + 1]))
+        angles[-1] -= self.ee_angle
+        return angles
+
+    def _get_new_joints2d(self, joints, target, d):
+
+        # calculates distance from root to target
+        dist = math.sqrt(math.pow(joints[0, 0] - target[0], 2) + math.pow(joints[0, 1] - target[1], 2))
+
+        # columns is number of joints
+        num_joints = joints.shape[0]
+
+        # checks if target is reachable
+        if dist > sum(d):
+            # target is unreachable
+            for i in range(num_joints - 1):
+                # finds distance between each target and each joint, except the last joint
+                r = math.sqrt(math.pow(joints[i, 0] - target[0], 2) + math.pow(joints[i, 1] - target[1], 2))
                 kappa = d[i] / r
 
                 # updates joint positions
-                joints[i, 0] = (1 - kappa) * joints[i + 1, 0] + kappa * joints[i, 0]
-                joints[i, 1] = (1 - kappa) * joints[i + 1, 1] + kappa * joints[i, 1]
+                joints[i + 1, 0] = (1 - kappa) * joints[i, 0] + kappa * target[0]
+                joints[i + 1, 1] = (1 - kappa) * joints[i, 1] + kappa * target[1]
+        else:
+            # target is reachable
+            b = np.zeros((2,))
+            b[0] = joints[0, 0]
+            b[1] = joints[0, 1]
 
-            # STAGE 2: BACKWARD REACHING
-            # Set the root as the initial position
-
-            joints[0, 0] = b[0]
-            joints[0, 1] = b[1]
-
-            for i in range(num_joints - 1):
-                # finds distances between the new joint positions of the next joint
-                # and the current position of the lower joint
-                r = math.sqrt(math.pow(joints[i, 0] - joints[i + 1, 0], 2) + math.pow(joints[i, 1] - joints[i + 1, 1], 2))
-
-                kappa = d[i] / r
-
-                joints[i + 1, 0] = (1 - kappa) * joints[i, 0] + kappa * joints[i + 1, 0]
-                joints[i + 1, 1] = (1 - kappa) * joints[i, 1] + kappa * joints[i + 1, 1]
+            # Check whether the distance between end effector and the target is greater
+            # than some tolerance
 
             difA = math.sqrt(math.pow(joints[num_joints - 1, 0] - target[0], 2) + math.pow(joints[num_joints - 1, 1] - target[1], 2))
 
-    return joints
+            while difA > TOLERANCE:
+                # STAGE 1: FORWARD REACHING
+                # Set the end effector as target t
+                joints[num_joints - 1, 0] = target[0]
+                joints[num_joints - 1, 1] = target[1]
+
+                for i in reversed(range(num_joints - 1)):
+                    # finds distances between the new joint positions of the next joint
+                    # and the current position of the lower joint
+                    r = math.sqrt(math.pow(joints[i, 0] - joints[i + 1, 0], 2) + math.pow(joints[i, 1] - joints[i + 1, 1], 2))
+
+                    kappa = d[i] / r
+
+                    # updates joint positions
+                    joints[i, 0] = (1 - kappa) * joints[i + 1, 0] + kappa * joints[i, 0]
+                    joints[i, 1] = (1 - kappa) * joints[i + 1, 1] + kappa * joints[i, 1]
+
+                # STAGE 2: BACKWARD REACHING
+                # Set the root as the initial position
+
+                joints[0, 0] = b[0]
+                joints[0, 1] = b[1]
+
+                for i in range(num_joints - 1):
+                    # finds distances between the new joint positions of the next joint
+                    # and the current position of the lower joint
+                    r = math.sqrt(math.pow(joints[i, 0] - joints[i + 1, 0], 2) + math.pow(joints[i, 1] - joints[i + 1, 1], 2))
+
+                    kappa = d[i] / r
+
+                    joints[i + 1, 0] = (1 - kappa) * joints[i, 0] + kappa * joints[i + 1, 0]
+                    joints[i + 1, 1] = (1 - kappa) * joints[i, 1] + kappa * joints[i + 1, 1]
+
+                difA = math.sqrt(math.pow(joints[num_joints - 1, 0] - target[0], 2) + math.pow(joints[num_joints - 1, 1] - target[1], 2))
+
+                # # check if any constraints are violated
+                # angles = self._joints_to_angles(joints)
+                # for i in range(len(angles)):
+                #     # lower limit
+                #     if angles[i] < self.joint_constraints[i][0]:
+                #         angles[i] = self.joint_constraints[i][0]
+                #     # upper limit
+                #     if angles[i] > self.joint_constraints[i][1]:
+                #         angles[i] = self.joint_constraints[i][1]
+                #
+                # # and rebuild joints from (new) angles
+                # ...
 
 
-def fabrik_rotation(joints, target, d):
-    # angle the base has to have to face the target
-    baseangle = get_base_angle(joints, target)
-
-    # rotation matrix to rotate the target onto the x-z-plane
-    rotmat = rotation_matrix(baseangle)
-    rotated_target = numpy.dot(rotmat, target)
-
-    # removes the y-component from the target
-    target_in_plane = numpy.array([rotated_target[0], rotated_target[2]])
-
-    # removes the y-components from the joints
-    joints_in_plane = numpy.array([[joints[0, 0], joints[0, 2]],
-                                   [joints[0, 0], joints[0, 2]],
-                                   [joints[0, 0], joints[0, 2]],
-                                   [joints[0, 0], joints[0, 2]]])
-
-    # applies FABRIK on the 2D-data
-    j = get_new_joints2d(joints_in_plane, target_in_plane, d)
-    print("FABRIK 3D version by rotating the target point onto the x-z-plane")
-    print(j)
-
-    # add the y-components back to the joints
-    j1 = numpy.array([j[0, 0], 0, j[0, 1]])
-    j2 = numpy.array([j[1, 0], 0, j[1, 1]])
-    j3 = numpy.array([j[2, 0], 0, j[2, 1]])
-    j4 = numpy.array([j[3, 0], 0, j[3, 1]])
-
-    # rotation matrix to rotate back to the original target point
-    rotmat = rotation_matrix(-baseangle)
-
-    # rotates the joint positions to the correct positions
-    j1 = numpy.dot(rotmat, j1)
-    j2 = numpy.dot(rotmat, j2)
-    j3 = numpy.dot(rotmat, j3)
-    j4 = numpy.dot(rotmat, j4)
-
-    joints_in_space = numpy.array([j1, j2, j3, j4])
-
-    # calculates the angles from the joint positions
-    theta1, theta2, theta3 = get_joint_angles(joints_in_space, d)
-    print(joints_in_space)
-    print("Base: " + str(baseangle) + " Th1: " + str(theta1) + " Th2: " + str(theta2) + " Th3: " + str(theta3))
-    return (baseangle, theta1, theta2, theta3)
-
-
-def get_base_angle(joints, target):
-    b = numpy.array([1, 0])
-    t = target[0:2]
-    if numpy.min(t) < 0:
-        return get_angle_between_vectors(t, b)
-    else:
-        return -get_angle_between_vectors(t, b)
+        return joints
 
 
 def rotation_matrix(theta):
-    return numpy.array([[math.cos(theta), -math.sin(theta), 0], [math.sin(theta), math.cos(theta), 0], [0, 0, 1]])
-
-# gets joint angle
-
-
-def get_joint_angles(joints, d):
-    basevec = numpy.array([0, 0, 10.7])
-    link1vec = joints[1, :] - joints[0, :]
-    link2vec = joints[2, :] - joints[1, :]
-    link3vec = joints[3, :] - joints[2, :]
-
-    theta1 = get_angle_between_vectors(link1vec, basevec)
-    theta2 = get_angle_between_vectors(link2vec, link1vec)
-    theta3 = get_angle_between_vectors(link3vec, link2vec)
-
-    return theta1, theta2, theta3
-
-
-# finds the angle between the plane in which the new joint positions lie and the x-z-plane,
-# which is the angle for the base.
-def find_angle_to_plane(planecoeffs):
-    xvec = numpy.array([1, 0, 0])
-    zvec = numpy.array([0, 0, 1])
-
-    # gets the normal of the x-z-plane
-    crossproduct = numpy.cross(xvec, zvec)
-
-    # the angle between the two normals
-    theta = get_angle_between_vectors(crossproduct, planecoeffs)
-
-    print(str(theta))
-
-    return theta
+    return np.array([
+        [math.cos(theta), -math.sin(theta), 0],
+        [math.sin(theta), math.cos(theta), 0],
+        [0, 0, 1]
+    ])
 
 
 # calculates an angle between two vectors
-def get_angle_between_vectors(v1, v2):
-    dn = numpy.dot(v1, v2)
-    n = numpy.linalg.norm(v1) * numpy.linalg.norm(v2)
-    return math.acos(dn / n)
+def angle_between_vectors(v0, v1):
+    # dn = np.dot(v1, v2)
+    # n = np.linalg.norm(v1) * np.linalg.norm(v2)
+    # return math.acos(dn / n)
+    a0 = math.atan2(v0[1], v0[0])
+    a1 = math.atan2(v1[1], v1[0])
+    return a0 - a1
