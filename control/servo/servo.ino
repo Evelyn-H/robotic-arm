@@ -72,11 +72,17 @@ void move_to_slow(int a0_to, int a1_to, int a2_to, int a3_to){
 void move_to_time(int a0_target, int a1_target, int a2_target, int a3_target, int duration){
     // this function doesn't work with delays and instead sets the angles by
     // continuously linearly interpolating between the start and end angles
+    if(duration < 20){
+        set_all_angles(a0_target, a1_target, a2_target, a3_target);
+        Serial.println("duration too small, moving right away");
+        return;
+    }
+
     float original[] = {current_angles[0], current_angles[1], current_angles[2], current_angles[3]};
     int t0 = millis();
     int t = 0;
     do {
-        int t = millis();
+        t = millis();
         // d is a value between 0 and 1 that tells us how far along
         // the duration we are: 0 -> start, 1-> end
         float d = (float)(t - t0) / (float) duration;
@@ -87,7 +93,8 @@ void move_to_time(int a0_target, int a1_target, int a2_target, int a3_target, in
         float a3 = (1-d) * original[3] + d * a3_target;
         // and set all the angles
         set_all_angles(a0, a1, a2, a3);
-    } while(t - t0 < duration);
+    } while((t - t0) < duration);
+    set_all_angles(a0_target, a1_target, a2_target, a3_target);
 }
 
 void move_pen(float target_h, int a1, int a0){
@@ -116,25 +123,29 @@ void read_commands(){
     }
 
     // split up the command into substrings delimited by spaces
-    int pos = 0;
+    int pos = command.indexOf(' ', 0);
     int i = 0;
+    substrings[i++] = command.substring(0, pos);
     while(pos < command.length()){
         // find next delimiter
         int next_space = command.indexOf(' ', pos+1); // pos+1 to skip over the previous space
         if(next_space == -1)
             next_space = command.indexOf('\n', pos);
         // and chop the command up some more
-        substrings[i++] = command.substring(pos+1, next_space); // pos+1 to skip over the space
+        substrings[i++] = command.substring(pos, next_space); // pos+1 to skip over the space
+        Serial.println(command.substring(pos+1, next_space));
         pos = next_space;
     }
 
     // and execute the appropriate command
     if (substrings[0] == "reset") {
+        Serial.println("arm reset");
         set_all_angles(0, 0, 0, 0);
 
     } else if (substrings[0] == "set") {
         int pin = substrings[1].toInt();
         int angle = substrings[2].toInt();
+        Serial.println("servo set");
         go_to_angle(pin, angle);
 
     } else if (substrings[0] == "set_all") {
@@ -142,6 +153,7 @@ void read_commands(){
         int a1 = substrings[2].toInt();
         int a2 = substrings[3].toInt();
         int a3 = substrings[4].toInt();
+        Serial.println("all servos set");
         set_all_angles(a0, a1, a2, a3);
 
     } else if (substrings[0] == "move_to") {
@@ -150,6 +162,7 @@ void read_commands(){
         int a2 = substrings[3].toInt();
         int a3 = substrings[4].toInt();
         int duration = substrings[5].toInt();
+        Serial.println("started movement...");
         move_to_time(a0, a1, a2, a3, duration);
 
     }
@@ -201,25 +214,25 @@ void loop() {
     * format: <servo number (0 -> 3)> <angle (-90 -> 90)>
     * * * * * * * * */
 
-    go_to_angle(3, 0);
-    go_to_angle(2, 0);
-    go_to_angle(1, 0);
-    go_to_angle(0, 0);
-    int angles[4];
-    while(1){
-        if(Serial.available() > 0){
-            int pin = Serial.parseInt();
-            int angle = Serial.parseInt();
-            angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
-            angles[pin] = angle;
-            go_to_angle(pin, angle);
-            // move_to_slow(angles[0], angles[1], angles[2], angles[3]);
-            Serial.print(pin);
-            Serial.print(" set to ");
-            Serial.println(angle);
-        }
-        delay(100);
-    }
+    // go_to_angle(3, 0);
+    // go_to_angle(2, 0);
+    // go_to_angle(1, 0);
+    // go_to_angle(0, 0);
+    // int angles[4];
+    // while(1){
+    //     if(Serial.available() > 0){
+    //         int pin = Serial.parseInt();
+    //         int angle = Serial.parseInt();
+    //         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
+    //         angles[pin] = angle;
+    //         go_to_angle(pin, angle);
+    //         // move_to_slow(angles[0], angles[1], angles[2], angles[3]);
+    //         Serial.print(pin);
+    //         Serial.print(" set to ");
+    //         Serial.println(angle);
+    //     }
+    //     delay(100);
+    // }
 
 
     /* * * * * * * * *
