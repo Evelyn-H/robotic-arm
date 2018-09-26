@@ -43,7 +43,8 @@ class IKSolver(object):
 
     """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
     def find_angles(self, target):
-        phi = self.min_phi
+        phi = (self.min_phi + self.max_phi) / 2
+        sign = 1
 
         # calculates the angle by which the target has to be rotated to land on the y-z-plane
         t = target[0:2]
@@ -63,26 +64,30 @@ class IKSolver(object):
         rotated_target = dot(rotmat, target)
 
         # Tries out different EE-orientations and calculates a solution, which is then transformed to our angle space
-        found_solution = False
-        while not found_solution:
+        while True:
             try:
                 # ignores the x-component since the target is rotated onto the y-z-plane
                 angles = self._ik_solver((rotated_target[0], rotated_target[2]), phi)
-                found_solution = True
 
                 solution = [[degrees(baseangle),
                              degrees(joints[0]),
                              degrees(joints[1]),
                              degrees(joints[2])] for joints in angles]
 
-                return self._transform_angles(solution)
+                print('pre:  ', solution)
+                transformed = self._transform_angles(solution)
+                print('post: ', transformed)
+                return transformed
 
             except (JointConstraintsViolated, NotReachable):
                 if phi >= self.max_phi:
-                    print("error")
                     return []
+                sign = -1 * sign
+                if sign == -1:
+                    phi = sign * phi
+                else:
+                    phi = -1 * phi + self.phi_increments
 
-                phi = phi + self.phi_increments
 
     '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
     def _ik_solver(self, target, phi):
@@ -135,16 +140,11 @@ class IKSolver(object):
     '''Transforms the angle space given by the solver to the angle space used in our robot setup'''
     def _transform_angles(self, angles):
         for solution in angles:
-            for i in range(1, len(solution)):
-                solution[i] = -solution[i]
-
-        # the solver considers our two-dimensional end effector as a single link, this corrects the solution
-        solution[3] = solution[3] + degrees(self.ee_angle)
-
-        # corrects the angle for the base of the RRR-arm to the form used by our setup.
-        if solution[1] < 0:
+            # the solver considers our two-dimensional end effector as a single link, this corrects the solution
+            solution[3] = solution[3] + degrees(self.ee_angle)
             solution[1] = solution[1] + degrees(0.5 * pi)
-        else:
-            solution[1] = solution[1] - degrees(0.5 * pi)
+
+            # for i in range(1, len(solution)):
+                # solution[i] = -solution[i]
 
         return angles
