@@ -101,33 +101,37 @@ class IKSolver(object):
 
         delta = (wx ** 2) + (wy ** 2)
 
-        c2 = (delta - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1])
+        t2 = acos((delta - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
 
-        # if 1-c^2 is negative, the target is not reachable with the current robot configuration.
-        try:
-            s2 = [-sqrt(1 - c2 ** 2), sqrt(1 - c2 ** 2)]
-        except ValueError:
-            raise NotReachable("The target is not reachable!")
+        t1 = ((-self.links[1] * sin(t2))*wx + (self.links[0] + self.links[1] * cos(t2))*wy) / ((self.links[1] * sin(t2))*wy + (self.links[0] + self.links[1] * cos(t2))*wx)
 
-        theta2_unbounded = [atan2(x, c2) for x in s2]
-        theta2 = [x for x in theta2_unbounded
-                  if self.joint_constraints[1][0] < x < self.joint_constraints[1][1]]
-
-        # Angles for theta2 exceed joint limits
-        if len(theta2) == 0:
-            raise JointConstraintsViolated("Theta2 has illegal joint angle values!")
-
-        s1 = [((self.links[0] + self.links[1] * c2) * wy - self.links[1] * var * wx) / delta for var in s2]
-
-        c1 = [((self.links[0] + self.links[1] * c2) * wx + self.links[1] * var * wy) / delta for var in s2]
-
-        theta1_unbounded = [atan2(x, y) for x, y in zip(s1, c1)]
-        theta1 = [x for x in theta1_unbounded
-                  if 2*self.joint_constraints[0][1] > x > 2*self.joint_constraints[0][0]]
-
-        # Angles for theta1 exceed joint limits
-        if len(theta1) == 0:
-            raise JointConstraintsViolated("Theta1 has illegal joint angle values!")
+        t2 = t2 - radians(90)
+        t1 = t1 - radians(90)
+        # # if 1-c^2 is negative, the target is not reachable with the current robot configuration.
+        # try:
+        #     s2 = [-sqrt(1 - c2 ** 2), sqrt(1 - c2 ** 2)]
+        # except ValueError:
+        #     raise NotReachable("The target is not reachable!")
+        #
+        # theta2_unbounded = [atan2(x, c2) for x in s2]
+        # theta2 = [x for x in theta2_unbounded
+        #           if self.joint_constraints[1][0] < x < self.joint_constraints[1][1]]
+        #
+        # # Angles for theta2 exceed joint limits
+        # if len(theta2) == 0:
+        #     raise JointConstraintsViolated("Theta2 has illegal joint angle values!")
+        #
+        # s1 = [((self.links[0] + self.links[1] * c2) * wy - self.links[1] * var * wx) / delta for var in s2]
+        #
+        # c1 = [((self.links[0] + self.links[1] * c2) * wx + self.links[1] * var * wy) / delta for var in s2]
+        #
+        # theta1_unbounded = [atan2(x, y) for x, y in zip(s1, c1)]
+        # theta1 = [x for x in theta1_unbounded
+        #           if 2*self.joint_constraints[0][1] > x > 2*self.joint_constraints[0][0]]
+        #
+        # # Angles for theta1 exceed joint limits
+        # if len(theta1) == 0:
+        #     raise JointConstraintsViolated("Theta1 has illegal joint angle values!")
 
         all_angles = [[th1, th2, phi - th2 - th1]
                       for th1, th2 in zip(theta1, theta2)
