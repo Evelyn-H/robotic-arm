@@ -15,7 +15,7 @@ class NotReachable(Exception):
 
 class IKSolver(object):
 
-    # our parameters are: __init([11.9, 10.5, 15], [[-90, 90], [-90, 90], [-90, 90]], [12.5, 9], -90, 90, 0.1)
+    # our parameters are: __init([11.9, 10.5, 15], [[-90, 90], [-90, 90], [-90, 90]], [12.5, 9], -180, 0, 0.1)
     def __init__(self, links, joint_constraints, effector_dims, min_phi, max_phi, phi_increments):
         '''
             Keyword arguments:
@@ -43,10 +43,9 @@ class IKSolver(object):
 
     """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
     def find_angles(self, target):
-        phi = (self.min_phi + self.max_phi) / 2
-        sign = 1
+        phi = self.min_phi
 
-        # calculates the angle by which the target has to be rotated to land on the y-z-plane
+        # calculates the angle by which the target has to be rotated to land on the x-z-plane
         t = target[0:2]
         dn = dot(t, self.base)
         n = norm(t) * norm(self.base)
@@ -56,7 +55,7 @@ class IKSolver(object):
         else:
             baseangle = -res
 
-        # rotation matrix to rotate the target onto the y-z-plane
+        # rotation matrix to rotate the target onto the x-z-plane
         rotmat = array([[cos(baseangle), -sin(baseangle), 0],
                         [sin(baseangle), cos(baseangle), 0],
                         [0, 0, 1]])
@@ -66,7 +65,7 @@ class IKSolver(object):
         # Tries out different EE-orientations and calculates a solution, which is then transformed to our angle space
         while True:
             try:
-                # ignores the x-component since the target is rotated onto the y-z-plane
+                # ignores the y-component since the target is rotated onto the x-z-plane
                 angles = self._ik_solver((rotated_target[0], rotated_target[2]), phi)
 
                 solution = [[degrees(baseangle),
@@ -82,11 +81,8 @@ class IKSolver(object):
             except (JointConstraintsViolated, NotReachable):
                 if phi >= self.max_phi:
                     return []
-                sign = -1 * sign
-                if sign == -1:
-                    phi = sign * phi
                 else:
-                    phi = -1 * phi + self.phi_increments
+                    phi = phi + self.phi_increments
 
 
     '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
