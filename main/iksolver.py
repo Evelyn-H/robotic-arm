@@ -123,7 +123,7 @@ class IKSolver(object):
 
         theta1_unbounded = [atan2(x, y) for x, y in zip(s1, c1)]
         theta1 = [x for x in theta1_unbounded
-                  if 2*self.joint_constraints[0][1] > x > 2*self.joint_constraints[0][0]]
+                  if self.joint_constraints[0][1] > x + 0.5 * pi > self.joint_constraints[0][0]]
 
         # Angles for theta1 exceed joint limits
         if len(theta1) == 0:
