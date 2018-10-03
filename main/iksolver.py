@@ -44,7 +44,7 @@ class IKSolver(object):
 
     """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
     def find_angles(self, target):
-        phi = (self.min_phi + self.max_phi) / 2
+        phi = self.min_phi
         sign = 1
 
         # calculates the angle by which the target has to be rotated to land on the y-z-plane
@@ -75,7 +75,7 @@ class IKSolver(object):
                              degrees(joints[1]),
                              degrees(joints[2])] for joints in angles]
 
-                print('pre:  \n', np.round(solution, 2))
+                #print('pre:  \n', np.round(solution, 2))
                 transformed = self._transform_angles(solution, phi)
                 print('post: \n', np.round(transformed, 2))
                 print('phi: ', phi)
@@ -84,11 +84,9 @@ class IKSolver(object):
             except (JointConstraintsViolated, NotReachable):
                 if phi >= self.max_phi:
                     return []
-                sign = -1 * sign
-                if sign == -1:
-                    phi = sign * phi
                 else:
-                    phi = -1 * phi + self.phi_increments
+                    phi = phi + self.phi_increments
+                #print(phi)
 
 
     '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
