@@ -51,9 +51,7 @@ class IKSolver(object):
         angles = [base_angle]
         angles.extend(self._joints_to_angles(joints))
         print(angles)
-
-        angles_degrees = [math.degrees(x) for x in angles]
-        print(angles_degrees)
+        print([math.degrees(x) for x in angles])
         return angles
 
     def _joints_to_angles(self, joints):
@@ -97,7 +95,9 @@ class IKSolver(object):
 
             difA = math.sqrt(math.pow(joints[num_joints - 1, 0] - target[0], 2) + math.pow(joints[num_joints - 1, 1] - target[1], 2))
 
-            while difA > TOLERANCE:
+            num_iterations = 0
+            while difA > TOLERANCE and num_iterations < 10:
+                num_iterations += 1
                 # STAGE 1: FORWARD REACHING
                 # Set the end effector as target t
                 joints[num_joints - 1, 0] = target[0]
@@ -129,6 +129,28 @@ class IKSolver(object):
 
                     joints[i + 1, 0] = (1 - kappa) * joints[i, 0] + kappa * joints[i + 1, 0]
                     joints[i + 1, 1] = (1 - kappa) * joints[i, 1] + kappa * joints[i + 1, 1]
+
+                    # check angle constraints
+                    # angles = self._joints_to_angles(joints)
+                    # print('pre:  ', [math.degrees(x) for x in angles])
+                    # if angles[i] < math.radians(-45):
+                    #     # set position to min allowed angle
+                    #     angle_diff = -math.radians(-45) + angles[i]
+                    #     print('< -45', i, math.degrees(angle_diff))
+                    #     # rotate
+                    #     joints[i + 1, 0] = math.cos(angle_diff) * (joints[i + 1, 0] - joints[i, 0]) - math.sin(angle_diff) * (joints[i + 1, 1] - joints[i, 1]) + joints[i, 0]
+                    #     joints[i + 1, 1] = math.sin(angle_diff) * (joints[i + 1, 0] - joints[i, 0]) + math.cos(angle_diff) * (joints[i + 1, 1] - joints[i, 1]) + joints[i, 1]
+                    #
+                    #     print('post: ', [math.degrees(x) for x in self._joints_to_angles(joints)])
+                    # elif angles[i] > math.radians(45):
+                    #     # set position to min allowed angle
+                    #     angle_diff = -math.radians(45) + angles[i]
+                    #     print('> 45', i, math.degrees(angle_diff))
+                    #     # rotate
+                    #     joints[i + 1, 0] = math.cos(angle_diff) * (joints[i + 1, 0] - joints[i, 0]) - math.sin(angle_diff) * (joints[i + 1, 1] - joints[i, 1]) + joints[i, 0]
+                    #     joints[i + 1, 1] = math.sin(angle_diff) * (joints[i + 1, 0] - joints[i, 0]) + math.cos(angle_diff) * (joints[i + 1, 1] - joints[i, 1]) + joints[i, 1]
+                    #
+                    #     print('post: ', [math.degrees(x) for x in self._joints_to_angles(joints)])
 
                 difA = math.sqrt(math.pow(joints[num_joints - 1, 0] - target[0], 2) + math.pow(joints[num_joints - 1, 1] - target[1], 2))
 
