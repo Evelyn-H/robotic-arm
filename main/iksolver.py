@@ -76,7 +76,7 @@ class IKSolver(object):
                              degrees(joints[2])] for joints in angles]
 
                 print('pre:  \n', np.round(solution, 2))
-                transformed = self._transform_angles(solution)
+                transformed = self._transform_angles(solution, phi)
                 print('post: \n', np.round(transformed, 2))
                 print('phi: ', phi)
                 return transformed
@@ -140,11 +140,18 @@ class IKSolver(object):
         return all_angles
 
     '''Transforms the angle space given by the solver to the angle space used in our robot setup'''
-    def _transform_angles(self, angles):
+    def _transform_angles(self, angles, ee_phi):
         for solution in angles:
             # the solver considers our two-dimensional end effector as a single link, this corrects the solution
-            solution[3] = solution[3] + degrees(self.ee_angle)
-            solution[1] = solution[1] + degrees(0.5 * pi)
+
+            s = np.sign(cos(ee_phi))
+            print(s)
+            solution[3] = solution[3] + s*degrees(self.ee_angle)
+            solution[1] = solution[1] + s*degrees(0.5 * pi)
+
+
+            solution[3] = s * solution[3]
+            solution[2] = s * solution[2]
 
             # for i in range(1, len(solution)):
                 # solution[i] = -solution[i]
