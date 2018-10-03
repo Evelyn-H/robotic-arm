@@ -105,8 +105,9 @@ class IKSolver(object):
 
         t1 = ((-self.links[1] * sin(t2))*wx + (self.links[0] + self.links[1] * cos(t2))*wy) / ((self.links[1] * sin(t2))*wy + (self.links[0] + self.links[1] * cos(t2))*wx)
 
-        t2 = t2 - radians(90)
-        t1 = t1 - radians(90)
+        t1 = t1 #+ radians(90)
+        t2 = t2 #- radians(90)
+        print('--', degrees(t1), degrees(t2), degrees(phi))
         # # if 1-c^2 is negative, the target is not reachable with the current robot configuration.
         # try:
         #     s2 = [-sqrt(1 - c2 ** 2), sqrt(1 - c2 ** 2)]
@@ -133,9 +134,7 @@ class IKSolver(object):
         # if len(theta1) == 0:
         #     raise JointConstraintsViolated("Theta1 has illegal joint angle values!")
 
-        all_angles = [[th1, th2, phi - th2 - th1]
-                      for th1, th2 in zip(theta1, theta2)
-                      if self.joint_constraints[2][0] < phi - th1 - th2 < self.joint_constraints[2][1]]
+        all_angles = [[t1, t2, phi - t2 - t1]]
 
         # Angles for theta3 exceed joint limits
         if len(all_angles) == 0:
