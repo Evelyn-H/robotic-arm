@@ -96,8 +96,9 @@ class IKSolver(object):
         px = target[0]
         py = target[1]
 
-        wx = px - self.links[2] * cos(phi)
-        wy = py - self.links[2] * sin(phi)
+        wx = px - self.links[2] * sin(phi)
+        wy = py + self.links[2] * cos(phi)
+        print('w', px, wx, py, wy)
 
         delta = (wx ** 2) + (wy ** 2)
 
