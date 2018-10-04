@@ -76,10 +76,8 @@ class IKSolver(object):
                              degrees(joints[2])] for joints in angles]
 
                 print('pre:  \n', np.round(solution, 2))
-                transformed = self._transform_angles(solution, phi)
-                print('post: \n', np.round(transformed, 2))
                 print('phi: ', phi)
-                return transformed
+                return solution
 
             except (JointConstraintsViolated, NotReachable):
                 if phi >= self.max_phi:
@@ -96,25 +94,26 @@ class IKSolver(object):
         px = target[0]
         py = target[1]
 
-        wx = px - self.links[2] * sin(phi)
-        wy = py + self.links[2] * cos(phi)
+
+        wx = px - self.links[2] * cos(phi)
+        wy = py + self.links[2] * sin(phi)
+
         print('w', px, wx, py, wy)
 
-        delta = (wx ** 2) + (wy ** 2)
+        d = wx ** 2 + wy ** 2
 
-        t2 = acos((delta - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
+        if sqrt(d) > self.links[0] + self.links[1]:
+            raise NotReachable("Arm isn't long enough")
 
-        t1 = ((-self.links[1] * sin(t2))*wx + (self.links[0] + self.links[1] * cos(t2))*wy) / ((self.links[1] * sin(t2))*wy + (self.links[0] + self.links[1] * cos(t2))*wx)
+        t2 = -acos((d - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
 
-        t1 = t1 #+ radians(90)
-        t2 = t2 #- radians(90)
-        print('--', degrees(t1), degrees(t2), degrees(phi))
-        # # if 1-c^2 is negative, the target is not reachable with the current robot configuration.
-        # try:
-        #     s2 = [-sqrt(1 - c2 ** 2), sqrt(1 - c2 ** 2)]
-        # except ValueError:
-        #     raise NotReachable("The target is not reachable!")
-        #
+        t1 = atan(wy / wx) - atan((self.links[1] * sin(t2)) / (self.links[0] + self.links[1] * cos(t2)))
+
+        t1 = pi / 2 - t1
+        t2 = -t2
+        t3 = phi + (pi/2 - t1 - t2)
+        print('--', degrees(t1), degrees(t2), degrees(t3))
+
         # theta2_unbounded = [atan2(x, c2) for x in s2]
         # theta2 = [x for x in theta2_unbounded
         #           if self.joint_constraints[1][0] < x < self.joint_constraints[1][1]]
@@ -135,29 +134,4 @@ class IKSolver(object):
         # if len(theta1) == 0:
         #     raise JointConstraintsViolated("Theta1 has illegal joint angle values!")
 
-        all_angles = [[t1, t2, phi - t2 - t1]]
-
-        # Angles for theta3 exceed joint limits
-        if len(all_angles) == 0:
-            raise JointConstraintsViolated("Theta3 has illegal joint angle values!")
-
-        return all_angles
-
-    '''Transforms the angle space given by the solver to the angle space used in our robot setup'''
-    def _transform_angles(self, angles, ee_phi):
-        for solution in angles:
-            # the solver considers our two-dimensional end effector as a single link, this corrects the solution
-
-            s = np.sign(cos(ee_phi))
-            print(s)
-            solution[3] = solution[3] + s*degrees(self.ee_angle)
-            solution[1] = solution[1] + s*degrees(0.5 * pi)
-
-
-            solution[3] = s * solution[3]
-            solution[2] = s * solution[2]
-
-            # for i in range(1, len(solution)):
-                # solution[i] = -solution[i]
-
-        return angles
+        return [[t1, t2, t3]]
