@@ -35,7 +35,7 @@ def move_interpolated(start, end, duration=1000, steps=10):
 
 h = 0
 
-move_to([25, 0, h])
+move_to([15, 0, h])
 # move_to(10, -10)
 
 # while True:

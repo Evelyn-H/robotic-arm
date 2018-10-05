@@ -1,8 +1,6 @@
 import itertools
 import math
 import numpy as np
-from numpy.linalg import norm
-
 
 class JointConstraintsViolated(Exception):
     def __init__(self, *args, **kwargs):
@@ -94,7 +92,7 @@ class IKSolver(object):
         wx = px - self.links[2] * math.cos(phi)
         wy = py + self.links[2] * math.sin(phi)
 
-        # print('w', px, wx, py, wy)
+        # print(f' phi {round(math.degrees(phi),3)} xyz {round(px,3)}, {round(py,3)}, {round(wx,3)}, {round(wy,3)}')
 
         d = wx ** 2 + wy ** 2
 
@@ -108,7 +106,8 @@ class IKSolver(object):
         t1 = math.pi / 2 - t1
         t2 = -t2
         t3 = phi + (math.pi / 2 - t1 - t2)
-        # print('--', math.degrees(t1), math.degrees(t2), math.degrees(t3))
+
+        # print(' -- ', np.array([math.degrees(t1), math.degrees(t2), math.degrees(t3)]))
 
         # check angles for constraint violations
         # theta 1
