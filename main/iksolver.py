@@ -1,5 +1,5 @@
-from math import atan, atan2, sin, cos, acos, pi, sqrt, radians, degrees
-from numpy import array, dot, min
+import itertools
+import math
 import numpy as np
 from numpy.linalg import norm
 
@@ -16,8 +16,7 @@ class NotReachable(Exception):
 
 class IKSolver(object):
 
-    # our parameters are: __init([11.9, 10.5, 15], [[-90, 90], [-90, 90], [-90, 90]], [12.5, 9], -90, 90, 0.1)
-    def __init__(self, links, joint_constraints, effector_dims, min_phi, max_phi, phi_increments):
+    def __init__(self, links, joint_constraints, effector_dims, min_phi, max_phi, phi_steps):
         '''
             Keyword arguments:
             links = The lengths of the robot links (1x3 vector)
@@ -32,61 +31,59 @@ class IKSolver(object):
         self.links = links
         self.joint_constraints = joint_constraints
         self.effector_dims = effector_dims
-        self.min_phi = radians(min_phi)
-        self.max_phi = radians(max_phi)
-        self.ee_angle = -atan(effector_dims[1]/effector_dims[0])
-        self.base = array([1, 0])
-        self.phi_increments = radians(phi_increments)
+        self.min_phi = math.radians(min_phi)
+        self.max_phi = math.radians(max_phi)
+        self.ee_angle = -math.atan(effector_dims[1] / effector_dims[0])
+        self.base = np.array([1, 0])
+        self.phi_steps = phi_steps
 
         for i, _ in enumerate(self.joint_constraints):
-            self.joint_constraints[i][0] = radians(self.joint_constraints[i][0])
-            self.joint_constraints[i][1] = radians(self.joint_constraints[i][1])
+            self.joint_constraints[i][0] = math.radians(self.joint_constraints[i][0])
+            self.joint_constraints[i][1] = math.radians(self.joint_constraints[i][1])
 
     """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
     def find_angles(self, target):
-        phi = (self.min_phi + self.max_phi) / 2
-        sign = 1
+        # angle the base has to have to face the target
+        base_angle = angle_between_vectors(target[0:2], np.array([1, 0]))
 
-        # calculates the angle by which the target has to be rotated to land on the y-z-plane
-        t = target[0:2]
-        dn = dot(t, self.base)
-        n = norm(t) * norm(self.base)
-        res = acos((dn / n))
-        if min(t) < 0:
-            baseangle = res
-        else:
-            baseangle = -res
+        # rotation the target onto the xz plane
+        target_x = math.sqrt(target[0]**2 + target[1]**2)
+        rotated_target = np.array([target_x, target[2]])
 
-        # rotation matrix to rotate the target onto the y-z-plane
-        rotmat = array([[cos(baseangle), -sin(baseangle), 0],
-                        [sin(baseangle), cos(baseangle), 0],
-                        [0, 0, 1]])
+        def phi_middle_out(min, max, steps):
+            mid = (min + max) / 2
+            positive = np.linspace(mid, max, steps // 2)
+            negative = np.linspace(mid, min, steps // 2)
+            return itertools.chain(*itertools.zip_longest(positive, negative))
 
-        rotated_target = dot(rotmat, target)
+        def phi_positive_half(min, max, steps):
+            mid = (min + max) / 2
+            return np.linspace(mid, max, steps)
 
-        # Tries out different EE-orientations and calculates a solution, which is then transformed to our angle space
-        while True:
+        def phi_negative_half(min, max, steps):
+            mid = (min + max) / 2
+            return np.linspace(mid, min, steps)
+
+        # Tries out different EE-orientations and calculates a solution
+        for phi in phi_middle_out(self.min_phi, self.max_phi, self.phi_steps):
             try:
                 # ignores the x-component since the target is rotated onto the y-z-plane
-                angles = self._ik_solver((rotated_target[0], rotated_target[2]), phi)
+                solutions = self._ik_solver(rotated_target, phi)
 
-                solution = [[degrees(baseangle),
-                             degrees(joints[0]),
-                             degrees(joints[1]),
-                             degrees(joints[2])] for joints in angles]
+                solutions = [[
+                    math.degrees(base_angle),
+                    math.degrees(s[0]),
+                    math.degrees(s[1]),
+                    math.degrees(s[2])
+                ] for s in solutions]
 
-                print('pre:  \n', np.round(solution, 2))
+                print('solution:  \n', np.round(solutions, 2))
                 print('phi: ', phi)
-                return solution
+                return solutions
 
             except (JointConstraintsViolated, NotReachable):
-                if phi >= self.max_phi:
-                    return []
-                sign = -1 * sign
-                if sign == -1:
-                    phi = sign * phi
-                else:
-                    phi = -1 * phi + self.phi_increments
+                pass
+        return []
 
 
     '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
@@ -94,44 +91,40 @@ class IKSolver(object):
         px = target[0]
         py = target[1]
 
+        wx = px - self.links[2] * math.cos(phi)
+        wy = py + self.links[2] * math.sin(phi)
 
-        wx = px - self.links[2] * cos(phi)
-        wy = py + self.links[2] * sin(phi)
-
-        print('w', px, wx, py, wy)
+        # print('w', px, wx, py, wy)
 
         d = wx ** 2 + wy ** 2
 
-        if sqrt(d) > self.links[0] + self.links[1]:
+        if math.sqrt(d) > self.links[0] + self.links[1]:
             raise NotReachable("Arm isn't long enough")
 
-        t2 = -acos((d - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
+        t2 = -math.acos((d - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
 
-        t1 = atan(wy / wx) - atan((self.links[1] * sin(t2)) / (self.links[0] + self.links[1] * cos(t2)))
+        t1 = math.atan(wy / wx) - math.atan((self.links[1] * math.sin(t2)) / (self.links[0] + self.links[1] * math.cos(t2)))
 
-        t1 = pi / 2 - t1
+        t1 = math.pi / 2 - t1
         t2 = -t2
-        t3 = phi + (pi/2 - t1 - t2)
-        print('--', degrees(t1), degrees(t2), degrees(t3))
+        t3 = phi + (math.pi / 2 - t1 - t2)
+        # print('--', math.degrees(t1), math.degrees(t2), math.degrees(t3))
 
-        # theta2_unbounded = [atan2(x, c2) for x in s2]
-        # theta2 = [x for x in theta2_unbounded
-        #           if self.joint_constraints[1][0] < x < self.joint_constraints[1][1]]
-        #
-        # # Angles for theta2 exceed joint limits
-        # if len(theta2) == 0:
-        #     raise JointConstraintsViolated("Theta2 has illegal joint angle values!")
-        #
-        # s1 = [((self.links[0] + self.links[1] * c2) * wy - self.links[1] * var * wx) / delta for var in s2]
-        #
-        # c1 = [((self.links[0] + self.links[1] * c2) * wx + self.links[1] * var * wy) / delta for var in s2]
-        #
-        # theta1_unbounded = [atan2(x, y) for x, y in zip(s1, c1)]
-        # theta1 = [x for x in theta1_unbounded
-        #           if 2*self.joint_constraints[0][1] > x > 2*self.joint_constraints[0][0]]
-        #
-        # # Angles for theta1 exceed joint limits
-        # if len(theta1) == 0:
-        #     raise JointConstraintsViolated("Theta1 has illegal joint angle values!")
+        # check angles for constraint violations
+        # theta 1
+        if not self.joint_constraints[0][0] < t1 < self.joint_constraints[0][1]:
+            raise JointConstraintsViolated("Theta 1 has illegal joint angle values!")
+        # theta 2
+        if not self.joint_constraints[1][0] < t2 < self.joint_constraints[1][1]:
+            raise JointConstraintsViolated("Theta 2 has illegal joint angle values!")
+        # theta 3
+        if not self.joint_constraints[2][0] < t3 < self.joint_constraints[2][1]:
+            raise JointConstraintsViolated("Theta 3 has illegal joint angle values!")
 
         return [[t1, t2, t3]]
+
+
+def angle_between_vectors(v0, v1):
+    a0 = math.atan2(v0[1], v0[0])
+    a1 = math.atan2(v1[1], v1[0])
+    return a0 - a1
