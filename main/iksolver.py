@@ -2,6 +2,7 @@ import itertools
 import math
 import numpy as np
 
+
 class JointConstraintsViolated(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
@@ -31,7 +32,7 @@ class IKSolver(object):
         self.effector_dims = effector_dims
         self.min_phi = math.radians(min_phi)
         self.max_phi = math.radians(max_phi)
-        self.ee_angle = -math.atan(effector_dims[1] / effector_dims[0])
+        self.ee_angle = math.atan(effector_dims[1] / effector_dims[0])
         self.base = np.array([1, 0])
         self.phi_steps = phi_steps
 
@@ -39,8 +40,8 @@ class IKSolver(object):
             self.joint_constraints[i][0] = math.radians(self.joint_constraints[i][0])
             self.joint_constraints[i][1] = math.radians(self.joint_constraints[i][1])
 
-    """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
     def find_angles(self, target):
+        """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
         # angle the base has to have to face the target
         base_angle = angle_between_vectors(target[0:2], np.array([1, 0]))
 
@@ -83,16 +84,15 @@ class IKSolver(object):
                 pass
         return []
 
-
-    '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
     def _ik_solver(self, target, phi):
+        '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
         px = target[0]
         py = target[1]
 
         wx = px - self.links[2] * math.cos(phi)
         wy = py + self.links[2] * math.sin(phi)
 
-        # print(f' phi {round(math.degrees(phi),3)} xyz {round(px,3)}, {round(py,3)}, {round(wx,3)}, {round(wy,3)}')
+        print(f' phi {round(math.degrees(phi),3)} xyz {round(px,3)}, {round(py,3)}, {round(wx,3)}, {round(wy,3)}')
 
         d = wx ** 2 + wy ** 2
 
@@ -106,8 +106,9 @@ class IKSolver(object):
         t1 = math.pi / 2 - t1
         t2 = -t2
         t3 = phi + (math.pi / 2 - t1 - t2)
+        t3 = t3 #- self.ee_angle
 
-        # print(' -- ', np.array([math.degrees(t1), math.degrees(t2), math.degrees(t3)]))
+        print(' -- ', np.array([math.degrees(t1), math.degrees(t2), math.degrees(t3)]))
 
         # check angles for constraint violations
         # theta 1
