@@ -69,6 +69,16 @@ class IKSolver(object):
         def phi_negative(min, max, steps):
             return np.linspace(max, min, steps)
 
+        def phi_segmented(min, max, steps):
+            mid = (min + max) / 2
+            range = max - min
+            return itertools.chain(
+                np.linspace(mid + 1 * range / 3, mid - 1 * range / 3, int(steps / 3)),
+                np.linspace(mid + 2 * range / 3, mid - 2 * range / 3, int(steps / 3)),
+                np.linspace(mid + 3 * range / 3, mid - 3 * range / 3, int(steps / 3)),
+            )
+
+
         # Tries out different EE-orientations and calculates a solution
         for phi in phi_negative(self.min_phi, self.max_phi, self.phi_steps):
             phi += math.radians(90) - self.ee_angle
@@ -106,9 +116,11 @@ class IKSolver(object):
         if math.sqrt(d) > self.links[0] + self.links[1]:
             raise NotReachable("Arm isn't long enough")
 
-        t2 = -math.acos((d - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
-
-        t1 = math.atan(wy / wx) - math.atan((self.links[1] * math.sin(t2)) / (self.links[0] + self.links[1] * math.cos(t2)))
+        try:
+            t2 = -math.acos((d - self.links[0] ** 2 - self.links[1] ** 2) / (2 * self.links[0] * self.links[1]))
+            t1 = math.atan(wy / wx) - math.atan((self.links[1] * math.sin(t2)) / (self.links[0] + self.links[1] * math.cos(t2)))
+        except ValueError as e:
+            raise NotReachable('math error')
 
         t1 = math.pi / 2 - t1
         t2 = -t2
