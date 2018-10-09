@@ -36,6 +36,9 @@ class IKSolver(object):
         self.base = np.array([1, 0])
         self.phi_steps = phi_steps
 
+        self.joint_constraints[2][0] -= self.ee_angle
+        self.joint_constraints[2][1] -= self.ee_angle
+
         for i, _ in enumerate(self.joint_constraints):
             self.joint_constraints[i][0] = math.radians(self.joint_constraints[i][0])
             self.joint_constraints[i][1] = math.radians(self.joint_constraints[i][1])
@@ -63,8 +66,12 @@ class IKSolver(object):
             mid = (min + max) / 2
             return np.linspace(mid, min, steps)
 
+        def phi_negative(min, max, steps):
+            return np.linspace(max, min, steps)
+
         # Tries out different EE-orientations and calculates a solution
-        for phi in phi_middle_out(self.min_phi, self.max_phi, self.phi_steps):
+        for phi in phi_negative(self.min_phi, self.max_phi, self.phi_steps):
+            phi += math.radians(90) - self.ee_angle
             try:
                 # ignores the x-component since the target is rotated onto the y-z-plane
                 solutions = self._ik_solver(rotated_target, phi)
@@ -92,7 +99,7 @@ class IKSolver(object):
         wx = px - self.links[2] * math.cos(phi)
         wy = py + self.links[2] * math.sin(phi)
 
-        print(f' phi {round(math.degrees(phi),3)} xyz {round(px,3)}, {round(py,3)}, {round(wx,3)}, {round(wy,3)}')
+        # print(f' phi {round(math.degrees(phi),3)} xyz {round(px,3)}, {round(py,3)}, {round(wx,3)}, {round(wy,3)}')
 
         d = wx ** 2 + wy ** 2
 
@@ -106,9 +113,9 @@ class IKSolver(object):
         t1 = math.pi / 2 - t1
         t2 = -t2
         t3 = phi + (math.pi / 2 - t1 - t2)
-        t3 = t3 #- self.ee_angle
+        t3 = t3 - self.ee_angle
 
-        print(' -- ', np.array([math.degrees(t1), math.degrees(t2), math.degrees(t3)]))
+        # print(' -- ', np.array([math.degrees(t1), math.degrees(t2), math.degrees(t3)]))
 
         # check angles for constraint violations
         # theta 1

@@ -75,14 +75,6 @@ void move_to_smooth(float a0_target, float a1_target, float a2_target, float a3_
 void move_pen(float target_h, float a1, float a0){
     float a2 = acos((target_h-cos(-a1*PI/180)*joint_2) / joint_1)*180/PI - a1;
     float a3 = 90 - (a2+a1);
-    Serial.println("--");
-    Serial.println(a2);
-    Serial.println(a3);
-
-    //  go_to_angle(0, -a0);
-    //  go_to_angle(1, -a1);
-    //  go_to_angle(2, -a2);
-    //  go_to_angle(3, -a3);
     move_to_smooth(a0, a1, a2, a3, 1000);
     delay(200);
 }
@@ -108,19 +100,17 @@ void read_commands(){
             next_space = command.indexOf('\n', pos);
         // and chop the command up some more
         substrings[i++] = command.substring(pos, next_space); // pos+1 to skip over the space
-        Serial.println(command.substring(pos+1, next_space));
+        // Serial.println(command.substring(pos+1, next_space));
         pos = next_space;
     }
 
     // and execute the appropriate command
     if (substrings[0] == "reset") {
-        Serial.println("arm reset");
         set_all_angles(0, 0, 0, 0);
 
     } else if (substrings[0] == "set") {
         int pin = substrings[1].toInt();
         int angle = substrings[2].toInt();
-        Serial.println("servo set");
         go_to_angle(pin, angle);
 
     } else if (substrings[0] == "set_all") {
@@ -128,7 +118,6 @@ void read_commands(){
         int a1 = substrings[2].toInt();
         int a2 = substrings[3].toInt();
         int a3 = substrings[4].toInt();
-        Serial.println("all servos set");
         set_all_angles(a0, a1, a2, a3);
 
     } else if (substrings[0] == "move_to") {
@@ -137,10 +126,9 @@ void read_commands(){
         int a2 = substrings[3].toInt();
         int a3 = substrings[4].toInt();
         int duration = substrings[5].toInt();
-        Serial.println("started movement...");
         move_to_smooth(a0, a1, a2, a3, duration);
-
     }
+    Serial.println("done");
 }
 
 
@@ -160,55 +148,6 @@ void loop() {
 
     // read and execute commands that are coming in
     read_commands();
-
-    /* * * * * * * * *
-    * This moves the arm and draws a sort of 'square'
-    * * * * * * * * */
-
-    // int a0f = 20;
-    // int a0t = -20;
-    // int a1f = 45;
-    // int a1t = 20;
-    //
-    // int h = pen_h + 1;
-    //
-    // move_pen(h, a1f, a0f);
-    // move_pen(h, a1f, a0t);
-    // move_pen(h, a1t, a0t);
-    // move_pen(h, a1t, a0f);
-    //
-    // if (Serial.available() > 0) {
-    //     String s = Serial.readStringUntil('\n');
-    //     // Serial.print("response: ");
-    //     Serial.println(s);
-    // }
-
-
-    /* * * * * * * * *
-    * This looks at the serial monitor and waits for a command to change the position of a servo
-    * format: <servo number (0 -> 3)> <angle (-90 -> 90)>
-    * * * * * * * * */
-
-    // go_to_angle(3, 0);
-    // go_to_angle(2, 0);
-    // go_to_angle(1, 0);
-    // go_to_angle(0, 0);
-    // int angles[4];
-    // while(1){
-    //     if(Serial.available() > 0){
-    //         int pin = Serial.parseInt();
-    //         int angle = Serial.parseInt();
-    //         angles[0] = current_angles[0]; angles[0] = current_angles[1]; angles[2] = current_angles[2]; angles[3] = current_angles[3];
-    //         angles[pin] = angle;
-    //         go_to_angle(pin, angle);
-    //         // move_to_smooth(angles[0], angles[1], angles[2], angles[3]);
-    //         Serial.print(pin);
-    //         Serial.print(" set to ");
-    //         Serial.println(angle);
-    //     }
-    //     delay(100);
-    // }
-
 
     /* * * * * * * * *
     * This moves one servo back and forth, used for calibration only

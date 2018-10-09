@@ -5,8 +5,8 @@ import clib
 import iksolver
 import fabrik
 
-# arm = clib.Arm('/dev/ttyACM0', 9600)
-ik = iksolver.IKSolver([11.9, 10.5, 11.5], [[-45, 45], [-80, 80], [-90, 90]], [8.6, 9], 0, 180, 50)
+arm = clib.Arm('/dev/ttyACM0', 9600)
+ik = iksolver.IKSolver([11.9, 10.5, 11.5], [[-45, 45], [-80, 80], [-90, 90]], [8.6, 9], -20, 20, 50)
 
 
 # ik_fabrik = fabrik.IKSolver([11.9, 10.5, 11.5], [[-90, 90], [-80, 80], [-90, 90]], [8.6, 9])
@@ -35,11 +35,13 @@ def move_interpolated(start, end, duration=1000, steps=10):
 
 h = 0
 
-move_to([15, 0, h])
+# move_to([15, 0, h])
 # move_to(10, -10)
 
-# while True:
-#     move_interpolated([15, 5, h], [15, -5, h], 5000, 50)
-#     move_interpolated([15, -5, h], [30, -5, h+2], 5000, 50)
-#     move_interpolated([30, -5, h+2], [30, 5, h+2], 5000, 50)
-#     move_interpolated([30, 5, h+2], [15, 5, h], 5000, 50)
+d1 = 20
+d2 = 25
+while True:
+    move_interpolated([d1, 5, h], [d1, -5, h], 5000, 50)
+    move_interpolated([d1, -5, h], [d2, -5, h-2], 5000, 50)
+    move_interpolated([d2, -5, h-2], [d2, 5, h-2], 5000, 50)
+    move_interpolated([d2, 5, h-2], [d1, 5, h], 5000, 50)
