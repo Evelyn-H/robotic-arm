@@ -150,6 +150,24 @@ void loop() {
     read_commands();
 
     /* * * * * * * * *
+     * This moves the arm and draws a sort of 'square'
+     * * * * * * * * */
+
+    // int a0f = 20;
+    // int a0t = -20;
+    // int a1f = 45;
+    // int a1t = 20;
+    //
+    // int h = pen_h - 2;
+    //
+    // while(true){
+    //     move_pen(h, a1f, a0f);
+    //     move_pen(h, a1f, a0t);
+    //     move_pen(h, a1t, a0t);
+    //     move_pen(h, a1t, a0f);
+    // }
+
+    /* * * * * * * * *
     * This moves one servo back and forth, used for calibration only
     * * * * * * * * */
 

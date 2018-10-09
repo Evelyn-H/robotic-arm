@@ -1,4 +1,4 @@
-from math import radians, degrees
+import math
 import numpy as np
 
 import clib
@@ -35,18 +35,48 @@ def move_interpolated(start, end, duration=1000, steps=10):
         print(interp_points[:, i])
         move_to(interp_points[:, i], duration / steps)
 
-h = 0
+def h_for_pos(pos, pen_up=False):
+    dist = math.sqrt(pos[0] ** 2 + pos[1] ** 2)
+    slope = -3
+    offset = 0
+    h = (slope / 20) * (dist - 10) + offset
+    return h + 3 * pen_up
+
+
+def draw_line(start, end, pen_up=False, speed=1):
+    '''start and end are the (x, y) position of the pen'''
+    start_h = h_for_pos(start, pen_up)
+    end_h = h_for_pos(end, pen_up)
+    path_len = math.sqrt((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2)
+    time = path_len * 500 / speed
+    steps = round(path_len * 2)
+    move_interpolated([start[0], start[1], start_h], [end[0], end[1], end_h], time, steps)
 
 # move_to([15, 0, h])
 # move_to(10, -10)
 
-move_interpolated([12, 0, h], [30, 0, h-3], 50000, 50)
+
+draw_line([15, -1.5], [24, -1.5], pen_up=False)
+draw_line([24, -1.5], [15,  1.5], pen_up=True, speed=2)
+draw_line([15,  1.5], [24,  1.5], pen_up=False)
+draw_line([24,  1.5], [18, -4.5], pen_up=True, speed=2)
+draw_line([18, -4.5], [18,  4.5], pen_up=False)
+draw_line([18,  4.5], [21, -4.5], pen_up=True, speed=2)
+draw_line([21, -4.5], [21,  4.5], pen_up=False)
+draw_line([21,  4.5], [15, -1.5], pen_up=True, speed=2)
 
 
-# d1 = 15
-# d2 = 30
+
+# h = 0
+
+# x1 = 20
+# x2 = 25
+# y1 = 5
+# y2 = -5
+
 # while True:
-#     move_interpolated([d1, 5, h], [d1, -5, h], 5000, 20)
-#     move_interpolated([d1, -5, h], [d2, -5, h], 5000, 20)
-#     move_interpolated([d2, -5, h], [d2, 5, h], 5000, 20)
-#     move_interpolated([d2, 5, h], [d1, 5, h], 5000, 20)
+#     draw_line([x1, y1], [x1, y2], pen_up=False)
+#     # draw_line([x1, y2], [x1, y1], pen_up=False)
+#     draw_line([x1, y2], [x2, y2], pen_up=False)
+#     draw_line([x2, y2], [x2, y1], pen_up=False)
+#     draw_line([x2, y1], [x1, y1], pen_up=False)
