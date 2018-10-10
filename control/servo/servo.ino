@@ -46,11 +46,11 @@ void set_all_angles(float a0, float a1, float a2, float a3){
     go_to_angle(3, a3);
 }
 
-void move_to_smooth(float a0_target, float a1_target, float a2_target, float a3_target, float duration){
+void move_to_smooth(float a0_target, float a1_target, float a2_target, float a3_target, int duration){
     // this function doesn't work with delays and instead sets the angles by
     // continuously linearly interpolating between the start and end angles
-    if(duration < 100){
-        duration = 100;
+    if(duration == 0){
+        duration = 10;
     }
 
     float original[] = {current_angles[0], current_angles[1], current_angles[2], current_angles[3]};
@@ -121,10 +121,10 @@ void read_commands(){
         set_all_angles(a0, a1, a2, a3);
 
     } else if (substrings[0] == "move_to") {
-        int a0 = substrings[1].toInt();
-        int a1 = substrings[2].toInt();
-        int a2 = substrings[3].toInt();
-        int a3 = substrings[4].toInt();
+        float a0 = substrings[1].toFloat();
+        float a1 = substrings[2].toFloat();
+        float a2 = substrings[3].toFloat();
+        float a3 = substrings[4].toFloat();
         int duration = substrings[5].toInt();
         move_to_smooth(a0, a1, a2, a3, duration);
     }
@@ -133,7 +133,7 @@ void read_commands(){
 
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(19200);
 
     pinMode(LED_BUILTIN, OUTPUT);
 

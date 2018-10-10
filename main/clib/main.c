@@ -37,7 +37,7 @@ void command_set_all(float a0, float a1, float a2, float a3){
 }
 void command_move_to(float a0, float a1, float a2, float a3, int duration){
     clear_input_buffer(fd);
-    serial_printf(fd, "move_to %i %i %i %i %i\n", (int) round(a0), (int) round(a1), (int) round(a2), (int) round(a3), duration);
+    serial_printf(fd, "move_to %.2f %.2f %.2f %.2f %i\n", a0, a1, a2, a3, duration);
     while(!serial_available(fd)){ }
     serial_readline(fd, buffer);
 }

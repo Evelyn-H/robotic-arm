@@ -44,7 +44,7 @@ class IKSolver(object):
             self.joint_constraints[i][1] = math.radians(self.joint_constraints[i][1])
 
     def find_angles(self, target):
-         """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
+        """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
         # angle the base has to have to face the target
         base_angle = angle_between_vectors(target[0:2], np.array([1, 0]))
 
@@ -69,18 +69,16 @@ class IKSolver(object):
         def phi_negative(min, max, steps):
             return np.linspace(max, min, steps)
 
-        def phi_segmented(min, max, steps):
+        def phi_from_zero(min, max, steps):
             mid = (min + max) / 2
-            range = max - min
             return itertools.chain(
-                np.linspace(mid + 1 * range / 3, mid - 1 * range / 3, int(steps / 3)),
-                np.linspace(mid + 2 * range / 3, mid - 2 * range / 3, int(steps / 3)),
-                np.linspace(mid + 3 * range / 3, mid - 3 * range / 3, int(steps / 3)),
+                np.linspace(mid, min, int(steps / 2)),
+                np.linspace(mid, max, int(steps / 2)),
             )
 
 
         # Tries out different EE-orientations and calculates a solution
-        for phi in phi_negative(self.min_phi, self.max_phi, self.phi_steps):
+        for phi in phi_from_zero(self.min_phi, self.max_phi, self.phi_steps):
             phi += math.radians(90) - self.ee_angle
             try:
                 # ignores the x-component since the target is rotated onto the y-z-plane
@@ -93,8 +91,8 @@ class IKSolver(object):
                     math.degrees(s[2])
                 ] for s in solutions]
 
-                print('solution:  \n', np.round(solutions, 2))
-                print('phi: ', phi)
+                # print('solution:  \n', np.round(solutions, 2))
+                # print('phi: ', phi)
                 return solutions
 
             except (JointConstraintsViolated, NotReachable):
