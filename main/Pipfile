@@ -9,6 +9,7 @@ name = "pypi"
 
 cython = "*"
 numpy = "*"
+opencv-python = "*"
 
 
 [dev-packages]

@@ -1,4 +1,5 @@
 import math
+import itertools
 import time
 import numpy as np
 
@@ -20,8 +21,8 @@ class Arm:
     @staticmethod
     def h_for_pos(pos, pen_up=False):
         dist = math.sqrt(pos[0] ** 2 + pos[1] ** 2)
-        slope = -3
-        offset = 0
+        slope = -4
+        offset = 1
         h = (slope / 20) * (dist - 10) + offset
         return h# + 4 * pen_up
 
@@ -55,7 +56,6 @@ class Arm:
         path_len = np.linalg.norm(np.array(start) - np.array(end))
         time = path_len * 500 / speed
         steps = max(3, int(round(path_len * 2)))
-        print(time, steps)
         self._move_interpolated([start[0], start[1], start[2]], [end[0], end[1], end[2]], time, steps)
 
     def move_to(self, target, speed=1):
@@ -81,15 +81,30 @@ class Arm:
 
 
 arm = Arm('/dev/ttyACM0')
-
-arm.line([15, -1.5], [24, -1.5])
-arm.line([15,  1.5], [24,  1.5])
-arm.line([18, -4.5], [18,  4.5])
-arm.line([21, -4.5], [21,  4.5])
-
 #
-# for x in range(18, 18+10):
-#     arm.line([x, -5], [x, 5], speed=5)
+# arm.line([15, -1.5], [24, -1.5], speed=3)
+# arm.line([15,  1.5], [24,  1.5], speed=3)
+# arm.line([18, -4.5], [18,  4.5], speed=3)
+# arm.line([21, -4.5], [21,  4.5], speed=3)
+
+# circle
+arm.up()
+r = 5
+arm.move_to([22, r])
+arm.down()
+for theta in np.linspace(0, 4 * math.pi, 40):
+    x = math.sin(theta) * r + 22
+    y = math.cos(theta) * r
+    arm.move_to([x, y], speed=2)
+
+# grid
+
+# size = 8
+# horizontal = (([x, -5], [x, 5]) for x in np.linspace(18, 18+10, size + 1))
+# vertical = (([18, y], [18+10, y]) for y in np.linspace(-5, 5, size + 1))
 #
-# for y in range(-5, 5):
-#     arm.line([18, y], [18+10, y], speed=5)
+# for start, end in itertools.chain(*zip(horizontal, vertical)):
+#     arm.line(start, end, speed=3)
+
+# and move back up
+arm.up()
