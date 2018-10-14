@@ -9,13 +9,17 @@ from tkinter import *
 from tkinter import ttk
 root = Tk()
 
+root.option_add('*tearOff', FALSE)
+
 # Global variables
 bg = 0
 robo = 0
 cam = 0
 bgoffsetx, bgoffsety = 50, 50
-bgx, bgy = 500, 300
+bgx, bgy = 840, 600
 curLine = None
+
+lineList = []
 
 # Methods
 def xy(event):
@@ -24,17 +28,50 @@ def xy(event):
 
 def addLine(event):
     xy(event)
-    global lastx, lasty, curLine
+    global lastx, lasty, curLine, lineList
     if (curLine is None):
-        curLine = canvas.create_line((lastx, lasty, lastx, lasty), width=3)
+        curLine = canvas.create_line((lastx, lasty, lastx, lasty), width=3,
+                                     tags=('line'))
+        lineList.append(curLine)
     else:
         x,y = canvas.canvasx(event.x), canvas.canvasy(event.y)
         extendLine(curLine, x, y)
-        
+
+def clearLines():
+    global canvas, curLine, lineList
+    lineList = []
+    canvas.delete('line')
+    curLine = None
+    
+
+def resetCurLine():
+    global curLine
+    curLine = None      
 
 # Adds another point to the given line
 def extendLine(line, x, y):
     canvas.coords(line, canvas.coords(line)+[x,y])
+
+# Save list of lines to text
+def saveFile():
+    global lineList
+    f = open("currentDrawing.txt", "w+")
+    for i in range(0, len(lineList)):
+        l = lineList[i]
+        cList = canvas.coords(l)
+        f.write("NEWLINE\n")
+        for j in range(2, len(cList), 2):
+            f.write("%f %f\n"%(cList[j], cList[j+1]))
+    f.close()
+
+# Creating menu
+menubar = Menu(root)
+root.config(menu=menubar)
+menu_file = Menu(menubar)
+menubar.add_cascade(menu=menu_file, label='File')
+
+# Menu functions
+menu_file.add_command(label="Save", command=saveFile)
 
 # Creating window essentials
 h = ttk.Scrollbar(root, orient=HORIZONTAL)
@@ -55,20 +92,25 @@ root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
 # Creating buttons
-newLine = ttk.Button(toolbar, text="New Line")
-editLine = ttk.Button(toolbar, text="Edit Line")
-deleteLine = ttk.Button(toolbar, text="Delete Line")
-addPoint = ttk.Button(toolbar, text="Add Point")
-insertPoint = ttk.Button(toolbar, text="Insert Point")
-deletePoint = ttk.Button(toolbar, text="Delete Point")
+newLine = ttk.Button(toolbar, command=resetCurLine, text="New Line")
+basicSep = ttk.Separator(toolbar, orient=VERTICAL)
+# editLine = ttk.Button(toolbar, text="Edit Line")
+# deleteLine = ttk.Button(toolbar, text="Delete Line")
+# addPoint = ttk.Button(toolbar, text="Add Point")
+# insertPoint = ttk.Button(toolbar, text="Insert Point")
+# deletePoint = ttk.Button(toolbar, text="Delete Point")
+clearLines = ttk.Button(toolbar, command=clearLines, text="Clear")
 
 # Adding buttons in grid
 newLine.grid(column=0,row=0)
-editLine.grid(column=1, row=0)
-deleteLine.grid(column=2,row=0)
-addPoint.grid(column=3, row=0)
-insertPoint.grid(column=4, row=0)
-deletePoint.grid(column=5, row=0)
+# editLine.grid(column=1, row=0)
+# deleteLine.grid(column=2,row=0)
+# addPoint.grid(column=3, row=0)
+# insertPoint.grid(column=4, row=0)
+# deletePoint.grid(column=5, row=0)
+basicSep.grid(column=6, row=0)
+clearLines.grid(column=7, row=0)
+
 
 # Bindings
 canvas.bind("<Button-1>", addLine)
