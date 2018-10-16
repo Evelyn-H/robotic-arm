@@ -15,12 +15,13 @@ class NotReachable(Exception):
 
 class IKSolver(object):
 
-    def __init__(self, links, joint_constraints, effector_dims, min_phi, max_phi, phi_steps):
+    def __init__(self, links, joint_constraints, effector_dims, distance_from_page, min_phi, max_phi, phi_steps):
         '''
             Keyword arguments:
             links = The lengths of the robot links (1x3 vector)
             joint_constraints = The minimal and maximal angle each joint can have (3x2 vector)
             effector_dims = The size of the end effector ([x, y] vector)
+            distance_from_page = distance between the center of the page and the position of the robot
             min_phi = The minimal allowable end effector orientation angle
             max_phi = The maximal allowable end effector orientation angle
             phi_increments = The increments by which the end effector orientation will be increased during search, from
@@ -30,6 +31,7 @@ class IKSolver(object):
         self.links = links
         self.joint_constraints = joint_constraints
         self.effector_dims = effector_dims
+        self.distance_from_page = distance_from_page
         self.min_phi = math.radians(min_phi)
         self.max_phi = math.radians(max_phi)
         self.ee_angle = math.atan(effector_dims[1] / effector_dims[0])
@@ -45,6 +47,9 @@ class IKSolver(object):
 
     def find_angles(self, target):
         """Takes a x-y-z target array and returns a vector of solutions (at most two)."""
+        # convert to coordinates with (0,0) being the base of the robot instead of the centre of the page
+        target = target.copy()
+        target[0] += self.distance_from_page
         # angle the base has to have to face the target
         base_angle = angle_between_vectors(target[0:2], np.array([1, 0]))
 

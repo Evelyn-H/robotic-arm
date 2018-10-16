@@ -5,22 +5,21 @@ import numpy as np
 
 import clib
 import iksolver
-import fabrik
 
 class Arm:
     def __init__(self, device, baud_rate=19200, ik_params=None):
         self._serial = clib.Arm(device, baud_rate)
         if not ik_params:
-            ik_params =[[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], -45, 45, 50]
+            ik_params =[[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
         self._ik = iksolver.IKSolver(*ik_params)
         # move to start position
-        self._pos = [18, 0, 0]
+        self._pos = [0, 0, 0]
         self._pen_up = True
         self._move_to_position(self._pos, duration=1000)
 
     @staticmethod
     def h_for_pos(pos, pen_up=False):
-        dist = math.sqrt(pos[0] ** 2 + pos[1] ** 2)
+        dist = math.sqrt((pos[0]+20) ** 2 + pos[1] ** 2)
         slope = -4
         offset = 1
         h = (slope / 20) * (dist - 10) + offset
@@ -81,30 +80,26 @@ class Arm:
 
 
 arm = Arm('/dev/ttyACM0')
-#
-# arm.line([15, -1.5], [24, -1.5], speed=3)
-# arm.line([15,  1.5], [24,  1.5], speed=3)
-# arm.line([18, -4.5], [18,  4.5], speed=3)
-# arm.line([21, -4.5], [21,  4.5], speed=3)
 
 # circle
-arm.up()
-r = 5
-arm.move_to([22, r])
-arm.down()
-for theta in np.linspace(0, 4 * math.pi, 40):
-    x = math.sin(theta) * r + 22
-    y = math.cos(theta) * r
-    arm.move_to([x, y], speed=2)
+# arm.up()
+# r = 5
+# x0 = 0
+# arm.move_to([x0, r])
+# arm.down()
+# for theta in np.linspace(0, 4 * math.pi, 40):
+#     x = math.sin(theta) * r + x0
+#     y = math.cos(theta) * r
+#     arm.move_to([x, y], speed=1)
 
 # grid
 
-# size = 8
-# horizontal = (([x, -5], [x, 5]) for x in np.linspace(18, 18+10, size + 1))
-# vertical = (([18, y], [18+10, y]) for y in np.linspace(-5, 5, size + 1))
-#
-# for start, end in itertools.chain(*zip(horizontal, vertical)):
-#     arm.line(start, end, speed=3)
+size = 8
+horizontal = (([x, -5], [x, 5]) for x in np.linspace(-5, 5, size + 1))
+vertical = (([-5, y], [5, y]) for y in np.linspace(-5, 5, size + 1))
+
+for start, end in itertools.chain(*zip(horizontal, vertical)):
+    arm.line(start, end, speed=3)
 
 # and move back up
 arm.up()
