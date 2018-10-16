@@ -13,9 +13,12 @@ from State import State
 class TTTState(State):
     
     # Methods
-    def __init__(self):
+    def __init__(self, p1, p2):
         self.board = [[0,0,0], [0,0,0], [0,0,0]]
         self.history = []
+        self.p1 = p1
+        self.p2 = p2
+        self.current = self.p1
     
     def __str__(self):
         
@@ -39,11 +42,18 @@ class TTTState(State):
     def update(self, action):
         self.board[action.x][action.y] = action.played
         self.history.append(action)
+        if self.current == self.p1:
+            self.current = self.p2
+        else:
+            self.current == self.p1
         
     def reverse(self):
         a = self.history.pop()
-        if self.board[a.x][a.y] == a.played:
-            self.board[a.x][a.y] = 0
+        self.board[a.x][a.y] = 0
+        if self.current == self.p1:
+            self.current = self.p2
+        else:
+            self.current == self.p1
     
     def threeInRow(self):
         # Rows

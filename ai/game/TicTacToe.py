@@ -13,9 +13,9 @@ from TTTPlayer import TTTPlayer
 class TicTacToe:
     
     def __init__(self, player1, player2):
-        self.state = TTTState()
         self.p1 = player1
         self.p2 = player2
+        self.state = TTTState(p1, p2)
         self.currentPlayer = self.p1
         self.winner = None
         

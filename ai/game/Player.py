@@ -13,6 +13,7 @@ from abc import ABC, abstractmethod
 
 
 class Player(ABC):    
+    
     # Ready player before game begins.
     @abstractmethod
     def readyPlayer(self):
