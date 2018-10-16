@@ -42,11 +42,11 @@ def clearLines():
     lineList = []
     canvas.delete('line')
     curLine = None
-    
+
 
 def resetCurLine():
     global curLine
-    curLine = None      
+    curLine = None
 
 # Adds another point to the given line
 def extendLine(line, x, y):
@@ -74,20 +74,14 @@ menubar.add_cascade(menu=menu_file, label='File')
 menu_file.add_command(label="Save", command=saveFile)
 
 # Creating window essentials
-h = ttk.Scrollbar(root, orient=HORIZONTAL)
-v = ttk.Scrollbar(root, orient=VERTICAL)
-canvas = Canvas(root, scrollregion=(0,0,1000,1000), 
-                yscrollcommand=v.set, xscrollcommand=h.set)
-h['command'] = canvas.xview
-v['command'] = canvas.yview
-ttk.Sizegrip(root).grid(column=1, row=2, sticky=(S,E))
+canvas_size = 500
+canvas = Canvas(root, width=int(canvas_size*1.414), height=canvas_size)
+
 toolbar = ttk.Frame(root, padding=(5,5,10,10))
 
 # Placing window essentials on screen
 toolbar.grid(column=0, row=0, sticky=(W,E))
 canvas.grid(column=0, row=1, sticky=(N,W,E,S))
-h.grid(column=0, row=2, sticky=(W,E))
-v.grid(column=1, row=1, sticky=(N,S))
 root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(1, weight=1)
 
@@ -116,9 +110,9 @@ clearLines.grid(column=7, row=0)
 canvas.bind("<Button-1>", addLine)
 
 # Base stuff, like white rectangle bg and ish-robot position.
-bg = canvas.create_rectangle((bgoffsetx,bgoffsety, bgoffsetx+bgx, bgoffsety+bgy), 
+bg = canvas.create_rectangle((bgoffsetx,bgoffsety, bgoffsetx+bgx, bgoffsety+bgy),
                              fill='white', tags=('bg'))
-robo = canvas.create_rectangle((bgoffsetx + (bgx/3), 5, bgoffsetx+bgx-(bgx/3), bgoffsety-5), 
+robo = canvas.create_rectangle((bgoffsetx + (bgx/3), 5, bgoffsetx+bgx-(bgx/3), bgoffsety-5),
                                fill='black', tags =('robo'))
 cam = canvas.create_rectangle((bgoffsetx + (bgx/2) - (bgx/20), bgoffsety+bgy+5,
                                bgoffsetx + (bgx/2) + (bgx/20), bgoffsety+bgy+5+(bgoffsety)),
