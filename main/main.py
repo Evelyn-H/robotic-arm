@@ -6,11 +6,12 @@ import numpy as np
 import clib
 import iksolver
 
+
 class Arm:
     def __init__(self, device, baud_rate=19200, ik_params=None):
         self._serial = clib.Arm(device, baud_rate)
         if not ik_params:
-            ik_params =[[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
+            ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
         self._ik = iksolver.IKSolver(*ik_params)
         # move to start position
         self._pos = [0, 0, 0]
@@ -19,12 +20,11 @@ class Arm:
 
     @staticmethod
     def h_for_pos(pos, pen_up=False):
-        dist = math.sqrt((pos[0]+20) ** 2 + pos[1] ** 2)
+        dist = math.sqrt((pos[0] + 20) ** 2 + pos[1] ** 2)
         slope = -4
         offset = 1
         h = (slope / 20) * (dist - 10) + offset
-        return h# + 4 * pen_up
-
+        return h  # + 4 * pen_up
 
     def _move_to_position(self, target, duration=1000):
         angles = self._ik.find_angles(target)
@@ -71,9 +71,11 @@ class Arm:
 
     def line(self, start, end, speed=1):
         self.up()
-        self.move_to(start, speed=speed); time.sleep(0.5)
-        self.down();
-        self.move_to(end, speed=speed); time.sleep(0.5)
+        self.move_to(start, speed=speed)
+        time.sleep(0.5)
+        self.down()
+        self.move_to(end, speed=speed)
+        time.sleep(0.5)
         self.up()
 
 

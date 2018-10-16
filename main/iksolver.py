@@ -81,7 +81,6 @@ class IKSolver(object):
                 np.linspace(mid, max, int(steps / 2)),
             )
 
-
         # Tries out different EE-orientations and calculates a solution
         for phi in phi_from_zero(self.min_phi, self.max_phi, self.phi_steps):
             phi += math.radians(90) - self.ee_angle
