@@ -12,9 +12,7 @@ from abc import ABC, abstractmethod
 
 
 
-class Player(ABC):
-    playerID = -1 # -1 Means player number is currently unassigned.
-    
+class Player(ABC):    
     # Ready player before game begins.
     @abstractmethod
     def readyPlayer(self):
@@ -23,4 +21,5 @@ class Player(ABC):
     # Ask player for their move.
     @abstractmethod
     def queryAction(self, state):
+        pass
     

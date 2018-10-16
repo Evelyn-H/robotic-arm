@@ -8,8 +8,8 @@ Created on Sun Oct 14 13:25:08 2018
 from tkinter import *
 from tkinter import ttk
 
-from arm import Arm
-arm = Arm('/dev/ttyACM0')
+# from arm import Arm
+# arm = Arm('/dev/ttyACM0')
 
 
 #-------------------------------------------------
