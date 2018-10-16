@@ -87,22 +87,18 @@ class IKSolver(object):
             phi += math.radians(90) - self.ee_angle
             try:
                 # ignores the x-component since the target is rotated onto the y-z-plane
-                solutions = self._ik_solver(rotated_target, phi)
+                angles = self._ik_solver(rotated_target, phi)
 
-                solutions = [[
+                return [
                     math.degrees(base_angle),
-                    math.degrees(s[0]),
-                    math.degrees(s[1]),
-                    math.degrees(s[2])
-                ] for s in solutions]
-
-                # print('solution:  \n', np.round(solutions, 2))
-                # print('phi: ', phi)
-                return solutions
+                    math.degrees(angles[0]),
+                    math.degrees(angles[1]),
+                    math.degrees(angles[2])
+                ]
 
             except (JointConstraintsViolated, NotReachable):
                 pass
-        return []
+        return None
 
     def _ik_solver(self, target, phi):
         '''Calculates the solution of an IK problem given the parameters of the robot, the target, and an EE-orientation'''
@@ -143,7 +139,7 @@ class IKSolver(object):
         if not self.joint_constraints[2][0] < t3 < self.joint_constraints[2][1]:
             raise JointConstraintsViolated("Theta 3 has illegal joint angle values!")
 
-        return [[t1, t2, t3]]
+        return [t1, t2, t3]
 
 
 def angle_between_vectors(v0, v1):

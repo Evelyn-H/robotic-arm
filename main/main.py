@@ -27,13 +27,11 @@ class Arm:
 
 
     def _move_to_position(self, target, duration=1000):
-        solutions = self._ik.find_angles(target)
-        if len(solutions) < 1:
-            # raise iksolver.NotReachable('nope')
-            print('no solution found')
+        angles = self._ik.find_angles(target)
+        if not angles:
+            raise iksolver.NotReachable('Can\'t reach this point')
+            # print('no solution found')
             return
-        else:
-            angles = solutions[0]
 
         angles[1] -= 10 * self._pen_up
         angles[3] -= 5 * self._pen_up
@@ -41,21 +39,21 @@ class Arm:
         self._serial.move_to(angles[0], angles[1], angles[2], angles[3], duration)
         self._pos = target
 
-    def _move_interpolated(self, start, end, duration=1000, steps=10):
-        start = np.transpose(np.array(start))
-        end = np.transpose(np.array(end))
-        interp_points = np.array([np.linspace(start[0], end[0], steps), np.linspace(start[1], end[1], steps), np.linspace(start[2], end[2], steps)])
-
-        for i in range(steps):
-            # print(interp_points[:, i])
-            self._move_to_position(interp_points[:, i], duration / steps)
-
     def _move_line(self, start, end, speed=1):
         '''start and end are the (x, y, z) position of the pen'''
-        path_len = np.linalg.norm(np.array(start) - np.array(end))
+        start = np.array(start)
+        end = np.array(end)
+        path_len = np.linalg.norm(start - end)
         time = path_len * 500 / speed
         steps = max(3, int(round(path_len * 2)))
-        self._move_interpolated([start[0], start[1], start[2]], [end[0], end[1], end[2]], time, steps)
+
+        interp_points = np.array([
+            np.linspace(start[0], end[0], steps),
+            np.linspace(start[1], end[1], steps),
+            np.linspace(start[2], end[2], steps)
+        ])
+        for i in range(steps):
+            self._move_to_position(interp_points[:, i], time / steps)
 
     def move_to(self, target, speed=1):
         target_h = self.h_for_pos(target, self._pen_up)
