@@ -55,8 +55,20 @@ def saveFile():
         cList = canvas.coords(l)
         f.write("NEWLINE\n")
         for j in range(2, len(cList), 2):
-            f.write("%f %f\n"%(cList[j], cList[j+1]))
+            (x,y) = convertPoint(cList[j], cList[j+1])
+            f.write("%f %f\n"%(x, y))
     f.close()
+    
+def convertPoint(x, y):
+    global bgoffsetx, bgoffsety, bgx, bgy
+    newX = x-(bgoffsetx + bgx/2)
+    newY = y-(bgoffsety + bgy/2)
+    
+    newX = a3xcm*(float(newX)/float(bgx))
+    newY = a3ycm*(float(newY)/float(bgy))
+    
+    return (newX, newY)
+    
 
 #-------------------------------------------------
 #-------------------------------------------------
@@ -71,6 +83,7 @@ robo = 0
 cam = 0
 bgoffsetx, bgoffsety = 50, 50
 bgx, bgy = 840, 600
+a3xcm, a3ycm = 42.0, 29.7
 curLine = None
 
 lineList = []
