@@ -8,6 +8,10 @@ Created on Sun Oct 14 13:25:08 2018
 from tkinter import *
 from tkinter import ttk
 
+from arm import Arm
+arm = Arm('/dev/ttyACM0')
+
+
 #-------------------------------------------------
 #-------------------------------------------------
 #-------------------------------------------------
@@ -27,9 +31,16 @@ def addLine(event):
         curLine = canvas.create_line((lastx, lasty, lastx, lasty), width=3,
                                      tags=('line'))
         lineList.append(curLine)
+
+        # arm.move_to(convertPoint(lastx, lasty))
+        # arm.down()
     else:
         x,y = canvas.canvasx(event.x), canvas.canvasy(event.y)
         extendLine(curLine, x, y)
+
+        # arm.move_to(convertPoint(x, y))
+        # arm.up()
+
 
 def clearLines():
     global canvas, curLine, lineList
@@ -58,17 +69,17 @@ def saveFile():
             (x,y) = convertPoint(cList[j], cList[j+1])
             f.write("%f %f\n"%(x, y))
     f.close()
-    
+
 def convertPoint(x, y):
     global bgoffsetx, bgoffsety, bgx, bgy
     newX = x-(bgoffsetx + bgx/2)
     newY = y-(bgoffsety + bgy/2)
-    
+
     newX = a3xcm*(float(newX)/float(bgx))
     newY = a3ycm*(float(newY)/float(bgy))
-    
+
     return (newX, newY)
-    
+
 
 #-------------------------------------------------
 #-------------------------------------------------
@@ -77,7 +88,7 @@ def convertPoint(x, y):
 #-------------------------------------------------
 #-------------------------------------------------
 #-------------------------------------------------
-    
+
 bg = 0
 robo = 0
 cam = 0
