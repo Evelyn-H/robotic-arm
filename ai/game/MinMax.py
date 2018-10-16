@@ -4,16 +4,16 @@ Created on Tue Oct 16 17:11:13 2018
 
 @author: heier
 """
-import math
 
 class MinMax:
-    
-    infinity = 1000 # Assumed to be larger than any value the heuristic
-    # might return.
     
     def __init__(self, player, heuristic):
         self.player = player
         self.heuristic = heuristic
+        # Assumed to be larger than any value the heuristic
+        # might return.
+        self.infinity = 1000
+        
     
     # Implementation of depth-limited MinMax
     # Returns most optimal action
@@ -21,26 +21,52 @@ class MinMax:
     # Furthermore, value is returned with its assosciated action.
     def MinMaxGo(self, action, state, depth):
         global infinity
-        state.update(action)
-        if action != None and (depth == 0 or state.gameover() != -1):
-            return (action, self.heuristic.evaluate(state))
+        if action != None:
+            state.update(action)
+#            print("Entered " + str(depth))
+#            print("Action: " + str(action))
+#            print(state)
+            if (depth == 0 or state.gameover() != -1):
+                h = self.heuristic.evaluate(state)
+#                print("End reached, evaluation: " + str(h))
+                return [action, h]
+#        print("Step.")
+#        input()
         
         if state.current == self.player: # Max
-            best = (None, -infinity)
+#            print("Max player.")
+            best = [None, -self.infinity]
             actions = state.actionSpace(state.current)
             for a in actions:
-                option = MinMaxGo(a, state, depth-1)
+                option = self.MinMaxGo(a, state, depth-1)
                 state.reverse()
+#                print("Reversed state:\n" + str(state))
+#                print("Returned: " + str(option[1]))
+#                print("For action: " + str(a))
+#                print("Step")
+#                input()
+#                print("Best(" + str(best[1]) + ") vs Opt(" + str(option[1]) + ")")
                 if best[1] < option[1]:
+#                    print("Best replaced")
+                    best[0] = a
                     best[1] = option[1]
             return best
         else: # Min
-            worst = (None, infinity)
+#            print("Min player.")
+            worst = [None, self.infinity]
             actions = state.actionSpace(state.current)
             for a in actions:
-                option = MinMaxGo(a, state, depth-1)
+                option = self.MinMaxGo(a, state, depth-1)
                 state.reverse()
+#                print("Reversed state:\n" + str(state))
+#                print("Returned: " + str(option[1]))
+#                print("For action: " + str(a))
+#                print("Step")
+#                input()
+#                print("Worst(" + str(worst[1]) + ") vs Opt(" + str(option[1]) + ")")
                 if worst[1] > option[1]:
+#                    print("Worst replaced")
+                    worst[0] = a
                     worst[1] = option[1]
             return worst
                 

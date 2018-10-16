@@ -23,6 +23,7 @@ class TTTState(State):
     def __str__(self):
         
         s = "Current Board:\n"
+        s += "Player: " + str(self.current.ID) + "\n"
         for i in range(0,3):
             for j in range(0,3):
                 s
@@ -42,10 +43,11 @@ class TTTState(State):
     def update(self, action):
         self.board[action.x][action.y] = action.played
         self.history.append(action)
+        
         if self.current == self.p1:
             self.current = self.p2
         else:
-            self.current == self.p1
+            self.current = self.p1
         
     def reverse(self):
         a = self.history.pop()
@@ -53,7 +55,7 @@ class TTTState(State):
         if self.current == self.p1:
             self.current = self.p2
         else:
-            self.current == self.p1
+            self.current = self.p1
     
     def threeInRow(self):
         # Rows

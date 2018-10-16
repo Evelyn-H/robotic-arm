@@ -7,8 +7,6 @@ Created on Tue Oct 16 20:01:26 2018
 
 from Player import Player
 from MinMax import MinMax
-from TicTacToe import TicTacToe
-from TTTPlayer import TTTPlayer
 
 class TTTMinMax(Player):
     
@@ -36,52 +34,64 @@ class TTTMinMax(Player):
             # Go through rows
             for i in range(0,3):
                 ours, theirs, neither = 0, 0, 0
+#                print("row " + str(i))
                 for j in range(0,3):
                     if state.board[i][j] == 0:
-                        ++neither
+                        neither += 1
                     elif state.board[i][j] == self.ID:
-                        ++ours
+                        ours += 1
                     else:
-                        ++theirs
+                        theirs += 1
                 # possible results
+#                print(str(ours) + " " + str(theirs) + " " + str(neither))
                 score += self.singleScore(ours, theirs, neither)
-            
+#            print("Score after rows: " + str(score))
+           
             # Go through columns
             for i in range(0,3):
                 ours, theirs, neither = 0, 0, 0
+#                print("column " + str(i))
                 for j in range(0,3):
                     if state.board[j][i] == 0:
-                        ++neither
+                        neither += 1
                     elif state.board[j][i] == self.ID:
-                        ++ours
+                        ours += 1
                     else:
-                        ++theirs
+                        theirs += 1
                 # possible results
+#                print(str(ours) + " " + str(theirs) + " " + str(neither))
                 score += self.singleScore(ours, theirs, neither)
+#            print("Score after cols: " + str(score))
             
+#            print("First diagonal")
+            ours, theirs, neither = 0, 0, 0
             # Diagonal UL to DR
             for i in range(0,3):
-                ours, theirs, neither = 0, 0, 0
                 if state.board[i][i] == 0:
-                    ++neither
+                    neither += 1
                 elif state.board[i][i] == self.ID:
-                    ++ours
+                    ours += 1
                 else:
-                    ++theirs
+                    theirs += 1
+            # possible results
+#            print(str(ours) + " " + str(theirs) + " " + str(neither))
+            score += self.singleScore(ours, theirs, neither)
+            
+#            print("Second diagonal")
+            ours, theirs, neither = 0, 0, 0
+            # Diagonal UR to DL
+            for i in range(0,3):
+                if state.board[i][2-i] == 0:
+                    neither += 1
+                elif state.board[i][2-i] == self.ID:
+                    ours += 1
+                else:
+                    theirs += 1
             # possible results
             score += self.singleScore(ours, theirs, neither)
             
-            # Diagonal UR to DL
-            for i in range(0,3):
-                ours, theirs, neither = 0, 0, 0
-                if state.board[i][2-i] == 0:
-                    ++neither
-                elif state.board[i][2-i] == self.ID:
-                    ++ours
-                else:
-                    ++theirs
-            # possible results
-            score += self.singleScore(ours, theirs, neither)
+#            print("Score after diags: " + str(score))
+            
             return score
         elif result == 0: # Tie
             return 0
@@ -101,15 +111,11 @@ class TTTMinMax(Player):
         elif theirs == 2 and neither ==1:
             score -= 2
         return score
-
-p1 = TTTPlayer(1)
-p2 = TTTMinMax(2)
-
-g = TicTacToe(p1, p2)
-g.runGame()
         
-        
-        
+    def equals(self, arg):
+        if (arg.ID == self.ID):
+            return True
+        return False
         
         
         

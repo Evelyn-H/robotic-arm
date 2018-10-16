@@ -15,7 +15,7 @@ class TicTacToe:
     def __init__(self, player1, player2):
         self.p1 = player1
         self.p2 = player2
-        self.state = TTTState(p1, p2)
+        self.state = TTTState(self.p1, self.p2)
         self.currentPlayer = self.p1
         self.winner = None
         
@@ -49,12 +49,6 @@ class TicTacToe:
             print("Player 2 wins!")
         else:
             print("Error.")
-
-p1 = TTTPlayer(1)
-p2 = TTTPlayer(2)
-
-g = TicTacToe(p1, p2)
-g.runGame()
             
             
             

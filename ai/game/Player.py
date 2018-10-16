@@ -24,3 +24,7 @@ class Player(ABC):
     def queryAction(self, state):
         pass
     
+    @abstractmethod
+    def equals(self, arg):
+        pass
+    

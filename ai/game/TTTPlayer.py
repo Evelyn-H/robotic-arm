@@ -12,6 +12,9 @@ class TTTPlayer(Player):
     def __init__(self, playerID):
         self.ID = playerID
     
+    def what(self):
+        return True
+    
     def readyPlayer(self):
         pass
     
@@ -31,4 +34,8 @@ class TTTPlayer(Player):
         
         return choice
             
+    def equals(self, arg):
+        if (arg.ID == self.ID):
+            return True
+        return False
         

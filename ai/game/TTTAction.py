@@ -11,6 +11,9 @@ class TTTAction:
         self.played = p
         self.x = x0
         self.y = y0
+        
+    def __str__(self):
+        return (str(self.played) + " " + str(self.x) + " " + str(self.y))
     
 
     
