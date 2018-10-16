@@ -77,6 +77,25 @@ class Arm:
         self.move_to(end, speed=speed)
         time.sleep(0.5)
         self.up()
+        
+    def drawFromFile(self):
+        f = open("currentDrawing.txt", 'r')
+        armUp = False
+        for line in f:
+            if (line=="NEWLINE"):
+                arm.up()
+                armUp = True
+            else:
+                lsplit = line.split();
+                x, y = lsplit[0], lsplit[1]
+                arm.move_to([x,y])
+                
+                if (armUp):
+                    arm.down()
+                    armUp = False
+        
+        f.close()
+                
 
 
 if __name__ == '__main__':
