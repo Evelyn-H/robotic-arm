@@ -40,13 +40,13 @@ class Arm:
             time.sleep(10 / 1000)
         self._pos = target
 
-    def _move_line(self, start, end, speed=1):
+    def _move_line(self, start, end, speed=1, step_size=0.5):
         '''start and end are the (x, y, z) position of the pen'''
         start = np.array(start)
         end = np.array(end)
         path_len = np.linalg.norm(start - end)
         time = path_len / speed * 1000
-        steps = max(3, int(round(path_len * 2)))
+        steps = max(2, int(round(path_len / step_size)))
 
         interp_points = np.array([
             np.linspace(start[0], end[0], steps),

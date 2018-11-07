@@ -35,7 +35,7 @@ if __name__ == '__main__':
     for theta in np.linspace(0, 4 * math.pi, 40):
         x = math.sin(theta) * r + x0
         y = math.cos(theta) * r
-        arm.move_to([x, y], speed=4)
+        arm.move_to([x, y], speed=2)
 
     # grid
 
