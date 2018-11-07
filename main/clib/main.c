@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "main.h"
 #include "serial.h"
@@ -40,6 +41,14 @@ void command_move_to(float a0, float a1, float a2, float a3, int duration){
     serial_printf(fd, "move_to %.2f %.2f %.2f %.2f %i\n", a0, a1, a2, a3, duration);
     while(!serial_available(fd)){ }
     serial_readline(fd, buffer);
+}
+float command_is_done(){
+    clear_input_buffer(fd);
+    serial_printf(fd, "is_done\n");
+    while(!serial_available(fd)){ }
+    serial_readline(fd, buffer);
+    // printf("%s", buffer);
+    return atof(buffer);
 }
 
 

@@ -1,4 +1,6 @@
 import itertools
+import math
+import numpy as np
 
 from arm import Arm
 
@@ -12,7 +14,7 @@ def drawFromFile(arm):
             armUp = True
         else:
             x, y = line.split()
-            arm.move_to([float(y),float(x)])
+            arm.move_to([float(y), float(x)], speed=1)
 
             if (armUp):
                 arm.down()
@@ -25,15 +27,15 @@ if __name__ == '__main__':
     arm = Arm('/dev/ttyACM0')
 
     # circle
-    # arm.up()
-    # r = 5
-    # x0 = 0
-    # arm.move_to([x0, r])
-    # arm.down()
-    # for theta in np.linspace(0, 4 * math.pi, 40):
-    #     x = math.sin(theta) * r + x0
-    #     y = math.cos(theta) * r
-    #     arm.move_to([x, y], speed=1)
+    arm.up()
+    r = 5
+    x0 = 0
+    arm.move_to([x0, r], speed=2)
+    arm.down()
+    for theta in np.linspace(0, 4 * math.pi, 40):
+        x = math.sin(theta) * r + x0
+        y = math.cos(theta) * r
+        arm.move_to([x, y], speed=4)
 
     # grid
 
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     # for start, end in itertools.chain(*zip(horizontal, vertical)):
     #     arm.line(start, end, speed=3)
 
-    drawFromFile(arm)
+    # drawFromFile(arm)
 
     # and move back up
     arm.up()

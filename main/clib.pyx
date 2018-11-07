@@ -4,6 +4,7 @@ cdef extern from "main.h":
     void command_set(int servo, float a)
     void command_set_all(float a0, float a1, float a2, float a3)
     void command_move_to(float a0, float a1, float a2, float a3, int duration)
+    float command_is_done()
 
 class Arm():
     def __init__(self, device, int baud):
@@ -22,3 +23,6 @@ class Arm():
 
     def move_to(self, a0, a1, a2, a3, duration):
         command_move_to(a0, a1, a2, a3, duration);
+
+    def is_done(self):
+        return command_is_done();
