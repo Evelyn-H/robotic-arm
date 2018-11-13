@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 import numpy.linalg as la
+import itertools
 
 class Vision(object):
     """docstring for Vision."""
@@ -12,24 +13,31 @@ class Vision(object):
         self.cam2 = cv2.VideoCapture(1)
 
         self.cut_coords = []
+        self.warp_coords = []
+
 
 
     # Control
 
     def get_pen_height(self):
-        ...
+        x,y,h = Vision._detectTape(self, Vision._getImage(self, Vision.cam2), True)
+        return h
+
 
     def get_pen_pos(self):
-        ...
-
+        x,y = Vision._detectTape(self, Vision._getImage(self, Vision.cam1), False)
+        return x,y
     # Game
 
     def is_paper_empty(self):
+        #color? 
         ...
 
-    def get_gamestate():
-        '''tic tac toe'''
-        ...
+    def get_gamestate(self):
+        img = Vision._getImage(self, Vision.cam1)
+        cutImg = Vision._cropImage(self, self.cut_coords, img)
+        warpImg = Vision._warpImage(self, self.warp_coords, cutImg)
+        return Vision._detectCircles(self, warpImg), Vision._getGridPoints(self, warpImg)
 
     def is_hand_in_the_way():
         ...
@@ -74,7 +82,7 @@ class Vision(object):
         x,y,w,h = coords
         return image[y:y+h, x:x+w]
 
-    def _warpImage(self, img):
+    def _warpCoords(self, img):
         #Turn into grayscale
         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -129,7 +137,13 @@ class Vision(object):
         BottomLeft = np.flipud(BottomLeft)
         TopRight = np.flipud(TopRight)
         TopLeft = np.flipud(TopLeft)
+        return TopLeft,TopRight,BottomLeft,BottomRight
 
+
+    def _warpImage(self, img, warpCoords):
+        
+        TopLeft,TopRight,BottomLeft,BottomRight = warpCoords
+        
         #Drawing points
         #cv2.circle(img,(BottomRight[0],BottomRight[1]), 6, (0,0,255), -1)
         #cv2.circle(img,(BottomLeft[0],BottomLeft[1]), 6, (0,0,255), -1)
@@ -202,3 +216,99 @@ class Vision(object):
         if circles is not None and len(circles) > 0:
             circles = np.uint16(np.around(circles))
         return circles
+    
+# =============================================================================
+#     def _detectLines(self, img):
+#         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+#         imgblur = cv2.GaussianBlur(imgray, (9, 9), 0);
+#         thresh = cv2.adaptiveThreshold(imgblur,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,5,2)
+#         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+#         dilation = cv2.dilate(thresh, kernel)
+#         imgflip = cv2.bitwise_not(dilation)
+#         lines = cv2.HoughLines(imgflip,1,np.pi/180,100)
+#         return lines
+# =============================================================================
+        
+
+
+    def _getGridPoints(self, img):
+        def perp(a):
+            b = np.empty_like(a)
+            b[0] = -a[1]
+            b[1] = a[0]
+            return b   
+        height, width, channels = img.shape 
+        imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        imgblur = cv2.GaussianBlur(imgray, (9, 9), 0);
+        thresh = cv2.adaptiveThreshold(imgblur,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,5,2)
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+        dilation = cv2.dilate(thresh, kernel)
+        imgflip = cv2.bitwise_not(dilation)
+        lines = cv2.HoughLines(imgflip,1,np.pi/180,100)
+        
+        corners = []
+        
+        for rho, theta in itertools.chain(*lines):
+            for rho2, theta2 in itertools.chain(*lines):
+                    a = np.cos(theta)
+                    b = np.sin(theta)
+                    x0 = a*rho
+                    y0 = b*rho
+                    x1_1 = int(x0 + 1000*(-b))
+                    y1_1 = int(y0 + 1000*(a))
+                    x1_2 = int(x0 - 1000*(-b))
+                    y1_2 = int(y0 - 1000*(a))
+                    
+                    a = np.cos(theta2)
+                    b = np.sin(theta2)
+                    x0 = a*rho2
+                    y0 = b*rho2
+                    x2_1 = int(x0 + 1000*(-b))
+                    y2_1 = int(y0 + 1000*(a))
+                    x2_2 = int(x0 - 1000*(-b))
+                    y2_2 = int(y0 - 1000*(a))
+                    
+                    angleDif = abs(theta-theta2)
+                    
+                    
+                    if angleDif>0.1:
+                        a1=np.array([x1_1,y1_1])
+                        a2=np.array([x1_2,y1_2])
+                        b1=np.array([x2_1,y2_1])
+                        b2=np.array([x2_2,y2_2])
+                        da = a2-a1
+                        db = b2-b1
+                        dp = a1-b1
+                        dap = perp(da)
+                        denom = np.dot( dap, db)
+                        num = np.dot( dap, dp )
+                        x,y = (num / denom.astype(float))*db + b1
+                        
+                        if int(x) < width and int(x) > 0 and int(y) < height and int(y) > 0:
+                            corners.append([int(x),int(y)])
+                        cv2.circle(img,(int(x),int(y)),3,(255,0,0),1,8,0)
+        print(corners)
+                        
+        highest1 = -10000
+        highest2 = -10000
+        highest3 = -10000
+        highest4 = -10000
+        
+        for x in corners:
+            a=x[0]+x[1]
+            b=x[0]-x[1]
+            c=x[1]-x[0]
+            d=-x[0]-x[1]
+            if(a>highest1):
+                highest1 = a
+                BottomRight = x
+            if(b>highest2):
+                highest2 = b
+                BottomLeft = x
+            if(c>highest3):
+                highest3 = c
+                TopRight = x
+            if(d>highest4):
+                highest4 = d
+                TopLeft = x
+        return [TopLeft,TopRight,BottomLeft,BottomRight]
