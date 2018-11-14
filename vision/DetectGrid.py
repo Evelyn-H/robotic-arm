@@ -28,12 +28,11 @@ for x in range(0, len(lines)):
         y1 = int(y0 + 1000*(a))
         x2 = int(x0 - 1000*(-b))
         y2 = int(y0 - 1000*(a))
-    
+
         cv2.line(img,(x1,y1),(x2,y2),(0,0,255),2)
 
 cv2.imshow('frame',img)
-if cv2.waitKey(1) & 0xFF == ord('q'):  
+if cv2.waitKey(1) & 0xFF == ord('q'):
 #cam1.release()
     cv2.destroyAllWindows()
-    exit
-    
+    exit()

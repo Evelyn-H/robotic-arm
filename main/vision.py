@@ -19,12 +19,19 @@ class Vision(object):
     # Control
 
     def get_pen_height(self):
-        x, y, h = self._detectTape(self._getImage(self.cam2), True)
-        return h
+        result = self._detectTape(self._getImage(self.cam2), True)
+        if result:
+            x, y, h = result
+            return h
+        return None
 
     def get_pen_pos(self):
-        x, y = self._detectTape(self._getImage(self.cam1), False)
-        return x, y
+        result = self._detectTape(self._getImage(self.cam1), False)
+        if result:
+            x, y = result
+            return x, y
+        return None
+
     # Game
 
     def is_paper_empty(self):
@@ -43,7 +50,7 @@ class Vision(object):
     # Private
 
     def _getImage(self, camera):
-        ret, frame = camera.read()
+        _, frame = camera.read()
         return frame
 
     def _cutCoords(self, image):
@@ -168,7 +175,7 @@ class Vision(object):
         return dst
 
     # returns [x,y] of center of blue tape and height of the center if frontCamera is true
-    def _detectTape(self, img, frontCamera):
+    def _detectTape(self, img, frontCamera, paper_left=(0, 340), paper_right=(639, 340), tape_height=23, tape_offset=20):
         lower = np.array([100, 120, 30])
         upper = np.array([140, 255, 255])
         img2 = cv2.GaussianBlur(img, (5, 5), 1.4)
@@ -184,26 +191,30 @@ class Vision(object):
             if frontCamera:
                 rect = cv2.minAreaRect(contours[0])
                 height = max([rect[1][0], rect[1][1]])
-                # Where paper begins on left
-                xleft = 0
-                yleft = 521
 
-                # Where paper begins on right
-                xright = 960
-                yright = 531
                 # Create points
-                p1 = [xleft, yleft]
-                p2 = [xright, yright]
+                p1 = paper_left
+                p2 = paper_right
                 p3 = [int(x), int(y)]
 
                 # Calculate distance
                 d = la.norm(np.cross(np.array(p2) - np.array(p1), np.array(p1) - np.array(p3))) / la.norm(np.array(p2) - np.array(p1))
 
                 # Since height of rectangle is 2.6cm, get distance in mm
-                dmm = (23 * d) / height
+                dmm = (tape_height * d) / height
+                # tip of pen instead of middle of tape
+                dmm = dmm - tape_offset - tape_height / 2
+
+                # cv2.circle(img, paper_left, 5, (0, 0, 255), -1)
+                # cv2.circle(img, paper_right, 5, (0, 0, 255), -1)
+                # cv2.imshow('frame', img)
+                # if cv2.waitKey(1) & 0xFF == ord('q'):
+                #     cv2.destroyAllWindows()
+
                 return [int(x), int(y), dmm]
 
-        return [int(x), int(y)]
+            return [int(x), int(y)]
+        return []
 
     # returs rounded numpy array containing circles [x,y,radius]
     def _detectCircles(self, img):
