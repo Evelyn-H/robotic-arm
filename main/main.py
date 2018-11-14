@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # for start, end in itertools.chain(*zip(horizontal, vertical)):
     #     arm.line(start, end, speed=3)
 
-    drawFromFile(arm)
+    # drawFromFile(arm)
 
     # and move back up
     arm.up()
