@@ -64,7 +64,7 @@ class Arm:
 
     def up(self):
         self._pen_up = True
-        self._move_to_position(self._pos, duration=500)
+        self._move_to_position(self._pos, duration=1000)
         time.sleep(0.5)
 
 
