@@ -18,7 +18,7 @@ class Arm:
         self._move_to_position(self._pos, duration=1000)
 
     @staticmethod
-    def h_for_pos(pos, pen_up=False):
+    def h_for_pos(pos):
         dist = math.sqrt((pos[0] + 20) ** 2 + pos[1] ** 2)
         slope = -4
         offset = 1
@@ -36,15 +36,17 @@ class Arm:
         angles[3] -= 5 * self._pen_up
 
         self._serial.move_to(angles[0], angles[1], angles[2], angles[3], duration)
+        while self._serial.is_done() < 0.5:
+            time.sleep(10 / 1000)
         self._pos = target
 
-    def _move_line(self, start, end, speed=1):
+    def _move_line(self, start, end, speed=1, step_size=0.5):
         '''start and end are the (x, y, z) position of the pen'''
         start = np.array(start)
         end = np.array(end)
         path_len = np.linalg.norm(start - end)
-        time = path_len * 500 / speed
-        steps = max(3, int(round(path_len * 2)))
+        time = path_len / speed * 1000
+        steps = max(2, int(round(path_len / step_size)))
 
         interp_points = np.array([
             np.linspace(start[0], end[0], steps),
@@ -55,24 +57,28 @@ class Arm:
             self._move_to_position(interp_points[:, i], time / steps)
 
     def move_to(self, target, speed=1):
-        target_h = self.h_for_pos(target, self._pen_up)
+        target_h = self.h_for_pos(target)
         start = [self._pos[0], self._pos[1], self._pos[2]]
         target = [target[0], target[1], target_h]
         self._move_line(start, target, speed)
 
     def up(self):
         self._pen_up = True
-        self._move_to_position(self._pos, duration=500)
+        self._move_to_position(self._pos, duration=1000)
+        time.sleep(0.5)
+
 
     def down(self):
         self._pen_up = False
         self._move_to_position(self._pos, duration=1000)
+        time.sleep(0.5)
+
 
     def line(self, start, end, speed=1):
         self.up()
         self.move_to(start, speed=speed)
-        time.sleep(0.5)
+        # time.sleep(0.5)
         self.down()
         self.move_to(end, speed=speed)
-        time.sleep(0.5)
+        # time.sleep(0.5)
         self.up()
