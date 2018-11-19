@@ -7,7 +7,7 @@ import numpy as np
 
 class Model(object):
 
-    def __init__(self, robot, physics):
+    def __init__(self, robot, physics, com):
         self.robot = robot
         links = robot.links
         ee_dims = robot.ee_dims
@@ -21,7 +21,7 @@ class Model(object):
                                         [0, 0, 0, 1],
                                         [0, 0, 0, 1],
                                         [0, 0, ee_dims[1], 1]
-                                    ]), [0, 0, 7, 1]
+                                    ]), com
                                     )
         ik_params = [[11.9, 10.5, sqrt(ee_dims[0] ** 2 + ee_dims[1] ** 2)], [[-60, 60], [-90, 90], [-90, 90]], ee_dims,
                      20, -45, 45, 50]

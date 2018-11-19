@@ -11,6 +11,9 @@ from PhysicsEngine import Physics
 ee_dims = [8.6, 9]
 ee_angle = np.arctan((9/8.6))
 ee_orientation = 0
+
+# CALCULATE THIS PROPERLY, THIS IS JUST FOR TESTING PURPOSES
+ee_center_of_mass = [0, 0, 7, 1]
 links = [10.7, 11.9, 10.5, sqrt(ee_dims[0]**2 + ee_dims[1]**2)]
 angleRanges = [[-90, 90], [-90, 90], [-90, 90], [-90, 90]]
 currentPosition = [[0,0,0],
@@ -31,7 +34,7 @@ physics = Physics(robot.link_masses, robot.spring_constants)
 master = Tk()
 
 mvc = MVC(TIMESTEP)
-mvc.createModel(Model, robot=robot, physics=physics)
+mvc.createModel(Model, robot=robot, physics=physics, com=ee_center_of_mass)
 mvc.createView(Window, master=master, callback=mvc)
 mvc.viewLoop()
 master.mainloop()
