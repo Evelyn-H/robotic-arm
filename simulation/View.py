@@ -42,6 +42,7 @@ class Window(tk.Frame):
         self.j3sideoval = None
         self.j4sideoval = None
         self.eesideoval = None
+        self.comsideoval = None
 
         self.j1j2sideline = None
         self.j2j3sideline = None
@@ -412,6 +413,7 @@ class Window(tk.Frame):
         self.sideviewcanvas.delete(self.j3sideoval)
         self.sideviewcanvas.delete(self.j4sideoval)
         self.sideviewcanvas.delete(self.eesideoval)
+        self.sideviewcanvas.delete(self.comsideoval)
 
         self.sideviewcanvas.delete(self.j1j2sideline)
         self.sideviewcanvas.delete(self.j2j3sideline)
@@ -474,3 +476,10 @@ class Window(tk.Frame):
                                                           self.posEE[1]*10 + self.x_bias + 5,
                                                           self.canvas_dims[1] - self.posEE[2]*10 + 5 - self.y_bias,
                                                           fill="red")
+
+        self.posCOM = self.callback.getCOMPos()
+        self.comsideoval = self.sideviewcanvas.create_oval(self.posCOM[1]*10 + self.x_bias - 5,
+                                                          self.canvas_dims[1] - self.posCOM[2]*10 - 5 - self.y_bias,
+                                                          self.posCOM[1]*10 + self.x_bias + 5,
+                                                          self.canvas_dims[1] - self.posCOM[2]*10 + 5 - self.y_bias,
+                                                          fill="orange")

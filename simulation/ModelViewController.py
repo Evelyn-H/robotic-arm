@@ -57,6 +57,10 @@ class MVC(object):
     def getEEPos(self):
         return self.model.getEEPos()
 
+    def getCOMPos(self):
+        com = self.model.getCOMPos()
+        return [com[1], com[0], com[2]]
+
     def getKappaJoint2(self):
         return self.model.getKappaJoint2()
 

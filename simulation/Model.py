@@ -49,6 +49,11 @@ class Model(object):
         angles = self.apply_postprocessing_physics(iksol, positions)
         positions = self.fk.move([rad(angles[0]), -rad(angles[1]), -rad(angles[2]), -rad(angles[3])])
 
+        for i in range(0,200):
+            angles = self.apply_postprocessing_physics(angles, positions)
+            positions = self.fk.move([rad(angles[0]), -rad(angles[1]), -rad(angles[2]), -rad(angles[3])])
+
+        self.robot.com = positions[4]
         self.robot.currentPosition[-1][0] = positions[3][1]
         self.robot.currentPosition[-1][1] = positions[3][0]
         self.robot.currentPosition[-1][2] = positions[3][2]
@@ -94,6 +99,9 @@ class Model(object):
 
     def getEEPos(self):
         return self.robot.currentPosition[4]
+
+    def getCOMPos(self):
+        return self.robot.com
 
     def getKappaJoint2(self):
         return self.robot.spring_constants[0]
