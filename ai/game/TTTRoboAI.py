@@ -9,19 +9,46 @@ on robot arm.
 """
 import sys
 sys.path.insert(0, 'C:/Users/heier/Desktop/robotic-arm/main')
-from vision import Vision
+import TestGridCircles
 
 class TTTRoboAI:
     
-    def constructBoard(circles, gridpoints):
+    def __init__(self, robotFirst):
+        self.game = TicTacToe(self, self)
+    
+    def constructBoard(self, circles, gridpoints):
         # Sort by x coordinate.
         gridpoints.sort(key=lambda point: point[0])
         print(gridpoints)
         
+        
+    def runGame(self):
+        # Set up players and board
+        # Robot side
+        # Human side
+        
+        # Decide who goes first
+        # Tell them to wait
+        # Initiate game loop
+        
+        # While the game is not over
+        #   if human turn
+        #       and game state changes
+        #           Next turn
+        #   if robot turn
+        #       Decide next move
+        #       Execute move
+        #       When done, signal next turn
+        #
+        # Game over, signal winner
+        
+    def determineHumanAction(self):
+        
+        
+        
 
 # Testing
 aaa = TTTRoboAI()
-vvv = Vision()
 circles, gridpoints = vvv.get_gamestate()
 aaa.constructBoard(circles, gridpoints)
         
