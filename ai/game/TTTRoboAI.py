@@ -17,9 +17,10 @@ class TTTRoboAI:
         self.game = TicTacToe(self, self)
     
     def constructBoard(self, circles, gridpoints):
+        # Gridpoints should be only the gridpoints of the board
+        # Unecessary points from noise should not be present.
         # Sort by x coordinate.
         gridpoints.sort(key=lambda point: point[0])
-        print(gridpoints)
         
         
     def runGame(self):
@@ -43,12 +44,12 @@ class TTTRoboAI:
         # Game over, signal winner
         
     def determineHumanAction(self):
-        
+        # To be finished.
         
         
 
 # Testing
 aaa = TTTRoboAI()
-circles, gridpoints = vvv.get_gamestate()
+circles = 
 aaa.constructBoard(circles, gridpoints)
         
