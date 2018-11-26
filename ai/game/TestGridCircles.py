@@ -9,9 +9,6 @@ import cv2
 import numpy as np
 import itertools
 import math
- 
-imgStart = cv2.imread("C:/Users/heier/Desktop/robotic-arm/vision/images/top/gridboye.png")
-img2 = imgStart.copy()
 
 class TestGridCircles:
     
@@ -33,7 +30,7 @@ class TestGridCircles:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         
-        lines = cv2.HoughLines(imgflip, 1, np.pi / 180, 100)
+        lines = cv2.HoughLines(imgflip, 1.3, np.pi / 180, 100)
         
         houghExtra = imgflip.copy()
         
@@ -110,10 +107,23 @@ class TestGridCircles:
         imgblur = cv2.GaussianBlur(imgray, (9, 9), 0)
         circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)
         if circles is not None and len(circles) > 0:
-            circles = np.uint16(np.around(circles))
+            circles = np.uint16(np.around(circles)) 
+            circleDraw = imgblur.copy()
+            for i in circles[0,:]:
+            # draw the outer circle
+                cv2.circle(circleDraw,(i[0],i[1]),i[2],(0,255,0),2)
+                cv2.circle(circleDraw,(i[0],i[1]),2,(0,0,255),3)
+            
+            cv2.imshow('image',circleDraw)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+                
         return circles
 
 """
+imgStart = cv2.imread("C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_001.jpg")
+img2 = imgStart.copy()
+
 aaa = TestGridCircles()
 corners = aaa._getGridPoints(img2);
 circles = aaa._detectCircles(img2);
@@ -126,4 +136,4 @@ print(circles)
 cv2.imshow('image',img2)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-"""
+#"""
