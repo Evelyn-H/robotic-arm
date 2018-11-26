@@ -12,6 +12,11 @@ import math
 
 class TestGridCircles:
     
+    def __init__(self, HL1, HL2):
+        # Hough Line Accuracy
+        self.HL1 = HL1
+        self.HL2 = HL2
+    
     def _getGridPoints(self, img):
         def perp(a):
             b = np.empty_like(a)
@@ -30,7 +35,7 @@ class TestGridCircles:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         
-        lines = cv2.HoughLines(imgflip, 1.3, np.pi / 180, 100)
+        lines = cv2.HoughLines(imgflip, self.HL1, self.HL2, 100)
         
         houghExtra = imgflip.copy()
         
@@ -105,7 +110,7 @@ class TestGridCircles:
     def _detectCircles(self, img):
         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         imgblur = cv2.GaussianBlur(imgray, (9, 9), 0)
-        circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)
+        circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 35, param1=50, param2=30, minRadius=10, maxRadius=25)
         if circles is not None and len(circles) > 0:
             circles = np.uint16(np.around(circles)) 
             circleDraw = imgblur.copy()
@@ -120,11 +125,11 @@ class TestGridCircles:
                 
         return circles
 
-"""
-imgStart = cv2.imread("C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_001.jpg")
+#"""
+imgStart = cv2.imread("C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_002.jpg")
 img2 = imgStart.copy()
 
-aaa = TestGridCircles()
+aaa = TestGridCircles(1.0, (np.pi / 180.0))
 corners = aaa._getGridPoints(img2);
 circles = aaa._detectCircles(img2);
 
