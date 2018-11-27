@@ -13,12 +13,16 @@ sys.path.insert(0, 'C:/Users/heier/Desktop/robotic-arm/main')
 sys.path.insert(0, "C:/User/heier/Desktop/robotic-arm/vision/images/top")
 from TestGridCircles import TestGridCircles
 from TTTState import TTTState
+from TTTAction import TTTAction
+from TTTMinMax import TTTMinMax
 
 class TTTRoboAI:
     
     def __init__(self, vision, humanTurn):
         self.game = TTTState(self, self)
         self.humanTurn = humanTurn
+        self.hID = 1
+        self.rID = 2
         self.vision = vision
         
         self.paperBlankCount = 0
@@ -26,6 +30,8 @@ class TTTRoboAI:
         
         self.setup = True
         self.paperBlank = False
+        
+        self.minmax = TTTMinMax(self.rID, 1)
     
     def constructBoard(self, circles, gridpoints):
         # Gridpoints should be only the gridpoints of the board
@@ -73,18 +79,27 @@ class TTTRoboAI:
                     board[2][2] = '1'
         # End assignment of circle positions
         return board
+                  
+    # Returns the first difference in a board that is found.
+    def firstBoardDifference(self, b1, b2):
+        for i in range(0,3):
+            for j in range(0,3):
+                if b1[i][j] != b2[i][j]:
+                    return i, j
+        # Boards are completely similar
+        return None
                     
-                    
-        
     # The game needs to run without taking breaks, in other words
     # It will be a method where the AI calls it multiple times when it feels
     # like it, because we do not want this to slow down any other parts.
     def gameTick(self):
         # Setup
         if self.setup:
+            print("Setup")
             # Count how many times a paper is registered
             # as blank before aknowleding it is in fact blank.
             if not self.paperBlank:
+                print("Is paper blank?")
                 if self.paperBlankCount < self.paperBlankThresh:
                     if self.vision.isPaperEmpty():
                         self.paperBlankCount += 1
@@ -93,6 +108,7 @@ class TTTRoboAI:
                 else:
                     self.paperBlank = True
             else:
+                print("Initializing game")
                 # Draw grid, save what the location should be
                 # Robot Prep
                 # Human Prep
@@ -100,29 +116,46 @@ class TTTRoboAI:
                 # Who goes first determined by robotFirst
                 # Tell them to wait
                 # Initiate game loop
+                self.setup = False
         
         else: # Setup over, game is running.
-            
+            print("Game loop")
             # While the game is not over
-            while(self.game.gameover() < 0):
-            #   if human turn
+            if self.game.gameover() == -1:
+                # if human turn
+                # Note: Maybe want to put the entire thing for sides
+                # deciding which action to take in a separate method, for more
+                # readability?
                 if self.humanTurn:
                     print("Human turn")
-            #       check every 1 (?) sec
-            #       if game state changes
-            #           Next turn
-            #   if robot turn
+                    # Note: either there must be something catching
+                    # get_gamestate() in case it finds no solution
+                    # and logically returns null...
+                    # Either that, or we must never allow it to fail.
+                    circles, gridpoints = self.vision.get_gamestate()
+                    newBoard = self.constructBoard(circles, gridpoints)
+                    # if game state changes
+                    try:
+                        x, y = self.firstBoardDifference(newBoard, TTTState.board)
+                    except:
+                        print("No observed change in state")
+                    else:
+                        print("New move: ", x, ", ", y) 
+                        humanAction = TTTAction(self.hID, x, y)
+                        self.game.update(humanAction)
+                        # Next turn
+                        self.humanTurn = False
+                        # if robot turn
                 else:
                     print("Robot turn")
-            #       Decide next move
-            #       Execute move
-            #       When done, signal next turn
-            #
+                    robotAction = self.minmax.queryAction(self.game.board)
+                    self.game.update(robotAction)
+                    # Execute move
+                    # When done, signal next turn
+                    self.humanTurn = True
             # Game over, signal winner
-        
-    def determineHumanAction(self):
-        # To be finished.
-        return
+            else:
+                print("Game over! Result: ", self.game.gameover() )
         
         
 
