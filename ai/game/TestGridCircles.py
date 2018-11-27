@@ -126,10 +126,13 @@ class TestGridCircles:
         return circles
 
 #"""
-imgStart = cv2.imread("C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_002.jpg")
+filePath = "C:/Users/heier/Desktop/robotic-arm/vision/images/top/"
+fileName = "TTT_005.jpg"
+file = filePath + fileName
+imgStart = cv2.imread(file)
 img2 = imgStart.copy()
 
-aaa = TestGridCircles(1.0, (np.pi / 180.0))
+aaa = TestGridCircles(1.3, (np.pi / 180.0))
 corners = aaa._getGridPoints(img2);
 circles = aaa._detectCircles(img2);
 

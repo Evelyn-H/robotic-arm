@@ -17,9 +17,15 @@ from TTTState import TTTState
 class TTTRoboAI:
     
     def __init__(self, vision, humanTurn):
-        self.game = None
+        self.game = TTTState(self, self)
         self.humanTurn = humanTurn
         self.vision = vision
+        
+        self.paperBlankCount = 0
+        self.paperBlankThresh = 2
+        
+        self.setup = True
+        self.paperBlank = False
     
     def constructBoard(self, circles, gridpoints):
         # Gridpoints should be only the gridpoints of the board
@@ -70,33 +76,49 @@ class TTTRoboAI:
                     
                     
         
-        
-    def runGame(self):
-        # Set up players and board
-        self.game = TTTState(self, self)
-        # Robot side
-        # Human side
-        
-        # Who goes first determined by robotFirst
-        # Tell them to wait
-        # Initiate game loop
-        
-        # While the game is not over
-        while(self.game.gameover() < 0):
-        #   if human turn
-            if self.humanTurn:
-                print("Human turn")
-        #       check every 1 (?) sec
-        #       if game state changes
-        #           Next turn
-        #   if robot turn
+    # The game needs to run without taking breaks, in other words
+    # It will be a method where the AI calls it multiple times when it feels
+    # like it, because we do not want this to slow down any other parts.
+    def gameTick(self):
+        # Setup
+        if self.setup:
+            # Count how many times a paper is registered
+            # as blank before aknowleding it is in fact blank.
+            if not self.paperBlank:
+                if self.paperBlankCount < self.paperBlankThresh:
+                    if self.vision.isPaperEmpty():
+                        self.paperBlankCount += 1
+                    else:
+                        self.paperBlankCount = 0
+                else:
+                    self.paperBlank = True
             else:
-                print("Robot turn")
-        #       Decide next move
-        #       Execute move
-        #       When done, signal next turn
-        #
-        # Game over, signal winner
+                # Draw grid, save what the location should be
+                # Robot Prep
+                # Human Prep
+                
+                # Who goes first determined by robotFirst
+                # Tell them to wait
+                # Initiate game loop
+        
+        else: # Setup over, game is running.
+            
+            # While the game is not over
+            while(self.game.gameover() < 0):
+            #   if human turn
+                if self.humanTurn:
+                    print("Human turn")
+            #       check every 1 (?) sec
+            #       if game state changes
+            #           Next turn
+            #   if robot turn
+                else:
+                    print("Robot turn")
+            #       Decide next move
+            #       Execute move
+            #       When done, signal next turn
+            #
+            # Game over, signal winner
         
     def determineHumanAction(self):
         # To be finished.
