@@ -1,5 +1,8 @@
 import math
 import time
+import threading
+import queue
+
 import numpy as np
 
 import clib
@@ -13,9 +16,20 @@ class Arm:
             ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
         self._ik = iksolver.IKSolver(*ik_params)
         # move to start position
-        self._pos = [0, 0, 0]
+        # self._pos = [0, 0, 0]
         self._pen_up = True
         self._move_to_position(self._pos, duration=1000)
+
+        self._thread_lock = threading.RLock()
+        self._thread_queue = queue.Queue()
+        self._thread = threading.Thread(target=self._thread_loop, args=(self._thread_queue))
+
+    @property
+    def _pos(self):
+        """Getter for the current position"""
+        with self._thread_lock:
+            angles = self._serial.get_all_angles()
+        return self._ik.forward(angles)
 
     @staticmethod
     def h_for_pos(pos):
@@ -25,20 +39,31 @@ class Arm:
         h = (slope / 20) * (dist - 10) + offset
         return h  # + 4 * pen_up
 
+    def _thread_loop(self, q):
+        while True:
+            with self._thread_lock:
+                try:
+                    (target, time) = q.get(block=False)
+                    self._move_to_position(target, time)
+                except queue.Empty as e:
+                    pass
+
+
     def _move_to_position(self, target, duration=1000):
-        angles = self._ik.find_angles(target)
-        if not angles:
-            raise iksolver.NotReachable('Can\'t reach this point')
-            # print('no solution found')
-            return
+        with self._thread_lock:
+            angles = self._ik.find_angles(target)
+            if not angles:
+                raise iksolver.NotReachable('Can\'t reach this point')
+                # print('no solution found')
+                return
 
-        angles[1] -= 10 * self._pen_up
-        angles[3] -= 5 * self._pen_up
+            angles[1] -= 10 * self._pen_up
+            angles[3] -= 5 * self._pen_up
 
-        self._serial.move_to(angles[0], angles[1], angles[2], angles[3], duration)
-        while self._serial.is_done() < 0.5:
-            time.sleep(10 / 1000)
-        self._pos = target
+            self._serial.move_to(angles[0], angles[1], angles[2], angles[3], duration)
+            while self._serial.is_done() < 0.5:
+                time.sleep(10 / 1000)
+                # self._pos = target
 
     def _move_line(self, start, end, speed=1, step_size=0.5):
         '''start and end are the (x, y, z) position of the pen'''
@@ -53,12 +78,26 @@ class Arm:
             np.linspace(start[1], end[1], steps),
             np.linspace(start[2], end[2], steps)
         ])
-        for i in range(steps):
-            self._move_to_position(interp_points[:, i], time / steps)
+
+        with self._thread_lock:
+            # empty the queue
+            while True:
+                try:
+                    self._thread_queue.get(block=False)
+                except Exception as e:
+                    break
+            # and add the new items
+            for i in range(steps):
+                self._thread_queue.put(
+                    (interp_points[:, i], time / steps)
+                )
+                # self._move_to_position(interp_points[:, i], time / steps)
+
 
     def move_to(self, target, speed=1):
         target_h = self.h_for_pos(target)
-        start = [self._pos[0], self._pos[1], self._pos[2]]
+        current_pos = self._pos
+        start = [current_pos[0], current_pos[1], current_pos[2]]
         target = [target[0], target[1], target_h]
         self._move_line(start, target, speed)
 

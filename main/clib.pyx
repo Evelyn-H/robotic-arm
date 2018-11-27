@@ -5,6 +5,7 @@ cdef extern from "main.h":
     void command_set_all(float a0, float a1, float a2, float a3)
     void command_move_to(float a0, float a1, float a2, float a3, int duration)
     float command_is_done()
+    float command_get_angle(int n)
 
 class Arm():
     def __init__(self, device, int baud):
@@ -19,10 +20,21 @@ class Arm():
         command_set(servo, angle)
 
     def set_all(self, a0, a1, a2, a3):
-        command_set_all(a0, a1, a2, a3);
+        command_set_all(a0, a1, a2, a3)
 
     def move_to(self, a0, a1, a2, a3, duration):
-        command_move_to(a0, a1, a2, a3, duration);
+        command_move_to(a0, a1, a2, a3, duration)
 
     def is_done(self):
-        return command_is_done();
+        return command_is_done()
+
+    def get_angle(self, n):
+        return command_get_angle(n)
+
+    def get_all_angles(self):
+        return (
+            command_get_angle(0),
+            command_get_angle(1),
+            command_get_angle(2),
+            command_get_angle(3),
+        )

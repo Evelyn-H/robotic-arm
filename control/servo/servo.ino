@@ -135,6 +135,10 @@ void read_commands(){
         float d = (float)(t - t0) / (float) duration;
         d = min(1.0, d);
         Serial.println(d);
+
+    } else if (substrings[0] == "get_angle") {
+        int n = substrings[1].toInt();
+        Serial.println(current_angles[n]);
     }
 }
 
