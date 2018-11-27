@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import numpy.linalg as la
 import itertools
+import math
 
 
 class Vision(object):
@@ -35,8 +36,14 @@ class Vision(object):
     # Game
 
     def is_paper_empty(self):
-        #  color?
-        ...
+        img = self._getImage(self.cam1)
+        cutImg = self._cropImage(self.cut_coords, img)
+        warpImg = self._warpImage(self.warp_coords, cutImg)
+        black, white, total = self._getBWPixels(self, warpImg)
+        blackPercent = (black * 100) / total
+        if blackPercent < 1:
+            return True
+        return False
 
     def get_gamestate(self):
         img = self._getImage(self.cam1)
@@ -291,29 +298,26 @@ class Vision(object):
 
                         if int(x) < width and int(x) > 0 and int(y) < height and int(y) > 0:
                             corners.append([int(x), int(y)])
-                        cv2.circle(img, (int(x), int(y)), 3, (255, 0, 0), 1, 8, 0)
-        print(corners)
-
-        highest1 = -10000
-        highest2 = -10000
-        highest3 = -10000
-        highest4 = -10000
-
-        for x in corners:
-            a = x[0] + x[1]
-            b = x[0] - x[1]
-            c = x[1] - x[0]
-            d = -x[0] - x[1]
-            if a > highest1:
-                highest1 = a
-                BottomRight = x
-            if b > highest2:
-                highest2 = b
-                BottomLeft = x
-            if c > highest3:
-                highest3 = c
-                TopRight = x
-            if d > highest4:
-                highest4 = d
-                TopLeft = x
-        return [TopLeft, TopRight, BottomLeft, BottomRight]
+                        
+                        #cv2.circle(img, (int(x), int(y)), 3, (255, 0, 0), 1, 8, 0)
+        for index, x in enumerate(corners):
+            remove = []
+            for index2, x2 in enumerate(corners):
+                if index != index2:
+                    distance = math.sqrt(((x[0]-x2[0])**2 + (x[1]-x2[1])**2))
+                    if distance < 5:
+                        remove.append(index2)
+            remove.sort(reverse=True)
+            for x3 in remove:
+                del corners[x3]
+        return corners
+    
+    def _getBWPixels(self, img):
+        imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        ret, thresh = cv2.threshold(imgray, 140, 255, 0)
+        kernel = np.ones((7,7),np.uint8)
+        thresh2 = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+        height, width = thresh2.shape
+        white = cv2.countNonZero(thresh2);
+        black = (height*width)-white;
+        return black, white, height*width
