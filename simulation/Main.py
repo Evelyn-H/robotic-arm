@@ -13,7 +13,7 @@ ee_angle = np.arctan((9/8.6))
 ee_orientation = 0
 
 # CALCULATE THIS PROPERLY, THIS IS JUST FOR TESTING PURPOSES
-ee_center_of_mass = [-2, 0, 2, 1]
+ee_center_of_mass = [-2, 0, 0, 1]
 links = [10.7, 11.9, 10.5, sqrt(ee_dims[0]**2 + ee_dims[1]**2)]
 angleRanges = [[-90, 90], [-90, 90], [-90, 90], [-90, 90]]
 currentPosition = [[0,0,0],
@@ -25,13 +25,13 @@ currentPosition = [[0,0,0],
 initialAngles = [0, 0, 0, 0]
 
 # masses for every link
-link_masses = [1, 1, 1, 1]
+link_masses = [0.2, 0.15, 0.1]
 
 # spring constant for the torsion spring joints
-spring_constants = [1, 1, 1]
+spring_constants = [25, 25, 25]
 
 # refresh rate of view (and later maybe physics) - in ms
-TIMESTEP = 25
+TIMESTEP = 12
 
 robot = Robot(links, angleRanges, currentPosition, initialAngles, ee_orientation, ee_dims, link_masses, spring_constants, ee_center_of_mass[0:3])
 physics = Physics(robot.link_masses, robot.spring_constants)
