@@ -53,57 +53,59 @@ class TTTRoboAI:
         
         board = [[0,0,0], [0,0,0], [0,0,0]]
         
-        for c in circles[0]:
-            if c[0] < corners[0][0][0]: # Left
-                if c[1] < corners[0][0][1]:   # Upper
-                    board[0][0] = '1'
-                elif c[1] < corners[1][0][1]: # Middle
-                    board[1][0] = '1'
-                else:                       # Lower
-                    board[2][0] = '1'
-            
-            elif c[0] < corners[0][1][0]: # Middle
-                if c[1] < corners[0][0][1]:   # Upper
-                    board[0][1] = '1'
-                elif c[1] < corners[1][0][1]: # Middle
-                    board[1][1] = '1'
-                else:                       # Lower
-                    board[2][1] = '1'
-            
-            else:
-                if c[1] < corners[0][0][1]:   # Upper
-                    board[0][2] = '1'
-                elif c[1] < corners[1][0][1]: # Middle
-                    board[1][2] = '1'
-                else:                       # Lower
-                    board[2][2] = '1'
-        # End assignment of circle positions
-        # Assign x position
-        for x in crosses[0]:
-            if x[0] < corners[0][0][0]: # Left
-                if x[1] < corners[0][0][1]:   # Upper
-                    board[0][0] = '2'
-                elif x[1] < corners[1][0][1]: # Middle
-                    board[1][0] = '2'
-                else:                       # Lower
-                    board[2][0] = '2'
-            
-            elif x[0] < corners[0][1][0]: # Middle
-                if x[1] < corners[0][0][1]:   # Upper
-                    board[0][1] = '2'
-                elif x[1] < corners[1][0][1]: # Middle
-                    board[1][1] = '2'
-                else:                       # Lower
-                    board[2][1] = '2'
-            
-            else:
-                if x[1] < corners[0][0][1]:   # Upper
-                    board[0][2] = '2'
-                elif x[1] < corners[1][0][1]: # Middle
-                    board[1][2] = '2'
-                else:                       # Lower
-                    board[2][2] = '2'
-        # End assignment of cross positions
+        if circles != None:
+            for c in circles[0]:
+                if c[0] < corners[0][0][0]: # Left
+                    if c[1] < corners[0][0][1]:   # Upper
+                        board[0][0] = '1'
+                    elif c[1] < corners[1][0][1]: # Middle
+                        board[1][0] = '1'
+                    else:                       # Lower
+                        board[2][0] = '1'
+                
+                elif c[0] < corners[0][1][0]: # Middle
+                    if c[1] < corners[0][0][1]:   # Upper
+                        board[0][1] = '1'
+                    elif c[1] < corners[1][0][1]: # Middle
+                        board[1][1] = '1'
+                    else:                       # Lower
+                        board[2][1] = '1'
+                
+                else:
+                    if c[1] < corners[0][0][1]:   # Upper
+                        board[0][2] = '1'
+                    elif c[1] < corners[1][0][1]: # Middle
+                        board[1][2] = '1'
+                    else:                       # Lower
+                        board[2][2] = '1'
+            # End assignment of circle positions
+        if crosses != None:
+            # Assign cross positions
+            for x in crosses[0]:
+                if x[0] < corners[0][0][0]: # Left
+                    if x[1] < corners[0][0][1]:   # Upper
+                        board[0][0] = '2'
+                    elif x[1] < corners[1][0][1]: # Middle
+                        board[1][0] = '2'
+                    else:                       # Lower
+                        board[2][0] = '2'
+                
+                elif x[0] < corners[0][1][0]: # Middle
+                    if x[1] < corners[0][0][1]:   # Upper
+                        board[0][1] = '2'
+                    elif x[1] < corners[1][0][1]: # Middle
+                        board[1][1] = '2'
+                    else:                       # Lower
+                        board[2][1] = '2'
+                
+                else:
+                    if x[1] < corners[0][0][1]:   # Upper
+                        board[0][2] = '2'
+                    elif x[1] < corners[1][0][1]: # Middle
+                        board[1][2] = '2'
+                    else:                       # Lower
+                        board[2][2] = '2'
+            # End assignment of cross positions
         return board
                   
     # Returns the first difference in a board that is found.
