@@ -33,7 +33,7 @@ class TTTRoboAI:
         
         self.minmax = TTTMinMax(self.rID, 1)
     
-    def constructBoard(self, circles, gridpoints):
+    def constructBoard(self, circles, crosses, gridpoints):
         # Gridpoints should be only the gridpoints of the board
         # Unecessary points from noise should not be present.
         # Sort by x coordinate.
@@ -78,6 +78,32 @@ class TTTRoboAI:
                 else:                       # Lower
                     board[2][2] = '1'
         # End assignment of circle positions
+        # Assign x position
+        for x in crosses[0]:
+            if x[0] < corners[0][0][0]: # Left
+                if x[1] < corners[0][0][1]:   # Upper
+                    board[0][0] = '2'
+                elif x[1] < corners[1][0][1]: # Middle
+                    board[1][0] = '2'
+                else:                       # Lower
+                    board[2][0] = '2'
+            
+            elif x[0] < corners[0][1][0]: # Middle
+                if x[1] < corners[0][0][1]:   # Upper
+                    board[0][1] = '2'
+                elif x[1] < corners[1][0][1]: # Middle
+                    board[1][1] = '2'
+                else:                       # Lower
+                    board[2][1] = '2'
+            
+            else:
+                if x[1] < corners[0][0][1]:   # Upper
+                    board[0][2] = '2'
+                elif x[1] < corners[1][0][1]: # Middle
+                    board[1][2] = '2'
+                else:                       # Lower
+                    board[2][2] = '2'
+        # End assignment of cross positions
         return board
                   
     # Returns the first difference in a board that is found.
