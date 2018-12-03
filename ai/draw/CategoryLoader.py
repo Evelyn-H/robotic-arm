@@ -7,6 +7,8 @@ Created on Sat Dec  1 12:02:59 2018
 
 import numpy
 from random import sample
+from matplotlib import pyplot as plt
+import cv2
 
 class CategoryLoader:
     # Values needed to extract the different datatypes.
@@ -99,6 +101,7 @@ class CategoryLoader:
                 
                 for i in range(0, n):
                     bm_new[bmi, :, :] = bm[samples[i]];
+                    bmi += 1
                 
                 return bm_new
             else: # non-random image list.
@@ -124,13 +127,24 @@ class CategoryLoader:
                         bmi += 1
                 
                 return bm_new
-                
 
-
-
-
-
-
+    def loadAll(self, n, n_start, random):
+        data = []
+        for i in range(len(self.category)):
+            data.append(self.loadSingle(i, n, n_start, random))
+            
+        return data
+            
+    def testCategoryLoader():
+        cl = CategoryLoader()
+        data = cl.loadAll(10, 0, False)
+        print("Data has ", len(data), " categories")
+        for i in range(len(data)):
+            print("Category: ", cl.category[i])
+            
+            cv2.imshow(cl.category[i], data[i][0])
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 # End
         
