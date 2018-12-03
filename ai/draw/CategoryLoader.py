@@ -6,7 +6,7 @@ Created on Sat Dec  1 12:02:59 2018
 """
 
 import numpy
-import cv2
+from random import sample
 
 class CategoryLoader:
     # Values needed to extract the different datatypes.
@@ -92,8 +92,15 @@ class CategoryLoader:
                 # TODO: will not this change the outer
                 # list datatype? Have to test.
                 print("Random samples, no repetition")
-                bm_r = random.sample(n)
-                return bm_r
+                bm_new = numpy.zeros((n,28,28), numpy.uint8)
+                samples = sample(range(len(bm)), n)
+                
+                bmi = 0
+                
+                for i in range(0, n):
+                    bm_new[bmi, :, :] = bm[samples[i]];
+                
+                return bm_new
             else: # non-random image list.
                 bm_new = numpy.zeros((n, 28, 28), numpy.uint8)
                 loop = False
@@ -118,22 +125,6 @@ class CategoryLoader:
                 
                 return bm_new
                 
-                
-            
-# For next: Debug the loop thing, see that it works both with
-# with and without random.
-catN = 0
-img_n = 0
-start = 5
-r = True
-cl = CategoryLoader()
-ar = cl.loadSingle(catN, img_n, start, r)
-print(ar.shape)
-
-img = 0
-cv2.imshow(cl.category[catN], ar[img])
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
 
 
