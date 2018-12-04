@@ -52,7 +52,7 @@ float command_is_done(){
 }
 float command_get_angle(int n){
     clear_input_buffer(fd);
-    serial_printf(fd, "get_angle &i\n", n);
+    serial_printf(fd, "get_angle %i\n", n);
     while(!serial_available(fd)){ }
     serial_readline(fd, buffer);
     printf("%s", buffer);

@@ -5,26 +5,26 @@ import numpy as np
 from arm import Arm
 
 
-def drawFromFile(arm):
-    f = open("currentDrawing.txt", 'r')
-    armUp = False
-    for line in f:
-        if line == "NEWLINE\n":
-            arm.up()
-            armUp = True
-        else:
-            x, y = line.split()
-            arm.move_to([float(y), float(x)], speed=1)
-
-            if (armUp):
-                arm.down()
-                armUp = False
-
-    f.close()
+# def drawFromFile(arm):
+#     f = open("currentDrawing.txt", 'r')
+#     armUp = False
+#     for line in f:
+#         if line == "NEWLINE\n":
+#             arm.up()
+#             armUp = True
+#         else:
+#             x, y = line.split()
+#             arm.move_to([float(y), float(x)], speed=1)
+#
+#             if (armUp):
+#                 arm.down()
+#                 armUp = False
+#
+#     f.close()
 
 
 if __name__ == '__main__':
-    arm = Arm('/dev/ttyACM1')
+    arm = Arm('/dev/ttyACM0')
 
     # import collections
     # import time

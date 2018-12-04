@@ -47,14 +47,16 @@ class Arm:
             with self._thread_lock:
                 try:
                     (target, t) = q.get(block=False)
+
                     print(target, q.qsize())
                     self._move_to_position(target, t)
                 except queue.Empty as e:
                     pass
-            time.sleep(10 / 1000)
+            time.sleep(0)
 
     def _move_to_position(self, target, duration=1000):
         with self._thread_lock:
+
             angles = self._ik.find_angles(target)
             if not angles:
                 raise iksolver.NotReachable('Can\'t reach this point')
@@ -99,7 +101,7 @@ class Arm:
         # if blocking:
             # self._thread_queue.join()
         while blocking and self._thread_queue.qsize() > 0:
-            time.sleep(10 / 1000)
+            time.sleep(1 / 1000)
         print('returned')
 
 
