@@ -9,7 +9,7 @@ import cv2
 import numpy
 
 # Testing how to load one of the bitmaps of numpy.
-name = "C:/Users/heier/Dropbox/Maastricht U/3.Project.1/full_numpy_bitmap_angel.npy"
+name = "C:/Users/heier/Dropbox/Maastricht U/3.Project.1/full_numpy_bitmap_airplane.npy"
 
 x = numpy.load(name)
 

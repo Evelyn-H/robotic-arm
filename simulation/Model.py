@@ -27,6 +27,7 @@ class Model(object):
                      20, -45, 45, 50]
         self.ik = IKSolver(*ik_params)
         self.physics = physics
+        self.iksol = 0
 
     def apply_preprocessing_physics(self, from_position, to_position):
         return to_position
@@ -39,18 +40,21 @@ class Model(object):
         # to_position = self.apply_preprocessing_physics(self.robot.currentPosition, to_position)
 
         # runs inverse kinematics
-        iksol = self.ik.find_angles([to_position[0], to_position[1], to_position[2]])
+        oldiksol = self.iksol
+        self.iksol = self.ik.find_angles([to_position[0], to_position[1], to_position[2]])
+        if self.iksol == None:
+            self.iksol = oldiksol
 
         # applies postprocessing physics on the joint angles
-        self.robot.currentAngles = -(np.array([iksol[0], iksol[1], iksol[2], iksol[3]]))
-        self.robot.ee_orientation = iksol[4]
-        positions = self.fk.move([rad(iksol[0]), -rad(iksol[1]), -rad(iksol[2]), -rad(iksol[3])])
+        self.robot.currentAngles = -(np.array([self.iksol[0], self.iksol[1], self.iksol[2], self.iksol[3]]))
+        self.robot.ee_orientation = self.iksol[4]
+        positions = self.fk.move([rad(self.iksol[0]), -rad(self.iksol[1]), -rad(self.iksol[2]), -rad(self.iksol[3])])
 
-        angles = self.apply_postprocessing_physics(iksol, positions)
+        angles = self.apply_postprocessing_physics(self.iksol, positions)
         positions = self.fk.move([rad(angles[0]), -rad(angles[1]), -rad(angles[2]), -rad(angles[3])])
 
         for i in range(0,200):
-            angles = self.apply_postprocessing_physics(angles, positions)
+            angles = self.apply_postprocessing_physics(self.iksol, positions)
             positions = self.fk.move([rad(angles[0]), -rad(angles[1]), -rad(angles[2]), -rad(angles[3])])
 
         self.robot.com = positions[4]
@@ -101,7 +105,8 @@ class Model(object):
         return self.robot.currentPosition[4]
 
     def getCOMPos(self):
-        return self.robot.com
+        com = self.robot.com
+        return [com[1], com[0], com[2]]
 
     def getKappaJoint2(self):
         return self.robot.spring_constants[0]
