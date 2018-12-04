@@ -1,3 +1,5 @@
+import time
+
 cdef extern from "main.h":
     int serial_init(char* port, int baud)
     void command_reset()
@@ -29,12 +31,14 @@ class Arm():
         return command_is_done()
 
     def get_angle(self, n):
-        return command_get_angle(n)
+        a = command_get_angle(n)
+        time.sleep(0.02)
+        return a
 
     def get_all_angles(self):
         return (
-            command_get_angle(0),
-            command_get_angle(1),
-            command_get_angle(2),
-            command_get_angle(3),
+            self.get_angle(0),
+            self.get_angle(1),
+            self.get_angle(2),
+            self.get_angle(3),
         )

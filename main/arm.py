@@ -12,6 +12,11 @@ import iksolver
 class Arm:
     def __init__(self, device, baud_rate=19200, ik_params=None):
         self._serial = clib.Arm(device, baud_rate)
+        self._thread_lock = threading.RLock()
+        self._thread_queue = queue.Queue()
+        self._thread = threading.Thread(target=self._thread_loop, args=(self._thread_queue,))
+        self._thread.start()
+
         if not ik_params:
             ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
         self._ik = iksolver.IKSolver(*ik_params)
@@ -20,16 +25,14 @@ class Arm:
         self._pen_up = True
         self._move_to_position(self._pos, duration=1000)
 
-        self._thread_lock = threading.RLock()
-        self._thread_queue = queue.Queue()
-        self._thread = threading.Thread(target=self._thread_loop, args=(self._thread_queue))
 
     @property
     def _pos(self):
         """Getter for the current position"""
         with self._thread_lock:
             angles = self._serial.get_all_angles()
-        return self._ik.forward(angles)
+            print(angles)
+        return np.array([0,0,0])#self._ik.forward(angles)
 
     @staticmethod
     def h_for_pos(pos):
@@ -43,11 +46,12 @@ class Arm:
         while True:
             with self._thread_lock:
                 try:
-                    (target, time) = q.get(block=False)
-                    self._move_to_position(target, time)
+                    (target, t) = q.get(block=False)
+                    print(target, q.qsize())
+                    self._move_to_position(target, t)
                 except queue.Empty as e:
                     pass
-
+            time.sleep(10 / 1000)
 
     def _move_to_position(self, target, duration=1000):
         with self._thread_lock:
@@ -63,14 +67,21 @@ class Arm:
             self._serial.move_to(angles[0], angles[1], angles[2], angles[3], duration)
             while self._serial.is_done() < 0.5:
                 time.sleep(10 / 1000)
-                # self._pos = target
 
-    def _move_line(self, start, end, speed=1, step_size=0.5):
+    def clear_move_queue(self):
+        with self._thread_lock:
+            while True:
+                try:
+                    self._thread_queue.get(block=False)
+                except Exception as e:
+                    break
+
+    def _move_line(self, start, end, speed=1, step_size=0.5, blocking=True):
         '''start and end are the (x, y, z) position of the pen'''
         start = np.array(start)
         end = np.array(end)
         path_len = np.linalg.norm(start - end)
-        time = path_len / speed * 1000
+        t = path_len / speed * 1000
         steps = max(2, int(round(path_len / step_size)))
 
         interp_points = np.array([
@@ -80,18 +91,16 @@ class Arm:
         ])
 
         with self._thread_lock:
-            # empty the queue
-            while True:
-                try:
-                    self._thread_queue.get(block=False)
-                except Exception as e:
-                    break
-            # and add the new items
             for i in range(steps):
                 self._thread_queue.put(
-                    (interp_points[:, i], time / steps)
+                    (interp_points[:, i], t / steps)
                 )
-                # self._move_to_position(interp_points[:, i], time / steps)
+                # self._move_to_position(interp_points[:, i], t / steps)
+        # if blocking:
+            # self._thread_queue.join()
+        while blocking and self._thread_queue.qsize() > 0:
+            time.sleep(10 / 1000)
+        print('returned')
 
 
     def move_to(self, target, speed=1):
