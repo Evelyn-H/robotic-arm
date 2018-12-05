@@ -6,7 +6,7 @@ import queue
 import numpy as np
 
 import clib
-from kinematics.solver import Solver
+import kinematics.solver as solver
 
 
 class Arm:
@@ -19,7 +19,7 @@ class Arm:
 
         if not ik_params:
             ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
-        self._ik = Solver(*ik_params)
+        self._ik = solver.Solver(*ik_params)
         # move to start position
         # self._pos = [0, 0, 0]
         self._pen_up = True
@@ -32,7 +32,8 @@ class Arm:
         with self._thread_lock:
             angles = self._serial.get_all_angles()
             print(angles)
-        return np.array([0,0,0])#self._ik.forward(angles)
+        # return np.array([0,0,0])
+        return self._ik.move(angles)
 
     @staticmethod
     def h_for_pos(pos):
@@ -57,9 +58,9 @@ class Arm:
     def _move_to_position(self, target, duration=1000):
         with self._thread_lock:
 
-            angles = self._ik.find_angles(target)
+            angles, _ = self._ik.find_angles(target)
             if not angles:
-                raise Solver.NotReachable('Can\'t reach this point')
+                raise solver.NotReachable('Can\'t reach this point')
                 # print('no solution found')
                 return
 

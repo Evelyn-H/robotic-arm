@@ -105,9 +105,9 @@ class Solver(object):
 
                 return ([
                     math.degrees(base_angle),
-                    math.degrees(angles[0]),
-                    math.degrees(angles[1]),
-                    math.degrees(angles[2]),
+                    -math.degrees(angles[0]),
+                    -math.degrees(angles[1]),
+                    -math.degrees(angles[2]),
                 ], phi)
 
             except (JointConstraintsViolated, NotReachable):
@@ -158,8 +158,11 @@ class Solver(object):
 
     def move(self, theta, COM=None):
         # print("Angles set to: " + " ".join(str(theta[x]) for x in range(len(theta))))
+        theta = [math.radians(t) for t in theta]
+        
         matrices = [self.dh_matrix(theta[x] + self.theta_add[x], self.a[x], self.d[x], self.r[x])
                     for x in range(len(theta))]
+
 
         resultEE = matrices[3].dot(self.actuator[3])
         resultEE = matrices[2].dot(resultEE)

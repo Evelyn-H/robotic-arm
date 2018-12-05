@@ -24,7 +24,17 @@ from control.arm import Arm
 
 
 if __name__ == '__main__':
-    arm = Arm('/dev/ttyACM0')
+    # arm = Arm('/dev/ttyACM0')
+
+    import kinematics.solver as solver
+    ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
+    ik = solver.Solver(*ik_params)
+
+    target = np.array([5,5,5])
+    angles, _ = ik.find_angles(target)
+    print(angles)
+    endpos = ik.move(angles)
+    print(target, endpos)
 
     # import collections
     # import time
@@ -66,16 +76,16 @@ if __name__ == '__main__':
         # target_h += dt * 0.5
 
     # circle
-    print('circle')
-    arm.up()
-    r = 5
-    x0 = 0
-    arm.move_to([x0, r], speed=2)
-    arm.down()
-    for theta in np.linspace(0, 4 * math.pi, 40):
-        x = math.sin(theta) * r + x0
-        y = math.cos(theta) * r
-        arm.move_to([x, y], speed=2)
+    # print('circle')
+    # arm.up()
+    # r = 5
+    # x0 = 0
+    # arm.move_to([x0, r], speed=2)
+    # arm.down()
+    # for theta in np.linspace(0, 4 * math.pi, 40):
+    #     x = math.sin(theta) * r + x0
+    #     y = math.cos(theta) * r
+    #     arm.move_to([x, y], speed=2)
 
     # grid
     # size = 8
