@@ -18,7 +18,7 @@ from HOGFinder import HOGFinder
 class DrawSVM:
     
     def __init__(self):
-        self.svm = svm.SVC()
+        self.svm = svm.SVC(C=1, gamma=0.5)
         self.cl = CategoryLoader()
         self.hf = HOGFinder()
         
@@ -61,11 +61,6 @@ class DrawSVM:
         x_test = data_frame[partition:,:-1]
         y_train = data_frame[:partition,-1:].ravel()
         y_test = data_frame[partition:,-1:].ravel()
-        
-        ls = [[2,2], [2,2]]
-        lsnp = np.array(ls).ravel()
-        print("Test weird ravel: ", lsnp)
-        print("shape: ", lsnp.shape)
         
         print("x_train: ", x_train.shape)
         print("y_train: ", y_train.shape)
