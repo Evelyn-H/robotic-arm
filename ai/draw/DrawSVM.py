@@ -62,10 +62,16 @@ class DrawSVM:
         y_train = data_frame[:partition,-1:].ravel()
         y_test = data_frame[partition:,-1:].ravel()
         
+        ls = [[2,2], [2,2]]
+        lsnp = np.array(ls).ravel()
+        print("Test weird ravel: ", lsnp)
+        print("shape: ", lsnp.shape)
+        
         print("x_train: ", x_train.shape)
         print("y_train: ", y_train.shape)
         print("x_test: ", x_test.shape)
         print("y_test: ", y_test.shape)
+        print("First y_train element: ", y_train[0])
         
         print("Training SVM")
         self.svm.fit(x_train, y_train)
