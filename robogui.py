@@ -47,13 +47,19 @@ def addLine(event):
         # arm.move_to(convertPoint(x, y))
         # arm.up()
 
-def addNewLine(event):
+def addNewLine():
     print("New line")
-    
-    resetCurLine()        
+    resetCurLine()    
+    unbindAll()
+    canvas.bind("<Button-1>", addLine)    
 
-def addNewCircle(event):
+def addNewCircle():
     print("Circle tool selected")
+    unbindAll()
+    canvas.bind("<Button-1>", circleStart)
+    canvas.bind("<B1-Motion>", circleShift)
+    canvas.bind("<ButtonRelease-1>", circlePlace)
+    
 
 def circleRegPoint(x, y, r, c, cTot):
     c = c%cTot # In case it is ever larger.
@@ -100,10 +106,6 @@ def circleShift(event):
         
         dx = newx-cx
         dy = newy-cy
-        
-        print("Old x y ", cx, " ", cy)
-        print("New x y ", newx, " ", newy)
-        print("Delta ", dx, " ", dy)
         
         cxy(event)
         
@@ -182,6 +184,11 @@ def convertPoint(x, y):
 
     return (newX, newY)
 
+def unbindAll():
+    global canvas
+    canvas.unbind("<Button-1>")
+    canvas.unbind("<B1-Motion>")
+    canvas.unbind("<ButtonRelease-1>")
 
 #-------------------------------------------------
 #-------------------------------------------------
@@ -256,6 +263,7 @@ clearLines = ttk.Button(toolbar, command=clearLines, text="Clear")
 
 # Adding buttons in grid
 newLine.grid(column=0,row=0)
+newCircle.grid(column=1,row=0)
 # editLine.grid(column=1, row=0)
 # deleteLine.grid(column=2,row=0)
 # addPoint.grid(column=3, row=0)
@@ -269,9 +277,9 @@ clearLines.grid(column=15, row=0)
 
 # Bindings
 # addLineBind = canvas.bind("<Button-1>", addLine)
-addCircleBind = canvas.bind("<Button-1>", circleStart)
-circleShiftBind = canvas.bind("<B1-Motion>", circleShift)
-circlePlaceBind = canvas.bind("<ButtonRelease-1>", circlePlace)
+# addCircleBind = canvas.bind("<Button-1>", circleStart)
+# circleShiftBind = canvas.bind("<B1-Motion>", circleShift)
+# circlePlaceBind = canvas.bind("<ButtonRelease-1>", circlePlace)
 
 # Base stuff, like white rectangle bg and ish-robot position.
 bg = canvas.create_rectangle((bgoffsetx,bgoffsety, bgoffsetx+bgx, bgoffsety+bgy),
