@@ -21,7 +21,11 @@ class ImgComp:
         search_params = dict(checks=50)
 
         self.flann = cv2.FlannBasedMatcher(index_params,search_params)
+    
+    # Uses
+    def compareSSIM(self, img1, img2):
         
+    
     # Compare two 2D images.
     # This does not work for small images. Argh!
     def compareORB(self, img1, img2):
@@ -67,12 +71,12 @@ class ImgComp:
         return minVal
         
     
-    def testComp(n, method=1):
+    def testComp(selection, n, method=1):
         cl = CategoryLoader()
         ic = ImgComp()
-        data = cl.loadAll(n, 0, False)
+        data = cl.load(selection, n, 0, False)
         
-        size = len(cl.category)
+        size = len(selection)
         
         md = np.zeros((size, size, 3), dtype=np.float64)
         

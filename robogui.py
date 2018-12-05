@@ -49,7 +49,7 @@ def addLine(event):
 
 def addNewLine():
     print("New line")
-    resetCurLine()    
+    resetCurLine()
     unbindAll()
     canvas.bind("<Button-1>", addLine)    
 
