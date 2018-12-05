@@ -7,6 +7,7 @@ Created on Sun Oct 14 13:25:08 2018
 
 from tkinter import *
 from tkinter import ttk
+from tkinter import filedialog
 
 # from arm import Arm
 # arm = Arm('/dev/ttyACM0')
@@ -70,6 +71,25 @@ def saveFile():
             f.write("%f %f\n"%(x, y))
     f.close()
 
+def saveFileAs():
+    fName = filedialog.asksaveasfilename()
+    print(fName)
+    if fName == "":
+        return
+    else:
+        global lineList
+        f = open(fName, "w+")
+        for i in range(0, len(lineList)):
+            l = lineList[i]
+            cList = canvas.coords(l)
+            f.write("NEWLINE\n")
+            for j in range(2, len(cList), 2):
+                (x,y) = convertPoint(cList[j], cList[j+1])
+                f.write("%f %f\n"%(x, y))
+        f.close()
+        
+    
+
 def convertPoint(x, y):
     global bgoffsetx, bgoffsety, bgx, bgy
     newX = x-(bgoffsetx + bgx/2)
@@ -119,6 +139,7 @@ menubar.add_cascade(menu=menu_file, label='File')
 
 # Menu functions
 menu_file.add_command(label="Save", command=saveFile)
+menu_file.add_command(label="Save As...", command=saveFileAs)
 
 # Creating window essentials
 canvas_size = 500
@@ -165,5 +186,11 @@ cam = canvas.create_rectangle((bgoffsetx + (bgx/2) - (bgx/20), bgoffsety+bgy+5,
                                bgoffsetx + (bgx/2) + (bgx/20), bgoffsety+bgy+5+(bgoffsety)),
                               fill='grey', tags=('cam'))
 
+center = canvas.create_rectangle((bgoffsetx + (bgx/2)-3, 
+                                      bgoffsety+(bgy/2)-3),
+                                      bgoffsetx + (bgx/2)+3, 
+                                      bgoffsety+(bgy/2)+3,
+                                    fill='deep sky blue',
+                                    tags=('center'))
 # Begin thingie.
 root.mainloop()
