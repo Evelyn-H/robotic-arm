@@ -11,6 +11,7 @@ cython = "*"
 numpy = "*"
 opencv-python = "*"
 matplotlib = "*"
+opencv-contrib-python = "*"
 
 
 [dev-packages]

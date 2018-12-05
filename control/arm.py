@@ -10,16 +10,14 @@ import kinematics.solver as solver
 
 
 class Arm:
-    def __init__(self, device, baud_rate=19200, ik_params=None):
+    def __init__(self, device, baud_rate=19200):
         self._serial = clib.Arm(device, baud_rate)
         self._thread_lock = threading.RLock()
         self._thread_queue = queue.Queue()
         self._thread = threading.Thread(target=self._thread_loop, args=(self._thread_queue,))
         self._thread.start()
 
-        if not ik_params:
-            ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
-        self._ik = solver.Solver(*ik_params)
+        self._ik = solver.Solver(*solver.robot_params)
         # move to start position
         # self._pos = [0, 0, 0]
         self._pen_up = True
@@ -31,9 +29,16 @@ class Arm:
         """Getter for the current position"""
         with self._thread_lock:
             angles = self._serial.get_all_angles()
-            print(angles)
+        angles = [
+            angles[0],
+            -angles[1],
+            -angles[2],
+            -angles[3],
+        ]
         # return np.array([0,0,0])
-        return self._ik.move(angles)
+        t = self._ik.move(angles)
+        print(angles, t)
+        return t
 
     @staticmethod
     def h_for_pos(pos):
@@ -49,7 +54,7 @@ class Arm:
                 try:
                     (target, t) = q.get(block=False)
 
-                    print(target, q.qsize())
+                    # print(target, q.qsize())
                     self._move_to_position(target, t)
                 except queue.Empty as e:
                     pass
@@ -59,6 +64,12 @@ class Arm:
         with self._thread_lock:
 
             angles, _ = self._ik.find_angles(target)
+            angles = [
+                angles[0],
+                -angles[1],
+                -angles[2],
+                -angles[3],
+            ]
             if not angles:
                 raise solver.NotReachable('Can\'t reach this point')
                 # print('no solution found')
@@ -103,7 +114,7 @@ class Arm:
             # self._thread_queue.join()
         while blocking and self._thread_queue.qsize() > 0:
             time.sleep(1 / 1000)
-        print('returned')
+        # print('returned')
 
 
     def move_to(self, target, speed=1):

@@ -3,6 +3,10 @@ import math
 import numpy as np
 from math import cos, sin, pi
 
+
+ee_dims = [8.6, 9]
+robot_params = ([11.9, 10.5, math.sqrt(ee_dims[0]**2 + ee_dims[1]**2)], [[-60, 60], [-90, 90], [-90, 90]], ee_dims, 20, -45, 45, 50)
+
 class JointConstraintsViolated(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
@@ -156,38 +160,75 @@ class Solver(object):
         return [t1, t2, t3]
 
 
-    def move(self, theta, COM=None):
-        # print("Angles set to: " + " ".join(str(theta[x]) for x in range(len(theta))))
-        theta = [math.radians(t) for t in theta]
-        
-        matrices = [self.dh_matrix(theta[x] + self.theta_add[x], self.a[x], self.d[x], self.r[x])
-                    for x in range(len(theta))]
+    def move(self, thetas):
+        thetas = [-math.radians(t) for t in thetas]
 
+        # final result
+        d = np.array([0.0, 0.0, 0.0])
 
-        resultEE = matrices[3].dot(self.actuator[3])
-        resultEE = matrices[2].dot(resultEE)
-        resultEE = matrices[1].dot(resultEE)
-        resultEE = matrices[0].dot(resultEE)
+        # cumulative angles (skipping the base angle)
+        thetas[2] += thetas[1]
+        thetas[3] += thetas[2]
+        # take ee angle into account
+        thetas[3] += self.ee_angle
 
-        if COM:
-            resultCOM = matrices[3].dot(COM)
-            resultCOM = matrices[2].dot(resultCOM)
-            resultCOM = matrices[1].dot(resultCOM)
-            resultCOM = matrices[0].dot(resultCOM)
+        for i, theta in enumerate(thetas):
+            if i == 0:
+                # skip the base angle
+                continue
+            offset = np.array([0.0, 0.0, 0.0])
+            offset[0] = math.sin(theta) * self.links[i-1]
+            offset[2] = math.cos(theta) * self.links[i-1]
+            d += offset
 
+        # and rotate away from the xz plane according to the base angle
+        dist = d[0]
+        d[0] = math.cos(-thetas[0]) * dist
+        d[1] = math.sin(-thetas[0]) * dist
 
-            resultJ4 = matrices[2].dot(self.actuator[2])
-            resultJ4 = matrices[1].dot(resultJ4)
-            resultJ4 = matrices[0].dot(resultJ4)
+        # coordinate space transformation
+        d[0] = d[0] - self.distance_from_page
+        return d
 
-            resultJ3 = matrices[1].dot(self.actuator[1])
-            resultJ3 = matrices[0].dot(resultJ3)
-
-            resultJ2 = matrices[0].dot(self.actuator[0])
-
-            return (resultJ2, resultJ3, resultJ4, resultEE, resultCOM)
-        else:
-            return resultEE
+    # def move(self, theta, COM=None):
+    #     # print("Angles set to: " + " ".join(str(theta[x]) for x in range(len(theta))))
+    #     theta = [math.radians(t) for t in theta]
+    #
+    #     matrices = [self.dh_matrix(theta[x] + self.theta_add[x], self.a[x], self.d[x], self.r[x])
+    #                 for x in range(len(theta))]
+    #
+    #     def change_coordinate_space(target):
+    #         return [
+    #             target[0] - self.distance_from_page,
+    #             target[1],
+    #             target[2] - self.links[0],
+    #         ]
+    #
+    #
+    #     resultEE = matrices[3].dot(self.actuator[3])
+    #     resultEE = matrices[2].dot(resultEE)
+    #     resultEE = matrices[1].dot(resultEE)
+    #     resultEE = matrices[0].dot(resultEE)
+    #
+    #     if COM:
+    #         resultCOM = matrices[3].dot(COM)
+    #         resultCOM = matrices[2].dot(resultCOM)
+    #         resultCOM = matrices[1].dot(resultCOM)
+    #         resultCOM = matrices[0].dot(resultCOM)
+    #
+    #
+    #         resultJ4 = matrices[2].dot(self.actuator[2])
+    #         resultJ4 = matrices[1].dot(resultJ4)
+    #         resultJ4 = matrices[0].dot(resultJ4)
+    #
+    #         resultJ3 = matrices[1].dot(self.actuator[1])
+    #         resultJ3 = matrices[0].dot(resultJ3)
+    #
+    #         resultJ2 = matrices[0].dot(self.actuator[0])
+    #
+    #         return [change_coordinate_space(t) for t in [resultJ2, resultJ3, resultJ4, resultEE, resultCOM]]
+    #     else:
+    #         return change_coordinate_space(resultEE)
 
     def dh_matrix(self, theta, alpha, d, r):
         return np.array([

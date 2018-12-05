@@ -55,8 +55,7 @@ float command_get_angle(int n){
     serial_printf(fd, "get_angle %i\n", n);
     while(!serial_available(fd)){ }
     serial_readline(fd, buffer);
-    printf("%s", buffer);
-
+    // printf("%s", buffer);
     return atof(buffer);
 }
 
