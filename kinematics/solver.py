@@ -156,7 +156,7 @@ class Solver(object):
         return [t1, t2, t3]
 
 
-    def move(self, theta, full_results=False):
+    def move(self, theta, COM=None):
         # print("Angles set to: " + " ".join(str(theta[x]) for x in range(len(theta))))
         matrices = [self.dh_matrix(theta[x] + self.theta_add[x], self.a[x], self.d[x], self.r[x])
                     for x in range(len(theta))]
@@ -166,8 +166,8 @@ class Solver(object):
         resultEE = matrices[1].dot(resultEE)
         resultEE = matrices[0].dot(resultEE)
 
-        if full_results:
-            resultCOM = matrices[3].dot(self.COM)
+        if COM:
+            resultCOM = matrices[3].dot(COM)
             resultCOM = matrices[2].dot(resultCOM)
             resultCOM = matrices[1].dot(resultCOM)
             resultCOM = matrices[0].dot(resultCOM)

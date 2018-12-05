@@ -6,7 +6,7 @@ import queue
 import numpy as np
 
 import clib
-from kinematics import iksolver
+from kinematics.solver import Solver
 
 
 class Arm:
@@ -19,7 +19,7 @@ class Arm:
 
         if not ik_params:
             ik_params = [[11.9, 10.5, 11.5], [[-60, 60], [-90, 90], [-90, 90]], [8.6, 9], 20, -45, 45, 50]
-        self._ik = iksolver.IKSolver(*ik_params)
+        self._ik = Solver(*ik_params)
         # move to start position
         # self._pos = [0, 0, 0]
         self._pen_up = True
@@ -59,7 +59,7 @@ class Arm:
 
             angles = self._ik.find_angles(target)
             if not angles:
-                raise iksolver.NotReachable('Can\'t reach this point')
+                raise Solver.NotReachable('Can\'t reach this point')
                 # print('no solution found')
                 return
 
