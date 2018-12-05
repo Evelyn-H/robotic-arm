@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 import time
 
 cdef extern from "main.h":

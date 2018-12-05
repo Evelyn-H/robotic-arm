@@ -6,7 +6,7 @@ import queue
 import numpy as np
 
 import clib
-import iksolver
+from kinematics import iksolver
 
 
 class Arm:

@@ -10,6 +10,7 @@ name = "pypi"
 cython = "*"
 numpy = "*"
 opencv-python = "*"
+matplotlib = "*"
 
 
 [dev-packages]

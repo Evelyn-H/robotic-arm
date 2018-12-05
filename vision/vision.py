@@ -298,7 +298,7 @@ class Vision(object):
 
                         if int(x) < width and int(x) > 0 and int(y) < height and int(y) > 0:
                             corners.append([int(x), int(y)])
-                        
+
                         #cv2.circle(img, (int(x), int(y)), 3, (255, 0, 0), 1, 8, 0)
         for index, x in enumerate(corners):
             remove = []
@@ -311,7 +311,7 @@ class Vision(object):
             for x3 in remove:
                 del corners[x3]
         return corners
-    
+
     def _getBWPixels(self, img):
         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(imgray, 140, 255, 0)

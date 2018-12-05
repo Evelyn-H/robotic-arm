@@ -2,7 +2,7 @@ import itertools
 import math
 import numpy as np
 
-from arm import Arm
+from control.arm import Arm
 
 
 # def drawFromFile(arm):
