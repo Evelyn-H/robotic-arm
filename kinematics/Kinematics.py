@@ -1,7 +1,7 @@
 import itertools
 import math
 import numpy as np
-from math import cos, sin
+from math import cos, sin, pi
 
 class JointConstraintsViolated(Exception):
     def __init__(self, *args, **kwargs):
@@ -15,7 +15,7 @@ class NotReachable(Exception):
 
 class Solver(object):
 
-    def __init__(self, links, joint_constraints, effector_dims, distance_from_page, min_phi, max_phi, phi_steps, theta, d, r, a, actuators):
+    def __init__(self, links, joint_constraints, effector_dims, distance_from_page, min_phi, max_phi, phi_steps):
         '''
             Keyword arguments:
             links = The lengths of the robot links (1x3 vector)
@@ -48,11 +48,16 @@ class Solver(object):
 
         # FK
 
-        self.theta_add = theta
-        self.d = d
-        self.r = r
-        self.a = a
-        self.actuator = actuators
+        self.theta_add = [0, 0.5 * pi, 0, 0]
+        self.d = [links[0], 0, 0, 0]
+        self.r = [0, links[1], links[2], effector_dims[0]]
+        self.a = [0.5 * pi, 0, 0, 0.5 * pi]
+        self.actuator = np.array([
+                           [0, 0, 0, 1],
+                           [0, 0, 0, 1],
+                           [0, 0, 0, 1],
+                           [0, 0, effector_dims[1], 1]
+                       ])
 
 
     def find_angles(self, target):
