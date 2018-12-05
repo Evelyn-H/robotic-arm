@@ -134,17 +134,26 @@ class CategoryLoader:
             data.append(self.loadSingle(i, n, n_start, random))
             
         return data
+    
+    def load(self, selection, n, n_start, random):
+        data = []
+        for i in selection:
+            data.append(self.loadSingle(i, n, n_start, random))
+            
+        return data
             
     def testCategoryLoader():
         cl = CategoryLoader()
-        data = cl.loadAll(10, 0, False)
+        categories = [0, 5, 3, 8]
+        data = cl.load(categories, 10, 0, False)
         print("Data has ", len(data), " categories")
-        for i in range(len(data)):
-            print("Category: ", cl.category[i])
+        for i in range(len(categories)):
+            print("Category: ", cl.category[categories[i]])
             
-            cv2.imshow(cl.category[i], data[i][0])
+            cv2.imshow(cl.category[categories[i]], data[i][0])
             cv2.waitKey(0)
             cv2.destroyAllWindows()
+
 
 # End
         

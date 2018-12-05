@@ -20,7 +20,7 @@ class HOGFinder:
     # it returns the HoG of those images.
     # Currently returns images, later add option
     # to not give images.
-    def findHOG(self, imgList):
+    def findHOG(self, imgList, visual=False):
         print("Finding HOGs")
         hog_img = []
         hog_ftr = []
@@ -29,7 +29,7 @@ class HOGFinder:
                          pixels_per_cell=(self.ppc, self.ppc),
                          cells_per_block=(self.cpb,self.cpb), 
                          block_norm="L2-Hys",
-                         visualise=True)
+                         visualise=visual)
             hog_ftr.append(hf)
             hog_img.append(hi)
         
