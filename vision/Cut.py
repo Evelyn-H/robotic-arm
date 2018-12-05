@@ -9,7 +9,8 @@ import cv2
 from matplotlib import pyplot as plt
 
 
-img = cv2.imread('C:\\Users\\ekorz\\Desktop\\Project\\Images\\4.png')
+# img = cv2.imread('C:\\Users\\ekorz\\Desktop\\Project\\Images\\4.png')
+img = cv2.imread('C:\\Users\\heier\\Desktop\\robotic-arm\\vision\\images\\top\\imageTestBoiii.jpg')
 
 #Turn image into grayscale
 imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -47,7 +48,7 @@ x,y,w,h = cv2.boundingRect(largestContour)
 
 #Crop the image using largest contour
 crop_img = img[y:y+h, x:x+w]
-cv2.imwrite( "C:\\Users\\ekorz\\Desktop\\Project\\Images\\4.jpg", crop_img);
+cv2.imwrite( 'C:\\Users\\heier\\Desktop\\robotic-arm\\vision\\images\\top\\imageTestBoye.jpg', crop_img);
 
 ###################################################################################################
 

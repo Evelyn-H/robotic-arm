@@ -24,12 +24,15 @@ class HOGFinder:
         print("Finding HOGs")
         hog_img = []
         hog_ftr = []
+        print("ImgList dim: ", len(imgList))
+        print("ImgList shape: ", imgList.shape)
         for i in range(len(imgList)):
             hf, hi = hog(imgList[i], 
                          pixels_per_cell=(self.ppc, self.ppc),
                          cells_per_block=(self.cpb,self.cpb), 
                          block_norm="L2-Hys",
-                         visualise=visual)
+                         visualise=False)
+            
             hog_ftr.append(hf)
             hog_img.append(hi)
         
@@ -54,4 +57,4 @@ class HOGFinder:
             plt.imshow(images[i-1])
         plt.show()
         
-# HOGFinder.testHOG()
+HOGFinder.testHOG()
