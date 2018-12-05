@@ -103,13 +103,12 @@ class Solver(object):
                 # ignores the x-component since the target is rotated onto the y-z-plane
                 angles = self._ik_solver(rotated_target, phi)
 
-                return self.move([
+                return ([
                     math.degrees(base_angle),
                     math.degrees(angles[0]),
                     math.degrees(angles[1]),
                     math.degrees(angles[2]),
-                    phi
-                ])
+                ], phi)
 
             except (JointConstraintsViolated, NotReachable):
                 pass
@@ -156,31 +155,36 @@ class Solver(object):
 
         return [t1, t2, t3]
 
-    def move(self, theta):
+
+    def move(self, theta, full_results=False):
         # print("Angles set to: " + " ".join(str(theta[x]) for x in range(len(theta))))
         matrices = [self.dh_matrix(theta[x] + self.theta_add[x], self.a[x], self.d[x], self.r[x])
                     for x in range(len(theta))]
-
-        resultCOM = matrices[3].dot(self.COM)
-        resultCOM = matrices[2].dot(resultCOM)
-        resultCOM = matrices[1].dot(resultCOM)
-        resultCOM = matrices[0].dot(resultCOM)
 
         resultEE = matrices[3].dot(self.actuator[3])
         resultEE = matrices[2].dot(resultEE)
         resultEE = matrices[1].dot(resultEE)
         resultEE = matrices[0].dot(resultEE)
 
-        resultJ4 = matrices[2].dot(self.actuator[2])
-        resultJ4 = matrices[1].dot(resultJ4)
-        resultJ4 = matrices[0].dot(resultJ4)
+        if full_results:
+            resultCOM = matrices[3].dot(self.COM)
+            resultCOM = matrices[2].dot(resultCOM)
+            resultCOM = matrices[1].dot(resultCOM)
+            resultCOM = matrices[0].dot(resultCOM)
 
-        resultJ3 = matrices[1].dot(self.actuator[1])
-        resultJ3 = matrices[0].dot(resultJ3)
 
-        resultJ2 = matrices[0].dot(self.actuator[0])
+            resultJ4 = matrices[2].dot(self.actuator[2])
+            resultJ4 = matrices[1].dot(resultJ4)
+            resultJ4 = matrices[0].dot(resultJ4)
 
-        return (resultJ2, resultJ3, resultJ4, resultEE, resultCOM)
+            resultJ3 = matrices[1].dot(self.actuator[1])
+            resultJ3 = matrices[0].dot(resultJ3)
+
+            resultJ2 = matrices[0].dot(self.actuator[0])
+
+            return (resultJ2, resultJ3, resultJ4, resultEE, resultCOM)
+        else:
+            return resultEE
 
     def dh_matrix(self, theta, alpha, d, r):
         return np.array([
