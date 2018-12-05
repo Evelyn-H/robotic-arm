@@ -20,30 +20,40 @@ class HOGFinder:
     # it returns the HoG of those images.
     # Currently returns images, later add option
     # to not give images.
-    def findHOG(self, imgList, visual=False):
-        print("Finding HOGs")
+    def findHOG(self, imgList, visual):
         hog_img = []
         hog_ftr = []
-        print("ImgList dim: ", len(imgList))
-        print("ImgList shape: ", imgList.shape)
         for i in range(len(imgList)):
-            hf, hi = hog(imgList[i], 
+            if visual:
+                hf, hi = hog(imgList[i], 
+                             pixels_per_cell=(self.ppc, self.ppc),
+                             cells_per_block=(self.cpb,self.cpb), 
+                             block_norm="L2-Hys",
+                             visualise=True)
+            else:
+                hf = hog(imgList[i], 
                          pixels_per_cell=(self.ppc, self.ppc),
                          cells_per_block=(self.cpb,self.cpb), 
-                         block_norm="L2-Hys",
-                         visualise=False)
+                         block_norm="L2-Hys")
+                
             
             hog_ftr.append(hf)
-            hog_img.append(hi)
+            
+            if visual:
+                hog_img.append(hi)
+            # End for loop
         
-        return hog_ftr, hog_img
+        if visual:
+            return hog_ftr, hog_img
+        else:
+            return hog_ftr
     
     def testHOG():
         # Test script
         hogf = HOGFinder()
         cl = CategoryLoader()
         data = cl.loadSingle(0, 10, 0, False)
-        features, images = hogf.findHOG(data)
+        features, images = hogf.findHOG(data, True)
                 
         w=12
         h=12
@@ -57,4 +67,4 @@ class HOGFinder:
             plt.imshow(images[i-1])
         plt.show()
         
-HOGFinder.testHOG()
+# HOGFinder.testHOG()
