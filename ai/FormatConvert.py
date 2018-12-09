@@ -117,10 +117,18 @@ class FormatConvert:
             # Be aware: I flipped the coordinates at some point,
             # But don't care about that rn.
             x1, y1, x2, y2 = FormatConvert.findExtrema(pl, imgx, imgy)
-            x1 -= borderWindow[0]
-            x2 += borderWindow[0]
-            y1 -= borderWindow[1]
-            y2 += borderWindow[1]
+            
+            if len(borderWindow==2)
+                x1 -= borderWindow[0]
+                x2 += borderWindow[0]
+                y1 -= borderWindow[1]
+                y2 += borderWindow[1]
+            
+            elif len(borderWindow==4):
+                x1 -= borderWindow[0]
+                x2 += borderWindow[2]
+                y1 -= borderWindow[1]
+                y2 += borderWindow[3]
             
             # Ensure no out-of-bounds error happens
             x1 = max(0, x1)
