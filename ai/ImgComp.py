@@ -9,7 +9,7 @@ from draw.CategoryLoader import CategoryLoader
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
-import time
+from skimage.measure import compare_ssim
 
 # Abstract class meant for any kind of image comparison tasks
 class ImgComp:
@@ -24,6 +24,8 @@ class ImgComp:
     
     # Uses
     def compareSSIM(self, img1, img2):
+        return compare_ssim(img1, img2)
+        
         
     
     # Compare two 2D images.
@@ -71,7 +73,7 @@ class ImgComp:
         return minVal
         
     
-    def testComp(selection, n, method=1):
+    def testComp(selection, n):
         cl = CategoryLoader()
         ic = ImgComp()
         data = cl.load(selection, n, 0, False)
@@ -91,10 +93,7 @@ class ImgComp:
                         img2 = data[catj][imgl]
                         # Template matching
                         # IMAGES NEED TO BE OF SAME SIZE
-                        if method==0:
-                            val = ImgComp.compareTemplateMatching(img1, img2)
-                        elif method==1:
-                            val = ic.compareORB(img1, img2)
+                        val = ic.compareSSIM(img1, img2)
                         
                         
                         c = md[cati, catj, 0]
