@@ -13,10 +13,11 @@ class Vision(object):
         # start video capture
         self.cam1 = cv2.VideoCapture(0)
         self.cam2 = cv2.VideoCapture(1)
-
+            
         self.cut_coords = []
         self.warp_coords = []
-
+        
+        self.query_image= cv2.imread('image.png',0)
     # Control
 
     def get_pen_height(self):
@@ -321,3 +322,44 @@ class Vision(object):
         white = cv2.countNonZero(thresh2);
         black = (height*width)-white;
         return black, white, height*width
+    
+    def _detectFeatures(self, query_img, train_img):
+        MIN_MATCH_COUNT = 5
+        # Initiate SIFT detector
+        orb = cv2.ORB_create()
+        kp1, des1 = orb.detectAndCompute(query_img, None)
+        des1 = np.float32(des1)
+        
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        search_params = dict(checks = 50)
+        
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        img2 = cv2.cvtColor(train_img, cv2.COLOR_BGR2GRAY)
+    
+        # img2 = cv2.imread('vlcsnap-2018-12-04-13h43m11s468.png',0) # trainImage
+    
+        # find the keypoints and descriptors with SIFT
+        kp2, des2 = orb.detectAndCompute(img2,None)
+        des2 = np.float32(des2)
+    
+        matches = flann.knnMatch(des1,des2,k=2)
+    
+        # store all the good matches as per Lowe's ratio test.
+        good = []
+        for m,n in matches:
+            if m.distance < 0.7*n.distance:
+                good.append(m)
+    
+    
+        if len(good)>MIN_MATCH_COUNT:
+            src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+            dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+    
+            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+            return M, mask
+        else:
+            print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
+            return
+
+        
