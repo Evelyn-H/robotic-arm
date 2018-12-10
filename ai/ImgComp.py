@@ -14,13 +14,14 @@ from skimage.measure import compare_ssim
 # Abstract class meant for any kind of image comparison tasks
 class ImgComp:
     
-#    def __init__(self):
-#        self.orb = cv2.ORB_create()
-#        FLANN_INDEX_KDTREE = 0
-#        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-#        search_params = dict(checks=50)
-#
-#        self.flann = cv2.FlannBasedMatcher(index_params,search_params)
+    def __init__(self):
+        self.orb = cv2.ORB_create()
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=100)
+
+        self.flann = cv2.FlannBasedMatcher(index_params,search_params)
+        self.bf = cv2.BFMatcher()   
     
     # Uses
     def compareSSIM(img1, img2):
@@ -41,28 +42,26 @@ class ImgComp:
     
     # Compare two 2D images.
     # This does not work for small images. Argh!
-#    def compareORB(self, img1, img2):
-#        print("Comparing two 2D with ORB")
-#        kp1, des1 = self.orb.detectAndCompute(img1, None)
-#        kp2, des2 = self.orb.detectAndCompute(img2, None)
-#        
+    def compareORB(self, img1, img2):
+        print("Comparing two 2D with ORB")
+        kp1, des1 = self.orb.detectAndCompute(img1, None)
+        kp2, des2 = self.orb.detectAndCompute(img2, None)
+        
 #        des1 = np.asarray(des1, np.float32)
 #        des2 = np.asarray(des2, np.float32)
 #        matches = self.flann.knnMatch(des1, des2, k=2)
-#        
-#        good = []
-#        for m,n in matches:
-#            if m.distance < 0.75*n.distance:
-#                good.append([m])
-#        
-#        print("Des1 size: ", len(des1))
-#        print(des1)
-#        print("Des2 size: ", len(des2))
-#        print(des2)
-#        print("Matches size: ", len(matches))
-#        print(matches)
-#        
-#        return 1.0
+        matches = self.bf.knnMatch(des1,des2, k=2)
+        
+        good = []
+        for m,n in matches:
+            if m.distance < 0.75*n.distance:
+                good.append([m])
+        
+        print("Des1 size: ", len(des1))
+        print("Des2 size: ", len(des2))
+        print("Good size: ", len(good))
+                
+        return len(good), len(des1), len(des2)
         
     
     # Currently only set to TM_SQDIFF.
@@ -165,15 +164,15 @@ class ImgComp:
             
         
 
-#f00 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_00.jpg"
-#f01 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_01.jpg"
-#f02 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_02.jpg"
-#f03 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_03.jpg"
-#f04 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_04.jpg"
-#f05 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_05.jpg"
-#f06 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_06.jpg"
-#f07 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_07.jpg"
-#f08 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_08.jpg"
-#f09 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_09.jpg"
+f00 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_00.jpg"
+f01 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_01.jpg"
+f02 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_02.jpg"
+f03 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_03.jpg"
+f04 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_04.jpg"
+f05 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_05.jpg"
+f06 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_06.jpg"
+f07 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_07.jpg"
+f08 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_08.jpg"
+f09 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_09.jpg"
 
         
