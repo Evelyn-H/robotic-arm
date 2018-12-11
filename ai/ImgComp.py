@@ -18,27 +18,64 @@ class ImgComp:
         self.orb = cv2.ORB_create()
         FLANN_INDEX_KDTREE = 0
         index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-        search_params = dict(checks=100)
+        search_params = dict(checks=50)
 
         self.flann = cv2.FlannBasedMatcher(index_params,search_params)
         self.bf = cv2.BFMatcher()   
     
     # Uses
-    def compareSSIM(img1, img2):
-        img1 = ImgComp.preprocess(img1)
-        img2 = ImgComp.preprocess(img2)
-        return compare_ssim(img1, img2)
+    def compareSSIM(img1, img2, rollDist=5):
+        if (isinstance(img1, str)):
+            img1 = ImgComp.preprocess(img1, gausN=20)
+        else:
+            img1 =ImgComp.preprocessImg(img1, gausN=20)     
+            
+        if (isinstance(img2, str)):
+            img2 = ImgComp.preprocess(img2, gausN=20)
+        else:
+            img2 =ImgComp.preprocessImg(img2, gausN=20)
+        
+        
+        img1 = cv2.resize(img1, (img2.shape[1], img2.shape[0]))
+        print(img1.shape)
+        print(img2.shape)
+        
+        bestMatch = -1
+        
+        np.roll(img1, -rollDist, axis=0)
+        np.roll(img1, -rollDist, axis=1)
+        
+        # shift.
+        for i in range(rollDist*2):
+            for j in range(rollDist*2):
+                current = compare_ssim(img1, img2)
+                if (current > bestMatch):
+                    bestMatch = current
+                
+                np.roll(img1, 1, axis=0)
+            np.roll(img1, 1, axis=1)
+                
+                
+        
+        return bestMatch
      
     def preprocess(imgFile, gausN=20):
         imgLoaded = cv2.imread(imgFile, 0) # grayscale
-        _, thresh = cv2.threshold(imgLoaded, 127, 255, cv2.THRESH_BINARY_INV)
-        
+        _, thresh = cv2.threshold(imgLoaded, 127, 255, 
+                                  cv2.THRESH_BINARY_INV)
+
         blur = thresh
         for i in range(gausN):    
             b1 = cv2.GaussianBlur(blur,(9,9),0)
             blur = np.maximum(b1, thresh)
         return blur
-        
+    
+    def preprocessImg(img, gausN=20):
+        blur = img.copy()
+        for i in range(gausN):    
+            b1 = cv2.GaussianBlur(blur,(9,9),0)
+            blur = np.maximum(b1, img)
+        return blur
     
     # Compare two 2D images.
     # This does not work for small images. Argh!
@@ -54,13 +91,17 @@ class ImgComp:
         
         good = []
         for m,n in matches:
-            if m.distance < 0.75*n.distance:
+            if m.distance < 0.65*n.distance:
                 good.append([m])
         
         print("Des1 size: ", len(des1))
         print("Des2 size: ", len(des2))
         print("Good size: ", len(good))
-                
+        
+        # cv2.drawMatchesKnn expects list of lists as matches.
+        img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,None,flags=2)
+        plt.imshow(img3), plt.show()
+        
         return len(good), len(des1), len(des2)
         
     
@@ -145,7 +186,17 @@ class ImgComp:
 #            return float('nan')
 #        else:
 #            return mean, variance, sampleVariance
+    
+    def tinyRoll(imgToRoll, rollDist):
+        img = imgToRoll.copy()
+        for i in range(img.shape[0]):
+            if i%2 == 0:
+                img[i] = np.roll(img[i], rollDist)
+            else:
+                img[i] = np.roll(img[i], -rollDist)
         
+        return img
+    
     def test2(comparer):
         fbase = "C:/Users/heier/Desktop/robotic-arm/ai/ice_"
         ls = []
