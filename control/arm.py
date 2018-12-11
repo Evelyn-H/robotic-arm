@@ -21,7 +21,7 @@ class Arm:
         # move to start position
         # self._pos = [0, 0, 0]
         self._pen_up = True
-        self._move_to_position(self._pos, duration=1000)
+        self._move_to_position(np.array([0,0,0]), duration=1000)
 
 
     @property
@@ -123,15 +123,17 @@ class Arm:
         self._move_line(start, target, speed)
 
     def up(self):
-        self._pen_up = True
-        self._move_to_position(self._pos, duration=1000)
-        time.sleep(0.5)
+        if not self._pen_up:
+            self._pen_up = True
+            self._move_to_position(self._pos, duration=1000)
+            time.sleep(0.5)
 
 
     def down(self):
-        self._pen_up = False
-        self._move_to_position(self._pos, duration=1000)
-        time.sleep(0.5)
+        if self._pen_up:
+            self._pen_up = False
+            self._move_to_position(self._pos, duration=1000)
+            time.sleep(0.5)
 
 
     def line(self, start, end, speed=1):

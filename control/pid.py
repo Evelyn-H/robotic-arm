@@ -14,10 +14,10 @@ class PID(object):
         error = target - current
 
         self._integral += error * dt
-        derivative = (error - self._last_error) / dt
+        derivative = (self._last_error - error) / dt
 
         power = self.kp * error + self.ki * self._integral + self.kd * derivative
-        print(f"t {target}, \tc {current}, \tp {power}")
+        # print(f"t {target}, \tc {current}, \tp {power}")
         return power
 
     def reset_integral(self):
