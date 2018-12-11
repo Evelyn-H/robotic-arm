@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 from control.arm import Arm
-
+from vision import Vision
 
 # def drawFromFile(arm):
 #     f = open("currentDrawing.txt", 'r')
@@ -23,32 +23,31 @@ from control.arm import Arm
 #     f.close()
 
 
-if __name__ == '__main__':
-    arm = Arm('/dev/ttyACM0')
+def main():
+    try:
+        arm = Arm('/dev/ttyACM0')
+    except Exception as e:
+        arm = Arm('/dev/ttyACM1')
 
-    # import kinematics.solver as solver
-    # ik = solver.Solver(*solver.robot_params)
-    #
-    # target = np.array([10, 10, 5])
-    # angles, _ = ik.find_angles(target)
-    # print(angles)
-    # endpos = ik.move(angles)
-    # print(target, endpos)
+
 
     # import collections
     # import time
     #
-    # import vision
-    #
-    # v = vision.Vision()
+    # v = Vision()
     # q_len = 4
     # q = collections.deque(maxlen=q_len)
     #
-    # import pid
-    # controller = pid.PID(0.5, 0, 0)
-    # target_h = 2
+    # # while True:
+    # #     h = v.get_pen_height()
+    # #     print(h)
+    #
+    # import control.pid
+    # controller = control.pid.PID(2, 0, 0)
+    # target_h = 4
     #
     # arm.down()
+    # arm.move_to([0,0,0])
     #
     # t0 = time.time()
     # while True:
@@ -57,11 +56,14 @@ if __name__ == '__main__':
     #     t0 = t
     #
     #     for _ in range(q_len):
-    #         h = v.get_pen_height() / 10  # mm to cm
+    #         h = v.get_pen_height()
+    #         if not h:
+    #             continue
+    #         h = h / 10  # mm to cm
     #         q.append(h if h else 0)
     #     current = sum(q) / q_len
     #
-    #     print("dt ", dt)
+    #     # print("dt ", dt)
     #     power = controller.update(target_h, current, max(0.1, dt))
     #
     #     # target = np.array(arm._pos) + np.array([0, 0, power])
@@ -69,8 +71,9 @@ if __name__ == '__main__':
     #
     #     pos = np.array(arm._pos)
     #     target_pos = pos + np.array([0, 0, max(-1, min(1, power))])
-    #     # print(pos, target_pos)
-    #     arm._move_line(pos, target_pos, speed=power*10, step_size=0.5)
+    #     print("{:03.2f}, {:03.2f}, {}, {}".format(h, power, pos, target_pos))
+    #     arm.clear_move_queue()
+    #     arm._move_line(pos, target_pos, speed=power, step_size=0.1, blocking=False)
 
         # target_h += dt * 0.5
 
@@ -111,3 +114,6 @@ if __name__ == '__main__':
     #     h = v.get_pen_height()
     #     q.append(h if h else 0)
     #     print(sum(q) / 4)
+
+if __name__ == '__main__':
+    main()

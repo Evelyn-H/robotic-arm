@@ -35,9 +35,8 @@ class Arm:
             -angles[2],
             -angles[3],
         ]
-        # return np.array([0,0,0])
         t = self._ik.move(angles)
-        print(angles, t)
+        # print(angles, t)
         return t
 
     @staticmethod
@@ -54,7 +53,6 @@ class Arm:
                 try:
                     (target, t) = q.get(block=False)
 
-                    # print(target, q.qsize())
                     self._move_to_position(target, t)
                 except queue.Empty as e:
                     pass

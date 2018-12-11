@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
+import itertools
+import math
+
 import cv2
 import numpy as np
 import numpy.linalg as la
-import itertools
-import math
 
 
 class Vision(object):
@@ -13,10 +15,10 @@ class Vision(object):
         # start video capture
         self.cam1 = cv2.VideoCapture(0)
         self.cam2 = cv2.VideoCapture(1)
-            
+
         self.cut_coords = []
         self.warp_coords = []
-        
+
         self.query_image= cv2.imread('image.png',0)
     # Control
 
@@ -183,14 +185,23 @@ class Vision(object):
         return dst
 
     # returns [x,y] of center of blue tape and height of the center if frontCamera is true
-    def _detectTape(self, img, frontCamera, paper_left=(0, 340), paper_right=(639, 340), tape_height=23, tape_offset=20):
-        lower = np.array([100, 120, 30])
-        upper = np.array([140, 255, 255])
+    def _detectTape(self, img, frontCamera, paper_left=(0, 330), paper_right=(639, 330), tape_height=7, tape_offset=7):
         img2 = cv2.GaussianBlur(img, (5, 5), 1.4)
         hsv = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
+
+        lower = np.array([0, 100, 100])
+        upper = np.array([10, 255, 255])
         mask = cv2.inRange(hsv, lower, upper)
+
+        lower = np.array([160, 100, 100])
+        upper = np.array([180, 255, 255])
+        mask2 = cv2.inRange(hsv, lower, upper)
+
+        mask = cv2.add(mask, mask2)
+
         kernel = np.ones((7, 7), np.uint8)
         eroded = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
         im2, contours, hierarchy = cv2.findContours(eroded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         if contours:
             M = cv2.moments(contours[0])
@@ -213,11 +224,13 @@ class Vision(object):
                 # tip of pen instead of middle of tape
                 dmm = dmm - tape_offset - tape_height / 2
 
-                # cv2.circle(img, paper_left, 5, (0, 0, 255), -1)
-                # cv2.circle(img, paper_right, 5, (0, 0, 255), -1)
-                # cv2.imshow('frame', img)
-                # if cv2.waitKey(1) & 0xFF == ord('q'):
-                #     cv2.destroyAllWindows()
+                if os.environ.get('DEBUG', None):
+                    cv2.circle(img, paper_left, 5, (0, 0, 255), -1)
+                    cv2.circle(img, paper_right, 5, (0, 0, 255), -1)
+                    cv2.drawContours(img, contours, -1, (0,255,0), 3)
+                    cv2.imshow('frame', img)
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        cv2.destroyAllWindows()
 
                 return [int(x), int(y), dmm]
 
@@ -322,44 +335,42 @@ class Vision(object):
         white = cv2.countNonZero(thresh2);
         black = (height*width)-white;
         return black, white, height*width
-    
+
     def _detectFeatures(self, query_img, train_img):
         MIN_MATCH_COUNT = 5
         # Initiate SIFT detector
         orb = cv2.ORB_create()
         kp1, des1 = orb.detectAndCompute(query_img, None)
         des1 = np.float32(des1)
-        
+
         FLANN_INDEX_KDTREE = 0
         index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
         search_params = dict(checks = 50)
-        
+
         flann = cv2.FlannBasedMatcher(index_params, search_params)
         img2 = cv2.cvtColor(train_img, cv2.COLOR_BGR2GRAY)
-    
+
         # img2 = cv2.imread('vlcsnap-2018-12-04-13h43m11s468.png',0) # trainImage
-    
+
         # find the keypoints and descriptors with SIFT
         kp2, des2 = orb.detectAndCompute(img2,None)
         des2 = np.float32(des2)
-    
+
         matches = flann.knnMatch(des1,des2,k=2)
-    
+
         # store all the good matches as per Lowe's ratio test.
         good = []
         for m,n in matches:
             if m.distance < 0.7*n.distance:
                 good.append(m)
-    
-    
+
+
         if len(good)>MIN_MATCH_COUNT:
             src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
             dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
-    
+
             M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
             return M, mask
         else:
             print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
             return
-
-        
