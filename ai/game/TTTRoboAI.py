@@ -19,19 +19,19 @@ from TTTMinMax import TTTMinMax
 class TTTRoboAI:
     
     def __init__(self, vision, humanTurn):
-        self.game = TTTState(self, self)
-        self.humanTurn = humanTurn
-        self.hID = 1
-        self.rID = 2
+        self.game = TTTState(self, self) # Game
+        self.humanTurn = humanTurn # Whose turn is it
+        self.hID = 1 # Human id
+        self.rID = 2 # Robot id
         self.vision = vision
         
-        self.paperBlankCount = 0
-        self.paperBlankThresh = 2
+        self.paperBlankCount = 0 # Current count of blank papers detected
+        self.paperBlankThresh = 2 # Threshhold to trigger continuation
         
-        self.setup = True
-        self.paperBlank = False
+        self.setup = True # Setup is happening
+        self.paperBlank = False # Paper is currently blank
         
-        self.minmax = TTTMinMax(self.rID, 1)
+        self.minmax = TTTMinMax(self.rID, 1) # Robot minmax method.
     
     def constructBoard(self, circles, crosses, gridpoints):
         # Gridpoints should be only the gridpoints of the board
@@ -146,7 +146,7 @@ class TTTRoboAI:
                 # Initiate game loop
                 self.setup = False
         
-        else: # Setup over, game is running.
+        \else: # Setup over, game is running.
             print("Game loop")
             # While the game is not over
             if self.game.gameover() == -1:
@@ -185,7 +185,7 @@ class TTTRoboAI:
             else:
                 print("Game over! Result: ", self.game.gameover() )
         
-        
+    
 
 # Testing purposes
 imgStart = cv2.imread('C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_001.jpg')

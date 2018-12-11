@@ -18,7 +18,7 @@ from HOGFinder import HOGFinder
 class DrawSVM:
     
     def __init__(self):
-        self.svm = svm.SVC(C=1, gamma=0.5)
+        self.svm = svm.SVC(C=5, gamma=0.05)
         self.cl = CategoryLoader()
         self.hf = HOGFinder()
         

@@ -89,7 +89,7 @@ class CategoryLoader:
                 numpy.random.shuffle(bm)
             return bm
         else: # Get n images
-            print("Loading ", n, " images...")
+            print("Loading ", n, " images from " + self.category[inst] + "...")
             if random:
                 # TODO: will not this change the outer
                 # list datatype? Have to test.
