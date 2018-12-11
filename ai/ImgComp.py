@@ -71,7 +71,9 @@ class ImgComp:
         return blur
     
     def preprocessImg(img, gausN=20):
-        blur = img.copy()
+        _, thresh = cv2.threshold(img, 127, 255, 
+                                  cv2.THRESH_BINARY_INV)
+        blur = thresh
         for i in range(gausN):    
             b1 = cv2.GaussianBlur(blur,(9,9),0)
             blur = np.maximum(b1, img)
