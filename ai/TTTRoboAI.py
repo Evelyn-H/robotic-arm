@@ -9,16 +9,18 @@ on robot arm.
 """
 import sys
 import cv2
+import FormatConvert
 sys.path.insert(0, 'C:/Users/heier/Desktop/robotic-arm/main')
 sys.path.insert(0, "C:/User/heier/Desktop/robotic-arm/vision/images/top")
 from TestGridCircles import TestGridCircles
-from TTTState import TTTState
-from TTTAction import TTTAction
-from TTTMinMax import TTTMinMax
+from game.TTTState import TTTState
+from game.TTTAction import TTTAction
+from game.TTTMinMax import TTTMinMax
 
 class TTTRoboAI:
     
-    def __init__(self, vision, humanTurn):
+    def __init__(self, arm, vision, humanTurn):
+        self.arm = arm
         self.game = TTTState(self, self) # Game
         self.humanTurn = humanTurn # Whose turn is it
         self.hID = 1 # Human id
@@ -32,6 +34,10 @@ class TTTRoboAI:
         self.paperBlank = False # Paper is currently blank
         
         self.minmax = TTTMinMax(self.rID, 1) # Robot minmax method.
+        
+        self.drawShift = [[(-5,-5), (0,-5), (5,-5)],
+                           [(-5,0), (0,0), (5,0)],
+                           [(-5,5), (0,5), (5,5)]]
     
     def constructBoard(self, circles, crosses, gridpoints):
         # Gridpoints should be only the gridpoints of the board
@@ -138,6 +144,7 @@ class TTTRoboAI:
             else:
                 print("Initializing game")
                 # Draw grid, save what the location should be
+                FormatConvert.drawFromFile(gridFile, self.arm)
                 # Robot Prep
                 # Human Prep
                 
@@ -179,6 +186,9 @@ class TTTRoboAI:
                     robotAction = self.minmax.queryAction(self.game.board)
                     self.game.update(robotAction)
                     # Execute move
+                    FormatConvert.drawFromFile(crossFile, self.arm,
+                                               shift1=(self.drawShift[robotAction.x][robotAction.y][0],
+                                                       self.drawShift[robotAction.x][robotAction.y][1]))
                     # When done, signal next turn
                     self.humanTurn = True
             # Game over, signal winner
@@ -186,19 +196,23 @@ class TTTRoboAI:
                 print("Game over! Result: ", self.game.gameover() )
         
     
+gridFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTLines.txt"
+circleFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCircle.txt"
+crossFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCross.txt" 
+
 
 # Testing purposes
-imgStart = cv2.imread('C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_001.jpg')
-
-cv2.imshow('image',imgStart)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-img2 = imgStart.copy()
-ttt = TestGridCircles()
-gridpoints = ttt._getGridPoints(img2);    
-aaa = TTTRoboAI(ttt, True)
-circles = ttt._detectCircles(img2);
-bbb = aaa.constructBoard(circles, gridpoints)
-print(bbb)
+#imgStart = cv2.imread('C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_001.jpg')
+#
+#cv2.imshow('image',imgStart)
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
+#
+#img2 = imgStart.copy()
+#ttt = TestGridCircles()
+#gridpoints = ttt._getGridPoints(img2);    
+#aaa = TTTRoboAI(ttt, True)
+#circles = ttt._detectCircles(img2);
+#bbb = aaa.constructBoard(circles, gridpoints)
+#print(bbb)
         
