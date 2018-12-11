@@ -10,6 +10,61 @@ import cv2
 
 class FormatConvert:
     
+#    def drawFromFile(arm):
+#        f = open("currentDrawing.txt", 'r')
+#        armUp = False
+#        for line in f:
+#            if line == "NEWLINE\n":
+#                arm.up()
+#                armUp = True
+#            else:
+#                x, y = line.split()
+#                arm.move_to([float(y), float(x)], speed=1)
+#
+#            if (armUp):
+#                arm.down()
+#                armUp = False
+#
+#        f.close()
+    
+    # Draws a drawing from a text file. Allows for scaling and
+    # shifting of what is drawn.
+    def drawFromFile(file, arm, scale1=None, shift1=None):
+        pl = FormatConvert.pointsToAr(file)
+        FormatConvert.scaleShift(pl, scale=scale1, shift=shift1)
+        for line in pl:
+            arm.up()
+            arm.move_to([float(line[0][0]), float(line[0][1])], speed=1)
+            arm.down()
+            for p in line:
+                arm.move_to([float(p[0]), float(p[1])], speed=1)
+            
+        arm.up()
+            
+            
+    # Scale cm values of drawing.
+    def scaleShift(pl, scale=None, shift=None):
+        newPl = []
+        
+        for l in pl:
+            newPl.append([])
+            for p in l:
+                x, y = p[0], p[1]
+                #first, scale
+                if not scale == None:      
+                    x = scale[1]*x
+                    y = scale[0]*y
+                
+                # Then shift
+                if not shift == None:
+                    x += shift[1]
+                    y += shift[0]
+                
+                newPl[len(newPl)-1].append((x,y))
+        
+        return newPl           
+        
+    
     def pointsToAr(file):
         f = open(file, 'r')
         ls = []
@@ -90,7 +145,7 @@ class FormatConvert:
     #       image by finding the extreme coordinates
     #       and adding a specified pixel border.
     #       This overrides the window.
-    def pointsToImg(file, 
+    def filePointToImg(file, 
                     scale=(1.0, 1.0), 
                     offset=(0,0),
                     window=None,
@@ -118,7 +173,7 @@ class FormatConvert:
             # But don't care about that rn.
             x1, y1, x2, y2 = FormatConvert.findExtrema(pl, imgx, imgy)
             
-            if len(borderWindow==2)
+            if len(borderWindow==2):
                 x1 -= borderWindow[0]
                 x2 += borderWindow[0]
                 y1 -= borderWindow[1]
@@ -146,5 +201,9 @@ class FormatConvert:
                 img = img2
         
         return img
-            
+
+gridFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTLines.txt"
+circleFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCircle.txt"
+crossFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCross.txt" 
+
         
