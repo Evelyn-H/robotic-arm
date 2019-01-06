@@ -52,13 +52,13 @@ class HOGFinder:
         # Test script
         hogf = HOGFinder()
         cl = CategoryLoader()
-        data = cl.loadSingle(0, 10, 0, False)
+        data = cl.loadSingle(0, 10, 1, False)
         features, images = hogf.findHOG(data, True)
                 
-        w=12
-        h=12
+        w=6
+        h=15
         fig=plt.figure(figsize=(w, h))
-        rows = 10
+        rows = 5
         columns = 2
         for i in range(1, rows +1):
             fig.add_subplot(rows, columns, (2*i)-1)

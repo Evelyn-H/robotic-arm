@@ -8,6 +8,7 @@ Created on Tue Nov 27 16:45:38 2018
 from draw.CategoryLoader import CategoryLoader
 import numpy as np
 import cv2
+from FormatConvert import FormatConvert
 from matplotlib import pyplot as plt
 from skimage.measure import compare_ssim
 
@@ -37,8 +38,6 @@ class ImgComp:
         
         
         img1 = cv2.resize(img1, (img2.shape[1], img2.shape[0]))
-        print(img1.shape)
-        print(img2.shape)
         
         bestMatch = -1
         
@@ -59,9 +58,11 @@ class ImgComp:
         
         return bestMatch
      
-    def preprocess(imgFile, gausN=20):
+    # Takes a filename of an image (jpg, png, etc.) that
+    # the preprocessing step is applied to.
+    def preprocess(imgFile, tVal=127, gausN=20):
         imgLoaded = cv2.imread(imgFile, 0) # grayscale
-        _, thresh = cv2.threshold(imgLoaded, 127, 255, 
+        _, thresh = cv2.threshold(imgLoaded, tVal, 255, 
                                   cv2.THRESH_BINARY_INV)
 
         blur = thresh
@@ -70,9 +71,17 @@ class ImgComp:
             blur = np.maximum(b1, thresh)
         return blur
     
-    def preprocessImg(img, gausN=20):
-        _, thresh = cv2.threshold(img, 127, 255, 
-                                  cv2.THRESH_BINARY_INV)
+    # Takes a 2d numpy uint8 array as an argument and 
+    # applies the preprocessing step to it.
+    def preprocessImg(img, tVal=127, gausN=20):
+        # Turn to grayscale if already in colour.
+        if len(img.shape) > 2:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            
+        _, thresh = cv2.threshold(img, tVal, 255, 
+                                  cv2.THRESH_BINARY)
+        
+        
         blur = thresh
         for i in range(gausN):    
             b1 = cv2.GaussianBlur(blur,(9,9),0)
@@ -215,6 +224,7 @@ class ImgComp:
             c = compare_ssim(img1, img2r)
             print(i, " - SSIM: ", c)
             
+            
         
 
 f00 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_00.jpg"
@@ -228,4 +238,122 @@ f07 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_07.jpg"
 f08 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_08.jpg"
 f09 = "C:/Users/heier/Desktop/robotic-arm/ai/ice_09.jpg"
 
-        
+fd00 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_1234.png"
+fd01 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_airplane.png"
+fd02 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_backpack.png"
+fd03 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_cactus.png"
+fd04 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_dog.png"
+fd05 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_ear.png"
+fd06 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_face.png"
+fd07 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_garden.png"
+fd08 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_hamburger.png"
+fd09 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_icecream.png"
+fd10 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/draw_jacket.png"
+
+# Drawings done by robot
+pf00 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/1.png"
+pf01 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/2.png"
+pf02 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/3.png"
+pf03 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/4.png"
+pf04 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/5.png"
+pf05 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/6.png"
+pf06 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/7.png"
+pf07 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/8.png"
+pf08 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/9.png"
+pf09 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/10.png"
+pf10 = "C:/Users/heier/Desktop/robotic-arm/ai/drawn_images/11.png"
+
+pi00 = ImgComp.preprocess(pf00, gausN=0, tVal=80)
+pi01 = ImgComp.preprocess(pf01, gausN=0, tVal=80)
+pi02 = ImgComp.preprocess(pf02, gausN=0, tVal=80)
+pi03 = ImgComp.preprocess(pf03, gausN=0, tVal=80)
+pi04 = ImgComp.preprocess(pf04, gausN=0, tVal=80)
+pi05 = ImgComp.preprocess(pf05, gausN=0, tVal=80)
+pi06 = ImgComp.preprocess(pf06, gausN=0, tVal=80)
+pi07 = ImgComp.preprocess(pf07, gausN=0, tVal=80)
+pi08 = ImgComp.preprocess(pf08, gausN=0, tVal=80)
+pi09 = ImgComp.preprocess(pf09, gausN=0, tVal=80)
+pi10 = ImgComp.preprocess(pf10, gausN=0, tVal=80)
+
+pi00 = pi00[270:525, 395:605]
+pi01 = pi01[175:535, 350:660]
+pi02 = pi02[175:530, 350:660]
+pi03 = pi03[120:550, 330:645]
+pi04 = pi04[225:620, 320:700]
+pi05 = pi05[210:500, 410:610]
+pi06 = pi06[175:555, 345:655]
+pi07 = pi07[75:525, 130:885]
+pi08 = pi08[210:495, 265:695]
+pi09 = pi09[140:570, 340:630]
+pi10 = pi10[130:600, 210:755]
+
+pi00 = ImgComp.preprocessImg(pi00)
+pi01 = ImgComp.preprocessImg(pi01)
+pi02 = ImgComp.preprocessImg(pi02)
+pi03 = ImgComp.preprocessImg(pi03)
+pi04 = ImgComp.preprocessImg(pi04)
+pi05 = ImgComp.preprocessImg(pi05)
+pi06 = ImgComp.preprocessImg(pi06)
+pi07 = ImgComp.preprocessImg(pi07)
+pi08 = ImgComp.preprocessImg(pi08)
+pi09 = ImgComp.preprocessImg(pi09)
+pi10 = ImgComp.preprocessImg(pi10)
+
+# Line files for robot
+t00 = "C:/Users/heier/Desktop/robotic-arm/ai/l_1234.txt"
+t01 = "C:/Users/heier/Desktop/robotic-arm/ai/l_airplane.txt"
+t02 = "C:/Users/heier/Desktop/robotic-arm/ai/l_backpack.txt"
+t03 = "C:/Users/heier/Desktop/robotic-arm/ai/l_cactus.txt"
+t04 = "C:/Users/heier/Desktop/robotic-arm/ai/l_dog.txt"
+t05 = "C:/Users/heier/Desktop/robotic-arm/ai/l_ear.txt"
+t06 = "C:/Users/heier/Desktop/robotic-arm/ai/l_face.txt"
+t07 = "C:/Users/heier/Desktop/robotic-arm/ai/l_garden.txt"
+t08 = "C:/Users/heier/Desktop/robotic-arm/ai/l_hamburger.txt"
+t09 = "C:/Users/heier/Desktop/robotic-arm/ai/l_icecream.txt"
+t10 = "C:/Users/heier/Desktop/robotic-arm/ai/l_jacket.txt"
+
+li00 = FormatConvert.filePointToImg(t00, scale=(2.4,2.4), borderWindow=50)
+li01 = FormatConvert.filePointToImg(t01, scale=(2.4,2.4), borderWindow=50)
+li02 = FormatConvert.filePointToImg(t02, scale=(2.4,2.4), borderWindow=50)
+li03 = FormatConvert.filePointToImg(t03, scale=(2.4,2.4), borderWindow=50)
+li04 = FormatConvert.filePointToImg(t04, scale=(2.4,2.4), borderWindow=50)
+li05 = FormatConvert.filePointToImg(t05, scale=(2.4,2.4), borderWindow=50)
+li06 = FormatConvert.filePointToImg(t06, scale=(2.4,2.4), borderWindow=50)
+li07 = FormatConvert.filePointToImg(t07, scale=(2.4,2.4), borderWindow=50)
+li08 = FormatConvert.filePointToImg(t08, scale=(2.4,2.4), borderWindow=50)
+li09 = FormatConvert.filePointToImg(t09, scale=(2.4,2.4), borderWindow=50)
+li10 = FormatConvert.filePointToImg(t10, scale=(2.4,2.4), borderWindow=50)
+
+li00 = ImgComp.preprocessImg(li00)
+li01 = ImgComp.preprocessImg(li01)
+li02 = ImgComp.preprocessImg(li02)
+li03 = ImgComp.preprocessImg(li03)
+li04 = ImgComp.preprocessImg(li04)
+li05 = ImgComp.preprocessImg(li05)
+li06 = ImgComp.preprocessImg(li06)
+li07 = ImgComp.preprocessImg(li07)
+li08 = ImgComp.preprocessImg(li08)
+li09 = ImgComp.preprocessImg(li09)
+li10 = ImgComp.preprocessImg(li10)
+
+a1 = []
+#a2 = []
+for i in range(11): #pi
+    print("!")
+    a1.append([])
+#    a2.append([])
+    for j in range(11): #li
+        pix = vars()['pi'+str((int(i/10)))+str(i%10)]
+        lix = vars()['li'+str((int(j/10)))+str(j%10)]
+        v1 = ImgComp.compareSSIM(pix, lix, rollDist=5)
+#        v2 = ImgComp.compareSSIM(pix, lix, rollDist=5)
+        a1[len(a1)-1].append(v1)
+#        a2[len(a2)-1].append(v2)
+        print(".")
+    
+    for k in range(len(a1[len(a1)-1])):
+        print(a1[len(a1)-1][k])
+#    print(a2[len(a2)-2])
+
+
+

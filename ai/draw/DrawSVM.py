@@ -10,7 +10,7 @@ as a guideline for implementation.
 """
 
 from sklearn import svm
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import numpy as np
 from CategoryLoader import CategoryLoader
 from HOGFinder import HOGFinder
@@ -53,7 +53,7 @@ class DrawSVM:
         np.random.shuffle(data_frame) # Shuffle shuffle yo
         
         # Percentage training data
-        percentage = 80
+        percentage = 66
         partition = int(len(h_data)*percentage/100)
         
         # Split into training and test set
@@ -76,6 +76,11 @@ class DrawSVM:
         print("Accuracy: "+str(accuracy_score(y_test, y_pred)))
         print('\n')
         print(classification_report(y_test, y_pred))
+        
+        print("Confusion matrix:")
+        print(confusion_matrix(y_test, y_pred))
+        print("\n")
+        
         
         
         
