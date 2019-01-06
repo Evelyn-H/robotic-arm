@@ -12,12 +12,13 @@ import numpy as np
 from sklearn.neural_network import MLPClassifier
 from CategoryLoader import CategoryLoader
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.preprocessing import StandardScaler
 
 
 class DrawMLP:
     
     def __init__(self):
-        self.mlp = MLPClassifier(hidden_layer_sizes=(10),
+        self.mlp = MLPClassifier(hidden_layer_sizes=(100),
                                  random_state=1)
         self.cl = CategoryLoader()
         
@@ -55,6 +56,13 @@ class DrawMLP:
         y_train = data_frame[:partition,-1:].ravel()
         y_test = data_frame[partition:,-1:].ravel()
         
+        print("Scaling features")
+        scaler = StandardScaler()  
+        # Only fit on training data.
+        scaler.fit(x_train)
+        x_train = scaler.transform(x_train)  
+        x_test = scaler.transform(x_test)  
+        
         print("x_train: ", x_train.shape)
         print("y_train: ", y_train.shape)
         print("x_test: ", x_test.shape)
@@ -76,5 +84,5 @@ class DrawMLP:
     
     # Consider: Should this also do feature scalling? Revisit at another point.
     def convert_to_1D(self, data):
-        data.shape = (data.shape[0], 784)
+        data.shape = (data.shape[0], 784)        
         return data
