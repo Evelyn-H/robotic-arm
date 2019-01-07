@@ -6,6 +6,7 @@ Created on Sat Dec  1 12:02:59 2018
 """
 
 import numpy
+import random
 from random import sample
 from matplotlib import pyplot as plt
 import cv2
@@ -141,7 +142,44 @@ class CategoryLoader:
             data.append(self.loadSingle(i, n, n_start, random))
             
         return data
-            
+
+
+    # Returns a drawing from a given category. Can specify
+    # a specific element with pick, and give a specific set of 
+    # drawings to choose from with pool.
+    def singleImage(self, cat, pick=None, pool=None):
+        print("Getting img ", cat, " from category ",
+              self.category[cat])
+        
+        draw = None
+        if not pool:
+            if not pick:
+                # No pool given, and no pick 
+                # load randomly from a single category.
+                draw = self.loadSingle(cat, 1, 0, True)[0]
+            else:
+                draw = self.loadSingle(cat, pick, 0, False)[0]
+        else:
+            # We do have a pool.
+            # If no pick given, pick randomly.
+            if not pick:
+                pick = random.randint(0, len(pool)-1)
+            draw = pool[pick]
+        
+        return draw
+    
+    def getPoints(img, mode="weighted")
+        # Convert img to a graph
+        # first, get vertices.
+        v = []
+        if mode=="weighted":
+            # Weighted
+            #   Find first white pixel, then draw in a continuous
+            #   line going from adjacent pixels until none are left.
+                        
+                        
+ 
+       
     def testCategoryLoader():
         cl = CategoryLoader()
         categories = [0, 5, 3, 8]
