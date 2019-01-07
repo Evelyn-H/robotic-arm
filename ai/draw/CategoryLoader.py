@@ -176,6 +176,17 @@ class CategoryLoader:
             # Weighted
             #   Find first white pixel, then draw in a continuous
             #   line going from adjacent pixels until none are left.
+            for x in range(0, 28, 2):
+                for y in range(0, 28, 2):
+                    # in cell format:
+                    #   p00 / p01
+                    #   p10 / p11
+                    p00 = img[x][y]
+                    p01 = img[x][y+1]
+                    p10 = img[x+1][y]
+                    p11 = img[x+1][y+1]
+                    
+                    
                         
                         
  
