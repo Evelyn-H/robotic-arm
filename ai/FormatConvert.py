@@ -162,15 +162,19 @@ class FormatConvert:
                     offset=(0,0),
                     window=None,
                     borderWindow=None,
-                    lineWidth=2):
+                    lineWidth=2,
+                    pl=None):
         imgy = int(297.0*scale[0])
         imgx = int(420.0*scale[1])
-        # Get a list of lines to the right coordinate types.
-        # First put the points into array
-        pl = FormatConvert.pointsToAr(file)
-        # Then format to appropriate type
-        pl = FormatConvert.convertToPixelCoordinates(pl, scale, offset)
-
+        
+        # Only bother with file if there is not a point list given.
+        if pl==None:
+            # Get a list of lines to the right coordinate types.
+            # First put the points into array
+            pl = FormatConvert.pointsToAr(file)
+            # Then format to appropriate type
+            pl = FormatConvert.convertToPixelCoordinates(pl, scale, offset)
+            
         # Create image.
         img = np.zeros((imgy, imgx), dtype=np.uint8)
         # for each line

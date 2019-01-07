@@ -106,6 +106,7 @@ class CategoryLoader:
                 
                 return bm_new
             else: # non-random image list.
+                print("Non-random sample")
                 bm_new = numpy.zeros((n, 28, 28), numpy.uint8)
                 loop = False
                 end = n_start + n
@@ -129,12 +130,14 @@ class CategoryLoader:
                 
                 return bm_new
 
+
     def loadAll(self, n, n_start, random):
         data = []
         for i in range(len(self.category)):
             data.append(self.loadSingle(i, n, n_start, random))
             
         return data
+    
     
     def load(self, selection, n, n_start, random):
         data = []
@@ -153,12 +156,12 @@ class CategoryLoader:
         
         draw = None
         if not pool:
-            if not pick:
+            if pick==None:
                 # No pool given, and no pick 
                 # load randomly from a single category.
                 draw = self.loadSingle(cat, 1, 0, True)[0]
             else:
-                draw = self.loadSingle(cat, pick, 0, False)[0]
+                draw = self.loadSingle(cat, 1, pick, False)[0]
         else:
             # We do have a pool.
             # If no pick given, pick randomly.
@@ -168,23 +171,91 @@ class CategoryLoader:
         
         return draw
     
-    def getPoints(img, mode="weighted")
+    
+    def getSingleSurrounding(x, y, img):
+        # deterministic
+        for i in range(x-1,x+2):
+            for j in range(y-1, y+2):
+                # (i,j) is in drawing, and not the center pixel.
+                if 0<=i and i<28 and 0<=j and j<28 and i!=x and j!=y:
+                    if img[i,j]>0:
+                        return (i,j)
+        
+        return None
+    
+    
+    # Given an image, this finds a collection of lines
+    # That approximate the drawing in the image.
+    # Returns a list of lines.
+    def getImagePoints(self, img, mode="simple", thresh_v=180):
         # Convert img to a graph
-        # first, get vertices.
-        v = []
-        if mode=="weighted":
-            # Weighted
-            #   Find first white pixel, then draw in a continuous
-            #   line going from adjacent pixels until none are left.
-            for x in range(0, 28, 2):
-                for y in range(0, 28, 2):
-                    # in cell format:
-                    #   p00 / p01
-                    #   p10 / p11
-                    p00 = img[x][y]
-                    p01 = img[x][y+1]
-                    p10 = img[x+1][y]
-                    p11 = img[x+1][y+1]
+        if mode=="simple":
+            # Do binary threshold, remaining pixels become "vertices"
+            # in this drawing. drawing is done by finding a white pixel
+            # among the surrounding pixels.
+            _, t = cv2.threshold(img, thresh_v, 255, cv2.THRESH_BINARY)
+            remaining = t.copy()
+                        
+            drawing = []
+            
+            for x in range(28):
+                for y in range(28):
+                    # Non empty pixel. Time to draw something.
+                    if remaining[x,y] > 0:
+                        line = [(x,y)]
+                        
+                        # investigate surrounding pixels.
+                        remaining[x,y] = 0
+                        vertex = CategoryLoader.getSingleSurrounding(x,y,remaining)
+                        while vertex:
+                            remaining
+                            line.append(vertex)
+                            newX = vertex[0]
+                            newY = vertex[1]
+                            remaining[newX, newY] = 0
+                            vertex = CategoryLoader.getSingleSurrounding(newX, newY, remaining)
+                        
+                        # Sub case, if only one pixel, add twice.
+                        if len(line)==1:
+                            line.append((x,y))
+                        
+                        drawing.append(line)
+            # Finished drawing stuff.
+            return drawing
+                        
+                        
+                        
+                        
+            
+            
+            
+        # Below is way complicating it. Keeping code here for future ref.
+#        if mode=="weighted":
+#            # Weighted
+#            #   Find first white pixel, then draw in a continuous
+#            #   line going from adjacent pixels until none are left.
+#            for x in range(0, 28, 2):
+#                for y in range(0, 28, 2):
+#                    # in cell format:
+#                    #   p00 / p01
+#                    #   p10 / p11
+#                    p00 = img[x][y]
+#                    p01 = img[x][y+1]
+#                    p10 = img[x+1][y]
+#                    p11 = img[x+1][y+1]
+#                    
+#                    # Only add a vertex if any have a value.
+#                    if p00>0 or p01>0 or p10>0 or p11>0:
+#                        # Relative total.
+#                        tot = p00 + p01 + p10 + p11
+#                        dx = float((p10+p11)-(p00+p01))/float(tot)
+#                        dy = float((p01+p11)-(p00+p11))/float(tot)
+#                        
+#                        v.extend((x+1+dx, y+1+dy))
+#            # Vertices gathered.
+#            # Now to generate sequences of edges to become lines.
+#            
+#            # Still unfinished.
                     
                     
                         
