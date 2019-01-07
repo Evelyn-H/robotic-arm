@@ -172,9 +172,10 @@ class FormatConvert:
             # Get a list of lines to the right coordinate types.
             # First put the points into array
             pl = FormatConvert.pointsToAr(file)
-            # Then format to appropriate type
-            pl = FormatConvert.convertToPixelCoordinates(pl, scale, offset)
-            
+        # Then format to appropriate type
+        pl = FormatConvert.convertToPixelCoordinates(pl, scale, offset)
+        print(pl)
+        
         # Create image.
         img = np.zeros((imgy, imgx), dtype=np.uint8)
         # for each line

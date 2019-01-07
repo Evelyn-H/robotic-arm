@@ -202,14 +202,14 @@ class CategoryLoader:
                 for y in range(28):
                     # Non empty pixel. Time to draw something.
                     if remaining[x,y] > 0:
-                        line = [(x,y)]
+                        line = [(y,x)]
                         
                         # investigate surrounding pixels.
                         remaining[x,y] = 0
                         vertex = CategoryLoader.getSingleSurrounding(x,y,remaining)
                         while vertex:
                             remaining
-                            line.append(vertex)
+                            line.append((vertex[1], vertex[0]))
                             newX = vertex[0]
                             newY = vertex[1]
                             remaining[newX, newY] = 0
@@ -217,10 +217,11 @@ class CategoryLoader:
                         
                         # Sub case, if only one pixel, add twice.
                         if len(line)==1:
-                            line.append((x,y))
+                            line.append((y,x))
                         
                         drawing.append(line)
             # Finished drawing stuff.
+                    
             return drawing
                         
                         
