@@ -51,28 +51,11 @@ class TTTRoboAI:
                            [(-5,5), (0,5), (5,5)]]
         
         # Grid line intersections
-        self.up_left = None
-        self.up_right = None
-        self.down_left = None
-        self.down_right = None
+        corners = None
         
     
     
-    def constructBoard(self, circles, crosses, gridpoints):
-        # Gridpoints should be only the gridpoints of the board
-        # Unecessary points from noise should not be present.
-        # Sort by x coordinate.
-        print(gridpoints)
-        gridpoints.sort(key=lambda point: point[1])
-        print(gridpoints)
-        
-        head = gridpoints[0:2]
-        head.sort(key=lambda point: point[0])
-        tail = gridpoints[2:4]
-        tail.sort(key=lambda point: point[0])
-        corners = [head, tail]
-        print(corners)
-        
+    def constructBoard(self, circles, crosses):    
         print("Circles")
         print(circles)
         
@@ -157,11 +140,21 @@ class TTTRoboAI:
             FormatConvert.drawFromFile(gridFile, self.arm)
             # Robot Prep
             # TODO: finish below.
-#            grid = vision.getgridpoints()
-#            self.up_left = grid[0]
-#            self.up_right = grid[1]
-#            self.down_left = grid[2]
-#            self.down_right = grid[3]
+            grid = self.vision.getgridpoints()
+            self.corners.append(grid[0])
+            self.corners.append(grid[1])
+            self.corners.append(grid[2])
+            self.corners.append(grid[3])
+            # sort corners.
+            print("Initial corners detected: ", self.corners)
+            self.corners.sort(key=lambda point: point[1])
+            head = self.corners[0:2]
+            head.sort(key=lambda point: point[0])
+            tail = self.corners[2:4]
+            tail.sort(key=lambda point: point[0])
+            self.corners = [head, tail]
+            print("Corners sorted: ", self.corners)
+            
             # Human Prep
             
             # Who goes first determined by robotFirst
@@ -183,8 +176,10 @@ class TTTRoboAI:
                     # get_gamestate() in case it finds no solution
                     # and logically returns null...
                     # Either that, or we must never allow it to fail.
-                    circles, gridpoints = self.vision.get_gamestate()
-                    newBoard = self.constructBoard(circles, gridpoints)
+                    # TODO: GET RIGHT METHODS BELOW.
+                    circles = self.vision.getcircles()
+                    crosses = self.vision.getcrosses()
+                    newBoard = self.constructBoard(circles, crosses)
                     # if game state changes
                     try:
                         x, y = self.firstBoardDifference(newBoard, TTTState.board)
