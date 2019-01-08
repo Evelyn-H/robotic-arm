@@ -63,26 +63,26 @@ class TTTRoboAI:
         
         if circles != None:
             for c in circles[0]:
-                if c[0] < corners[0][0][0]: # Left
-                    if c[1] < corners[0][0][1]:   # Upper
+                if c[0] < self.corners[0][0][0]: # Left
+                    if c[1] < self.corners[0][0][1]:   # Upper
                         board[0][0] = '1'
-                    elif c[1] < corners[1][0][1]: # Middle
+                    elif c[1] < self.corners[1][0][1]: # Middle
                         board[1][0] = '1'
                     else:                       # Lower
                         board[2][0] = '1'
                 
-                elif c[0] < corners[0][1][0]: # Middle
-                    if c[1] < corners[0][0][1]:   # Upper
+                elif c[0] < self.corners[0][1][0]: # Middle
+                    if c[1] < self.corners[0][0][1]:   # Upper
                         board[0][1] = '1'
-                    elif c[1] < corners[1][0][1]: # Middle
+                    elif c[1] < self.corners[1][0][1]: # Middle
                         board[1][1] = '1'
                     else:                       # Lower
                         board[2][1] = '1'
                 
                 else:
-                    if c[1] < corners[0][0][1]:   # Upper
+                    if c[1] < self.corners[0][0][1]:   # Upper
                         board[0][2] = '1'
-                    elif c[1] < corners[1][0][1]: # Middle
+                    elif c[1] < self.corners[1][0][1]: # Middle
                         board[1][2] = '1'
                     else:                       # Lower
                         board[2][2] = '1'
@@ -90,26 +90,26 @@ class TTTRoboAI:
         if crosses != None:
             # Assign cross positions
             for x in crosses[0]:
-                if x[0] < corners[0][0][0]: # Left
-                    if x[1] < corners[0][0][1]:   # Upper
+                if x[0] < self.corners[0][0][0]: # Left
+                    if x[1] < self.corners[0][0][1]:   # Upper
                         board[0][0] = '2'
-                    elif x[1] < corners[1][0][1]: # Middle
+                    elif x[1] < self.corners[1][0][1]: # Middle
                         board[1][0] = '2'
                     else:                       # Lower
                         board[2][0] = '2'
                 
-                elif x[0] < corners[0][1][0]: # Middle
-                    if x[1] < corners[0][0][1]:   # Upper
+                elif x[0] < self.corners[0][1][0]: # Middle
+                    if x[1] < self.corners[0][0][1]:   # Upper
                         board[0][1] = '2'
-                    elif x[1] < corners[1][0][1]: # Middle
+                    elif x[1] < self.corners[1][0][1]: # Middle
                         board[1][1] = '2'
                     else:                       # Lower
                         board[2][1] = '2'
                 
                 else:
-                    if x[1] < corners[0][0][1]:   # Upper
+                    if x[1] < self.corners[0][0][1]:   # Upper
                         board[0][2] = '2'
-                    elif x[1] < corners[1][0][1]: # Middle
+                    elif x[1] < self.corners[1][0][1]: # Middle
                         board[1][2] = '2'
                     else:                       # Lower
                         board[2][2] = '2'
@@ -118,12 +118,12 @@ class TTTRoboAI:
     
     
     # Returns the first difference in a board that is found.
-    def firstBoardDifference(self, b1, b2):
+    def firstNewFilledIn(self, new):
         for i in range(0,3):
             for j in range(0,3):
-                if b1[i][j] != b2[i][j]:
+                if self.TTTState.board[i][j]==0 and new[i][j]!=0:
                     return i, j
-        # Boards are completely similar
+        # Boards are completely similar in this case
         return None
     
     
@@ -182,7 +182,7 @@ class TTTRoboAI:
                     newBoard = self.constructBoard(circles, crosses)
                     # if game state changes
                     try:
-                        x, y = self.firstBoardDifference(newBoard, TTTState.board)
+                        x, y = self.firstNewFilledIn(newBoard)
                     except:
                         print("No observed change in state")
                     else:
