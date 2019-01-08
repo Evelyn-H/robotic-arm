@@ -13,31 +13,50 @@ import FormatConvert
 sys.path.insert(0, 'C:/Users/heier/Desktop/robotic-arm/main')
 sys.path.insert(0, "C:/User/heier/Desktop/robotic-arm/vision/images/top")
 from TestGridCircles import TestGridCircles
-from game.TTTState import TTTState
-from game.TTTAction import TTTAction
-from game.TTTMinMax import TTTMinMax
+from ai.game.TTTState import TTTState
+from ai.game.TTTAction import TTTAction
+from ai.game.TTTMinMax import TTTMinMax
 
 class TTTRoboAI:
     
     def __init__(self, arm, vision, humanTurn):
         self.arm = arm
-        self.game = TTTState(self, self) # Game
-        self.humanTurn = humanTurn # Whose turn is it
-        self.hID = 1 # Human id
-        self.rID = 2 # Robot id
+        # The Game State
+        self.game = TTTState(self, self)
+        # Who starts?
+        self.humanTurn = humanTurn
+        # Human ID
+        self.hID = 1
+        # Robot ID
+        self.rID = 2
+        # Reference to vision component
         self.vision = vision
         
-        self.paperBlankCount = 0 # Current count of blank papers detected
-        self.paperBlankThresh = 2 # Threshhold to trigger continuation
+        # Current count of blank papers detected
+        self.paperBlankCount = 0 
+        # Threshhold to trigger continuation
+        self.paperBlankThresh = 2
         
-        self.setup = True # Setup is happening
-        self.paperBlank = False # Paper is currently blank
+        # Setup is happening
+        self.setup = True
+        # Paper is currently blank
+        self.paperBlank = False 
         
-        self.minmax = TTTMinMax(self.rID, 1) # Robot minmax method.
+        # Robot minmax method.
+        self.minmax = TTTMinMax(self.rID, 1)
         
+        # Assumed distance to shift where to draw things
         self.drawShift = [[(-5,-5), (0,-5), (5,-5)],
                            [(-5,0), (0,0), (5,0)],
                            [(-5,5), (0,5), (5,5)]]
+        
+        # Grid line intersections
+        self.up_left = None
+        self.up_right = None
+        self.down_left = None
+        self.down_right = None
+        
+    
     
     def constructBoard(self, circles, crosses, gridpoints):
         # Gridpoints should be only the gridpoints of the board
@@ -113,7 +132,8 @@ class TTTRoboAI:
                         board[2][2] = '2'
             # End assignment of cross positions
         return board
-                  
+    
+    
     # Returns the first difference in a board that is found.
     def firstBoardDifference(self, b1, b2):
         for i in range(0,3):
@@ -122,7 +142,8 @@ class TTTRoboAI:
                     return i, j
         # Boards are completely similar
         return None
-                    
+    
+    
     # The game needs to run without taking breaks, in other words
     # It will be a method where the AI calls it multiple times when it feels
     # like it, because we do not want this to slow down any other parts.
@@ -130,28 +151,23 @@ class TTTRoboAI:
         # Setup
         if self.setup:
             print("Setup")
-            # Count how many times a paper is registered
-            # as blank before aknowleding it is in fact blank.
-            if not self.paperBlank:
-                print("Is paper blank?")
-                if self.paperBlankCount < self.paperBlankThresh:
-                    if self.vision.isPaperEmpty():
-                        self.paperBlankCount += 1
-                    else:
-                        self.paperBlankCount = 0
-                else:
-                    self.paperBlank = True
-            else:
-                print("Initializing game")
-                # Draw grid, save what the location should be
-                FormatConvert.drawFromFile(gridFile, self.arm)
-                # Robot Prep
-                # Human Prep
-                
-                # Who goes first determined by robotFirst
-                # Tell them to wait
-                # Initiate game loop
-                self.setup = False
+            # Assume board starts out blank.
+            print("Drawing board")
+            # Draw grid, save what the location should be
+            FormatConvert.drawFromFile(gridFile, self.arm)
+            # Robot Prep
+            # TODO: finish below.
+#            grid = vision.getgridpoints()
+#            self.up_left = grid[0]
+#            self.up_right = grid[1]
+#            self.down_left = grid[2]
+#            self.down_right = grid[3]
+            # Human Prep
+            
+            # Who goes first determined by robotFirst
+            # Tell them to wait
+            # Initiate game loop
+            self.setup = False
         
         \else: # Setup over, game is running.
             print("Game loop")
