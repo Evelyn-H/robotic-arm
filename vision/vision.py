@@ -14,7 +14,11 @@ class Vision(object):
     def __init__(self):
         # start video capture
         self.cam1 = cv2.VideoCapture(0)
+        self.cam1.set(3, 960)
+        self.cam1.set(4, 720)
         self.cam2 = cv2.VideoCapture(1)
+        self.cam2.set(3, 960)
+        self.cam2.set(4, 720)
 
         self.cut_coords = []
         self.warp_coords = []
@@ -23,7 +27,11 @@ class Vision(object):
     # Control
 
     def get_pen_height(self):
-        result = self._detectTape(self._getImage(self.cam2), True)
+        i = self._getImage(self.cam2)
+        # cv2.imshow('frame', i)
+        # while not cv2.waitKey(1) & 0xFF == ord('q'):
+            # pass
+        result = self._detectTape(i, True)
         if result:
             x, y, h = result
             return h
@@ -185,7 +193,7 @@ class Vision(object):
         return dst
 
     # returns [x,y] of center of blue tape and height of the center if frontCamera is true
-    def _detectTape(self, img, frontCamera, paper_left=(0, 330), paper_right=(639, 330), tape_height=7, tape_offset=7):
+    def _detectTape(self, img, frontCamera, paper_left=(0, 490), paper_right=(959, 500), tape_height=7, tape_offset=7):
         img2 = cv2.GaussianBlur(img, (5, 5), 1.4)
         hsv = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
 

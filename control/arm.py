@@ -9,20 +9,29 @@ import clib
 import kinematics.solver as solver
 
 
+# small debugging utility (Print And Return)
+def par(arg):
+    print(arg)
+    return arg
+
+
 class Arm:
     def __init__(self, device, baud_rate=19200):
         self._serial = clib.Arm(device, baud_rate)
         self._thread_lock = threading.RLock()
         self._thread_queue = queue.Queue()
         self._thread = threading.Thread(target=self._thread_loop, args=(self._thread_queue,))
+        self._thread.daemon = True
         self._thread.start()
 
         self._ik = solver.Solver(*solver.robot_params)
         # move to start position
         # self._pos = [0, 0, 0]
         self._pen_up = True
-        self._move_to_position(np.array([0,0,0]), duration=1000)
-
+        # self._move_to_position(np.array([0, 0, 0]), duration=1000)
+        self._thread_queue.put((np.array([0, 0, 4]), 1000))
+        self._thread_queue.join()
+        time.sleep(1)
 
     @property
     def _pos(self):
@@ -35,7 +44,12 @@ class Arm:
             -angles[2],
             -angles[3],
         ]
+
+        # angles[1] -= 10 * self._pen_up
+        # angles[3] -= 5 * self._pen_up
+
         t = self._ik.move(angles)
+        t[2] = Arm.h_for_pos(par(t[0:2])) + 4 * self._pen_up
         # print(angles, t)
         return t
 
@@ -51,14 +65,15 @@ class Arm:
         while True:
             with self._thread_lock:
                 try:
-                    (target, t) = q.get(block=False)
+                    (target, t) = par(q.get(block=False))
 
-                    self._move_to_position(target, t)
+                    self._move_to_position(target, t, blocking_constant=0.5)
+                    q.task_done()
                 except queue.Empty as e:
                     pass
             time.sleep(0)
 
-    def _move_to_position(self, target, duration=1000):
+    def _move_to_position(self, target, duration=1000, blocking_constant=0.5):
         with self._thread_lock:
 
             angles, _ = self._ik.find_angles(target)
@@ -73,11 +88,11 @@ class Arm:
                 # print('no solution found')
                 return
 
-            angles[1] -= 10 * self._pen_up
-            angles[3] -= 5 * self._pen_up
+            # angles[1] -= 10 * self._pen_up
+            # angles[3] -= 5 * self._pen_up
 
             self._serial.move_to(angles[0], angles[1], angles[2], angles[3], duration)
-            while self._serial.is_done() < 0.5:
+            while self._serial.is_done() < blocking_constant:
                 time.sleep(10 / 1000)
 
     def clear_move_queue(self):
@@ -108,33 +123,45 @@ class Arm:
                     (interp_points[:, i], t / steps)
                 )
                 # self._move_to_position(interp_points[:, i], t / steps)
-        # if blocking:
-            # self._thread_queue.join()
         while blocking and self._thread_queue.qsize() > 0:
             time.sleep(1 / 1000)
         # print('returned')
 
-
-    def move_to(self, target, speed=1):
-        target_h = self.h_for_pos(target)
+    def move_to(self, target, speed=1, blocking=True):
+        if blocking:
+            self._thread_queue.join()
+        target_h = self.h_for_pos(target) + 4 * self._pen_up
         current_pos = self._pos
         start = [current_pos[0], current_pos[1], current_pos[2]]
         target = [target[0], target[1], target_h]
-        self._move_line(start, target, speed)
+        self._move_line(start, target, speed, blocking)
 
     def up(self):
         if not self._pen_up:
+            self._thread_queue.join()
             self._pen_up = True
-            self._move_to_position(self._pos, duration=1000)
-            time.sleep(0.5)
-
+            print('up')
+            # self._move_to_position(self._pos, duration=1000, blocking_constant=1.0)
+            self._thread_queue.put((self._pos, 1000))
+            self._thread_queue.join()
+            # pos = self._pos
+            # self._move_line(pos, pos, speed=0.2, blocking=True)
+            print('/up')
+            time.sleep(2)
 
     def down(self):
         if self._pen_up:
+            self._thread_queue.join()
             self._pen_up = False
-            self._move_to_position(self._pos, duration=1000)
-            time.sleep(0.5)
+            print('down')
+            # self._move_to_position(self._pos, duration=1000, blocking_constant=1.0)
+            self._thread_queue.put((self._pos, 1000))
+            self._thread_queue.join()
 
+            # pos = self._pos
+            # self._move_line(pos, pos, speed=0.2, blocking=True)
+            print('/down')
+            time.sleep(2)
 
     def line(self, start, end, speed=1):
         self.up()

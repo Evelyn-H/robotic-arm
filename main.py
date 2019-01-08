@@ -1,5 +1,6 @@
 import itertools
 import math
+import time
 import numpy as np
 
 from control.arm import Arm
@@ -28,7 +29,6 @@ def main():
         arm = Arm('/dev/ttyACM0')
     except Exception as e:
         arm = Arm('/dev/ttyACM1')
-
 
 
     # import collections
@@ -96,10 +96,8 @@ def main():
     #
     # for start, end in itertools.chain(*zip(horizontal, vertical)):
     #     arm.line(start, end, speed=3)
-
-    # drawFromFile(arm)
-
-    # and move back up
+    #
+    # # and move back up
     # arm.up()
 
 
