@@ -187,6 +187,11 @@ class CategoryLoader:
     # Given an image, this finds a collection of lines
     # That approximate the drawing in the image.
     # Returns a list of lines.
+    # Once you have called this method on an image, it is best to 
+    # first call: 
+    #   FormatConvert.scaleShift(drawing, shift=(-14,-14))
+    # to center it. then you can watch the result with 
+    #   draw=FormatConvert.filePointToImg(None, pl=points2); plt.imshow(draw)
     def getImagePoints(self, img, mode="simple", thresh_v=180):
         # Convert img to a graph
         if mode=="simple":
