@@ -56,11 +56,17 @@ class Vision(object):
             return True
         return False
 
+    def get_gamegrid(self):
+        img = self._getImage(self.cam1)
+        cutImg = self._cropImage(self.cut_coords, img)
+        warpImg = self._warpImage(self.warp_coords, cutImg)
+        self._getGridPoints(self, warpImg)
+
     def get_gamestate(self):
         img = self._getImage(self.cam1)
         cutImg = self._cropImage(self.cut_coords, img)
         warpImg = self._warpImage(self.warp_coords, cutImg)
-        return self._detectCircles(warpImg), self._getGridPoints(self, warpImg)
+        return self._detectCircles(warpImg), self._detectCorners(self, warpImg)
 
     def is_hand_in_the_way():
         ...
@@ -253,6 +259,25 @@ class Vision(object):
         if circles is not None and len(circles) > 0:
             circles = np.uint16(np.around(circles))
         return circles
+    
+    def _detectCorners(self, img):
+        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        
+        gray = np.float32(gray)
+        
+        # Find corners
+        dst = cv2.cornerHarris(gray, 2, 3, 0.04)
+        
+        # result is dilated for marking the corners, not important
+        dst = cv2.dilate(dst, None)
+        
+        # Threshold for an optimal value, it may vary depending on the image.
+        ret, treshH = ret, thresh = cv2.threshold(dst, 0.1*dst.max(), 255, 0)
+        
+        # Get an array with all points
+        points = np.transpose(np.nonzero(treshH))
+        
+        return points
 
 # =============================================================================
 #     def _detectLines(self, img):
