@@ -103,6 +103,21 @@ class Arm:
                 except Exception as e:
                     break
 
+    def move_away(self):
+        with self._thread_lock:
+            self.clear_move_queue()
+            self._serial.move_to(0, 0, 0, 0, 2000)
+            while self._serial.is_done() < 0.9:
+                time.sleep(10 / 1000)
+
+    def move_back(self):
+        with self._thread_lock:
+            self.clear_move_queue()
+            self._serial.move_to(0, 0, 90, -20, 2000)
+            while self._serial.is_done() < 0.9:
+                time.sleep(10 / 1000)
+
+
     def _move_line(self, start, end, speed=1, step_size=0.5, blocking=True):
         '''start and end are the (x, y, z) position of the pen'''
         start = np.array(start)

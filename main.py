@@ -77,6 +77,12 @@ def main():
 
         # target_h += dt * 0.5
 
+    # move away and back
+    # print('back')
+    # arm.move_away()
+    # time.sleep(5)
+    # arm.move_back()
+
     # circle
     print('circle')
     arm.up()
