@@ -51,7 +51,10 @@ class TTTRoboAI:
                            [(-5,5), (0,5), (5,5)]]
         
         # Grid line intersections
-        corners = None
+        self.corners = []
+        
+        # Cross detection boundary
+        self.cross_bound = [[], [], []]
         
     
     
@@ -126,6 +129,29 @@ class TTTRoboAI:
         # Boards are completely similar in this case
         return None
     
+    # Cross bounds given as (x1,y1, x2, y2)
+    # where the the two xy's are the upper left
+    # and lower right corner of a square, respectively.
+    def compute_cross_bounds(self, border=3):
+        # TODO: double check if width and height is calculated correctly.
+        width = (self.corners[0][0][1] - self.corners[1][0][1])-2*border
+        height = (self.corners[0][0][0] - self.corners[1][0][0])-2*border
+        
+        # Append appropriate bounds
+        # Upper row
+        self.cross_bound[0].append( (self.corners[0][0][0]-width-border, 
+                        self.corners[0][0][1]-height-border, 
+                        self.corners[0][0][0]-border, 
+                        self.corners[0][0][1]-border))
+        self.cross_bound[0].append( (self.corners[0][1][0]-width-border, 
+                        self.corners[0][1][1]-height-border, 
+                        self.corners[0][1][0]-border, 
+                        self.corners[0][1][1]-border))
+#        self.cross_bound[0].append( (self.corners[0][1][0], 
+#                        self.corners[0][1][1], 
+#                        self.corners[0][1][0], 
+#                        self.corners[0][1][1] ))
+        
     
     # The game needs to run without taking breaks, in other words
     # It will be a method where the AI calls it multiple times when it feels
@@ -140,7 +166,7 @@ class TTTRoboAI:
             FormatConvert.drawFromFile(gridFile, self.arm)
             # Robot Prep
             # TODO: finish below.
-            grid = self.vision.getgridpoints()
+            grid = self.vision.get_gamegrid()
             self.corners.append(grid[0])
             self.corners.append(grid[1])
             self.corners.append(grid[2])
@@ -154,6 +180,9 @@ class TTTRoboAI:
             tail.sort(key=lambda point: point[0])
             self.corners = [head, tail]
             print("Corners sorted: ", self.corners)
+            
+            # Now define the square bounds needed for adding crosses.
+            self.compute_cross_bounds()
             
             # Human Prep
             
