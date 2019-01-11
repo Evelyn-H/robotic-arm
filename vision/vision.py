@@ -255,7 +255,7 @@ class Vision(object):
     def _detectCircles(self, img):
         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         imgblur = cv2.GaussianBlur(imgray, (9, 9), 0)
-        circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)
+        circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=5, maxRadius=30)
         if circles is not None and len(circles) > 0:
             circles = np.uint16(np.around(circles))
         return circles
