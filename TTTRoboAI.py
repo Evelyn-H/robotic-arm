@@ -13,11 +13,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 import ai.FormatConvert
 sys.path.insert(0, "ai")
+sys.path.insert(0, "vision")
 sys.path.insert(0, "ai/game")
 sys.path.insert(0, "vision/old/images/top")
 from TTTState import TTTState
 from TTTAction import TTTAction
 from TTTMinMax import TTTMinMax
+from vision import Vision
 
 class TTTRoboAI:
     
@@ -128,13 +130,37 @@ class TTTRoboAI:
         print("Final bounds: ")
         print(self.cross_bound)
     
+    def filterCrosses(self, crosses):
+        # Assign cross positions
+        # First, filter out all crosses that are not within bounds.
+        print("Filtering crosses (", len(crosses), ")")
+        i = 0;
+        while i < len(crosses):
+            bounded = False
+            # If a single boundary contains it, make it true.
+            for x in range(3):
+                for y in range(3):
+                    if (crosses[i][0] >= self.cross_bound[x][y][0]
+                        and crosses[i][0] >= self.cross_bound[x][y][1]
+                        and crosses[i][1] <= self.cross_bound[x][y][2]
+                        and crosses[i][1] <= self.cross_bound[x][y][3]):
+                            bounded = True
+            if bounded:
+                # Go to next
+                i += 1
+            else:
+                # Remove
+                crosses.pop(i)
+            # End while.
+        print("Crosses left: ", len(crosses))
+        return crosses
     
-    def constructBoard(self, circles, crosses): 
+    def constructBoard(self, circles, crosses, img): 
         crosses = crosses.tolist() # Convert to regular list
-        print("Circles")
-        print(circles)
-        print("Crosses (unfiltered)")
-        print(crosses)
+#        print("Circles")
+#        print(circles)
+#        print("Crosses (unfiltered)")
+#        print(crosses)
         
         if circles is None:
             print("No circles!")
@@ -171,55 +197,68 @@ class TTTRoboAI:
                     board[2][2] = '1'
         # End assignment of circle positions
         
-        # Assign cross positions
-        # First, filter out all crosses that are not within bounds.
-        print("Filtering crosses")
-        i = 0;
-        while i < len(crosses[0]):
-            bounded = False
-            # If a single boundary contains it, make it true.
-            for x in range(3):
-                for y in range(3):
-                    if (crosses[i][0] >= self.cross_bound[x][y][0]
-                        and crosses[i][0] >= self.cross_bound[x][y][1]
-                        and crosses[i][1] <= self.cross_bound[x][y][2]
-                        and crosses[i][1] <= self.cross_bound[x][y][3]):
-                            bounded = True
-            if bounded:
-                # Go to next
-                i += 1
-            else:
-                # Remove
-                crosses.pop(i)
-            # End while.
-                
-        print("Adding crosses to board")
+        crosses = self.filterCrosses(crosses)
+#        print("Board so far: ")
+#        print(board)
+#        print("Corners: ")
+#        print(self.corners[0][0], ' ', self.corners[0][1])
+#        print(self.corners[1][0], ' ', self.corners[1][1])
+#        print("Adding crosses to board")
         # Add crosses in appropriate places where there are no circles.
         for x in crosses:
+            print(x)
+#            ic = img.copy()
+            
             if x[0] < self.corners[0][0][0]: # Left
-                if x[1] < self.corners[0][0][1] and board[0][0]==0:   # Upper
-                    board[0][0] = '2'
-                elif x[1] < self.corners[1][0][1] and board[1][0]==0: # Middle
-                    board[1][0] = '2'
+                if x[1] < self.corners[0][0][1]:
+                    if board[0][0]==0:   # Upper
+                        board[0][0] = '2'
+#                        print('leftup')
+                elif x[1] < self.corners[1][0][1]:
+                    if board[1][0]==0: # Middle
+                        board[1][0] = '2'
+#                        print('leftmid')
                 elif board[2][0]==0:                       # Lower
                     board[2][0] = '2'
+#                    print('leftlow')
+#                else:
+#                    print("left...")
             
             elif x[0] < self.corners[0][1][0]: # Middle
-                if x[1] < self.corners[0][0][1] and board[0][1]==0:   # Upper
-                    board[0][1] = '2'
-                elif x[1] < self.corners[1][0][1] and board[1][1]==0: # Middle
-                    board[1][1] = '2'
-                elif board[2][1]==0:                       # Lower
+                if x[1] < self.corners[0][0][1]:
+                    if board[0][1]==0:   # Upper
+                        board[0][1] = '2'
+#                        print('midup')
+                elif x[1] < self.corners[1][0][1]:
+                    if board[1][1]==0: # Middle
+                        board[1][1] = '2'
+#                        print('midmid')
+                elif board[2][1]==0: # Lower
                     board[2][1] = '2'
+#                    print('midlow')
+#                else:
+#                    print("mid...")
             
             else:
-                if x[1] < self.corners[0][0][1] and board[0][2]==0:   # Upper
-                    board[0][2] = '2'
-                elif x[1] < self.corners[1][0][1] and board[1][2]==0: # Middle
-                    board[1][2] = '2'
-                elif board[2][2]==0:                       # Lower
+                if x[1] < self.corners[0][0][1]:
+                    if board[0][2]==0:   # Upper
+                        board[0][2] = '2'
+#                        print('rightup')
+                elif x[1] < self.corners[1][0][1]:
+                    if board[1][2]==0: # Middle
+                        board[1][2] = '2'
+#                        print('rightmid')
+                elif board[2][2]==0: # Lower
                     board[2][2] = '2'
-        # End assignment of cross positions
+#                    print('rightlow')
+#                else:
+#                    print('right...')
+            
+#            cv2.rectangle(ic, (x[0], x[1]), (x[0]+1,x[1]+1), (0,255,0), 2)
+#            cv2.imshow('image',ic)
+#            cv2.waitKey(0)
+#            cv2.destroyAllWindows()
+            # End assignment of cross positions
         return board
     
     
@@ -320,17 +359,58 @@ crossFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCross.txt"
 
 
 # Testing purposes
-#imgStart = cv2.imread('C:/Users/heier/Desktop/robotic-arm/vision/images/top/TTT_001.jpg')
+i2 = cv2.imread('vision/old/images/top/TTT_004.jpg')
+cv2.imshow('image',i2)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+g2 = cv2.cvtColor(i2, cv2.COLOR_BGR2GRAY)
+
+#b2 = cv2.GaussianBlur(g2,(5,5),0)
+b2 = cv2.medianBlur(g2, 5)
+cv2.imshow('image',b2)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+_, tb2 = cv2.threshold(b2, 127, 255, cv2.THRESH_BINARY_INV)
+
+#sx = cv2.Sobel(tb2,cv2.CV_64F,1,0,ksize=5)
+#sy = cv2.Sobel(tb2,cv2.CV_64F,0,1,ksize=5)
 #
-#cv2.imshow('image',imgStart)
+#cv2.imshow('image',sx)
 #cv2.waitKey(0)
 #cv2.destroyAllWindows()
-#
-#img2 = imgStart.copy()
-#ttt = TestGridCircles()
-#gridpoints = ttt._getGridPoints(img2);    
-#aaa = TTTRoboAI(ttt, True)
-#circles = ttt._detectCircles(img2);
-#bbb = aaa.constructBoard(circles, gridpoints)
-#print(bbb)
+#cv2.imshow('image',sy)
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
+
+g2c = g2.copy()
+
+v = Vision()
+t = TTTRoboAI(None, v, None)
+grid = v._getGridPoints(i2)
+print("Grid: \n", grid)
+t.findCorners(grid)
+print("Corners: \n", t.corners)
+t.compute_cross_bounds()
+print("Bounds: \n", t.cross_bound)
+
+
+circles = v._detectCircles(i2)
+crosses = v._detectCorners(i2)
+
+c_filter = t.filterCrosses(crosses.tolist())
+
+for x in c_filter:
+    cv2.rectangle(g2c, (x[0], x[1]), (x[0]+1,x[1]+1), (0,255,0), 1)
+
+cv2.imshow('image',g2c)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+board = t.constructBoard(circles, crosses, i2.copy())
+
+print("Board: \n", board)
+
+
         
