@@ -10,6 +10,11 @@ import sys
 sys.path.insert(0, "ai/draw")
 from CategoryLoader import CategoryLoader 
 import numpy as np
+from matplotlib import pyplot as plt
+
+from keras.models import Sequential
+from keras.layers import Dense, Activation
+
 
 # Contains methods that handle data prep for classification
 # Is independent of classifier used.
@@ -105,25 +110,44 @@ class DataPrep:
     
 
 # Classifier using Keras based neural network model.
+# Note to self: Does keras tell apart y_label being (x,) and (x,1)? 
 class DrawNN:
     def init(self):
         print("Initializing sequential neural network.")
-        self.data_prep = DataPrep()
+        
 
 # Classifier using SKLearn-based C-SVM model.
 class DrawSVM:
-    def init(self):
+    def init(self, categories):
         print("Initializing c support vector machine.")
-        self.data_prep = DataPrep()
+        self.cat = categories
+        # Starting basic structure. Change as needed.
+        self.model = Sequential()
+            self.model.add(Dense(100, input_dim=784))
+            self.model.add(Activation('relu'))
+            self.model.add(Dense(len(self.cat)))
+            self.model.add(Actication('softmax'))
+                
+        ])
         
-dprep = DataPrep()
-dprep.load_data(range(5), 30)
-dprep.split_data(66.6)
 
-dprep = DataPrep()
-dprep.load_training_data(range(5),20, 10)
-dprep.load_testing_data(range(5), 10, 0)
-print("x_train: ", dprep.x_train.shape)
-print("y_train: ", dprep.y_train.shape)
-print("x_test: ", dprep.x_test.shape)
-print("y_test: ", dprep.y_test.shape)
+# TEST CASE 1: Test case to check that data loading works alright. 
+       
+#dprep = DataPrep()
+#dprep.load_data(range(5), 30)
+#dprep.split_data(66.6)
+
+#dprep = DataPrep()
+#dprep.load_training_data(range(5),20, 10)
+#dprep.load_testing_data(range(5), 10, 0)
+#print("x_train: ", dprep.x_train.shape)
+#print("y_train: ", dprep.y_train.shape)
+#print("x_test: ", dprep.x_test.shape)
+#print("y_test: ", dprep.y_test.shape)
+#
+#img = dprep.x_train[0]
+#print(dprep.y_train[0])
+#img.shape = (28,28)
+#plt.imshow(img)
+
+# END TEST CASE 1.
