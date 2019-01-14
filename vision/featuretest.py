@@ -49,7 +49,6 @@ def find_pose(img, corners):
 
     def draw(img, corners, imgpts):
         corner = tuple(corners[0].ravel())
-        print(imgpts)
         img = cv2.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
         img = cv2.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
         img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)

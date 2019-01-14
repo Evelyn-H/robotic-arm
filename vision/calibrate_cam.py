@@ -6,8 +6,9 @@ import glob
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-objp = np.zeros((7 * 7, 3), np.float32)
-objp[:, :2] = np.mgrid[0:7, 0:7].T.reshape(-1, 2)
+gridsize = 7
+objp = np.zeros((gridsize * gridsize, 3), np.float32)
+objp[:, :2] = np.mgrid[0:gridsize, 0:gridsize].T.reshape(-1, 2)
 
 # Arrays to store object points and image points from all the images.
 objpoints = []  # 3d point in real world space
@@ -53,7 +54,7 @@ while True:
 
         # img = cv2.imread(fname)
         # gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        ret, corners = cv2.findChessboardCorners(gray, (7,7),None)
+        ret, corners = cv2.findChessboardCorners(gray, (gridsize, gridsize),None)
 
         if ret is True:
             corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
@@ -80,7 +81,7 @@ while True:
     k = cv2.waitKey(1) & 0xFF
     if k == ord('i'):
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (7, 7), None)
+        ret, corners = cv2.findChessboardCorners(gray, (gridsize, gridsize), None)
 
         # If found, add object points, image points (after refining them)
         print(ret)
@@ -91,7 +92,7 @@ while True:
             imgpoints.append(corners2)
 
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, (7, 7), corners2, ret)
+            img = cv2.drawChessboardCorners(img, (gridsize, gridsize), corners2, ret)
             cv2.imshow('cam', img)
             while not cv2.waitKey(200) & 0xFF == ord('i'):
                 pass
