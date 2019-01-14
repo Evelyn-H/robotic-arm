@@ -129,7 +129,85 @@ class CategoryLoader:
                         bmi += 1
                 
                 return bm_new
+    
+    
+    def loadSingle1D(self, inst, n, n_start, random):
+        # We got an integer value
+        bm = None
+        if (isinstance(inst, int)):
+            if 0 <= inst and inst < len(self.category):
+                file = self.file_path + self.file_start + self.category[inst]
+                file += self.file_type
+                bm = self.loadBitmap(file)
+            else:
+                print("Error: outside category range")
+                return None
+        
+        # Got string name to search with
+        elif (isinstance(inst, str)):
+            exists = False
+            cat = -1
+            for i in range(self.category):
+                if self.category[i] == inst:
+                    exists = True
+                    cat = i
+            if (exists): 
+                file = self.file_path + self.file_start + self.category[cat]
+                file += self.file_type
+                bm = self.loadBitmap(file)
+            else:
+                print("Error: name given not in categories.")
+                return None
+                
+        # Begin getting data.
+        # Get all.
+        if (n <= 0 or n >= len(bm)):
+            print("Loading all images...")
+            if (random):
+                print("Shuffling.")
+                numpy.random.shuffle(bm)
+            return bm
+        else: # Get n images
+            print("Loading ", n, " images from " + self.category[inst] + "...")
+            if random:
+                # TODO: will not this change the outer
+                # list datatype? Have to test.
+                print("Random samples, no repetition")
+                bm_new = numpy.zeros((n,784), numpy.uint8)
+                samples = sample(range(len(bm)), n)
+                
+                bmi = 0
+                
+                for i in range(0, n):
+                    bm_new[bmi, :] = bm[samples[i]];
+                    bmi += 1
+                
+                return bm_new
+            else: # non-random image list.
+                print("Non-random sample")
+                bm_new = numpy.zeros((n, 784), numpy.uint8)
+                loop = False
+                end = n_start + n
+                end2 = 0
+                
+                if (n_start + n) >= numpy.size(bm, 0):
+                    loop = True
+                    end2 = end - numpy.size(bm, 0)
+                    end = numpy.size(bm, 0)
+                
+                bmi = 0
 
+                for i in range(n_start, end):
+                    bm_new[bmi, :] = bm[i]
+                    bmi += 1
+                
+                if (loop):
+                    for i in range(0, end2):
+                        bm_new[bmi, :] = bm[i]
+                        bmi += 1
+                
+                return bm_new
+    
 
     def loadAll(self, n, n_start, random):
         data = []
@@ -144,6 +222,14 @@ class CategoryLoader:
         for i in selection:
             data.append(self.loadSingle(i, n, n_start, random))
             
+        return data
+    
+    # Loads the data instances as 1D line of values.
+    def load1D(self, selection, n, n_start, random):
+        data = []
+        for i in selection:
+            data.append(self.loadSingle1D(i, n, n_start, random))
+                
         return data
 
 
