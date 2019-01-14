@@ -9,6 +9,7 @@ criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 gridsize = 7
 objp = np.zeros((gridsize * gridsize, 3), np.float32)
 objp[:, :2] = np.mgrid[0:gridsize, 0:gridsize].T.reshape(-1, 2)
+objp = objp * 2
 
 # Arrays to store object points and image points from all the images.
 objpoints = []  # 3d point in real world space
@@ -20,12 +21,20 @@ cam.set(3, 960); cam.set(4, 720)
 
 ret, mtx, dist, rvecs, tvecs = None, None, None, None, None
 
+# mtx = np.array(
+#     [[1.21590122e+03, 0.00000000e+00, 3.75456517e+02],
+#      [0.00000000e+00, 1.17248719e+03, 3.56379910e+02],
+#      [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]
+# )
+# dst = np.array([[0.11245815, 0.30009981, 0.0081315, -0.03802704, -0.6149271]])
+
+#
 mtx = np.array(
-    [[1.21590122e+03, 0.00000000e+00, 3.75456517e+02],
-     [0.00000000e+00, 1.17248719e+03, 3.56379910e+02],
+    [[1.14745099e+03, 0.00000000e+00, 5.18314348e+02],
+     [0.00000000e+00, 1.14603781e+03, 3.50345299e+02],
      [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]
 )
-dst = np.array([[0.11245815, 0.30009981, 0.0081315, -0.03802704, -0.6149271]])
+dst = np.array([[3.80986576e-01, -2.77544439e+00, -1.15708998e-03, 1.41828794e-02, 8.76990313e+00]])
 
 def put_position_orientation_value_to_frame(frame, translation, rotation):
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -58,10 +67,8 @@ while True:
 
         if ret is True:
             corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
-            print(corners2)
             # Find the rotation and transl(ation vectors.
             _, rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners2, mtx, dist)
-            print(repr(objp))
 
             # project 3D points to image plane
             imgpts, jac = cv2.projectPoints(axis, rvecs, tvecs, mtx, dist)
@@ -120,13 +127,13 @@ while True:
         dst = dst[y:y + h, x:x + w]
         # cv2.imwrite('calibresult.png',dst)
 
-        # # error
+        # error
         # tot_error = 0
         # for i in range(len(objpoints)):
         #     imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
         #     error = cv2.norm(imgpoints[i],imgpoints2, cv2.NORM_L2)/len(imgpoints2)
         #     tot_error += error
-        #
+
         # print("total error: ", tot_error/len(objpoints))
 
         cv2.imshow('cam', img)
