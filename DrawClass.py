@@ -119,7 +119,7 @@ class DrawNN:
 # Classifier using SKLearn-based C-SVM model.
 class DrawSVM:
     def init(self, categories):
-        print("Initializing c support vector machine.")
+        print("\nInitializing c support vector machine.")
         self.cat = categories
         # Starting basic structure. Change as needed.
         self.model = Sequential()
@@ -129,6 +129,14 @@ class DrawSVM:
             self.model.add(Actication('softmax'))
                 
         ])
+    
+    def train(self):
+        print("\nTraining with all the data.")
+    
+    def trainBatch(self):
+        print("\nTraining with batch of data.")
+        
+    
         
 
 # TEST CASE 1: Test case to check that data loading works alright. 
