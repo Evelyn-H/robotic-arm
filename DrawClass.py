@@ -166,10 +166,6 @@ class DrawNN:
         self.model.add(Dropout(0.5))
         self.model.add(Dense(100, activation='relu', input_dim=784))
         self.model.add(Dropout(0.5))
-        self.model.add(Dense(50, activation='relu', input_dim=784))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(50, activation='relu', input_dim=784))
-        self.model.add(Dropout(0.5))
         self.model.add(Dense(len(self.cat), activation='softmax'))
                 
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
@@ -179,7 +175,7 @@ class DrawNN:
     
     def train_model(self, x_train, y_train):
         print("\nTraining with all the data.")
-        self.model.fit(x_train, y_train, epochs=50, batch_size=1000)
+        self.model.fit(x_train, y_train, epochs=20, batch_size=1000)
     
     def predict_model(self, x_test):
         print("\nTesting model.")
@@ -193,31 +189,35 @@ class DrawNN:
             y_p[i] = max
         
         return y_p
+
+# Testing stuff in this.
+class DrawTest:
+    def GetResults(self, y_predicted, y_test):
+        print("Accuracy: "+str(accuracy_score(y_test, y_predicted)))
+        print('\n')
+        print(classification_report(y_test, y_predicted))
+        
+        print("Confusion matrix:")
+        print(confusion_matrix(y_test, y_predicted))
+        print("\n")
     
-    
-dp = DataPrep(max_data_n=10000)
-dp.load_data(range(10), 10000, 0, shuffle=True)
-dp.split_data(80)
-
-# VERY VERY IMPORTANT!
-dp.feature_scale_data()
-
-nn = DrawNN(range(10))
-nn.train_model(dp.x_train, dp.y_train)
-
-print("\nUsing sklearn...")
-# Get best prediction.
-y_p = nn.predict_model(dp.x_test)
-
-print(y_p)
-
-print("Accuracy: "+str(accuracy_score(dp.y_test, y_p)))
-print('\n')
-print(classification_report(dp.y_test, y_p))
-
-print("Confusion matrix:")
-print(confusion_matrix(dp.y_test, y_p))
-print("\n")
+    def testNN(self):     
+        dp = DataPrep(max_data_n=10000)
+        dp.load_data(range(10), 10000, 0, shuffle=True)
+        dp.split_data(80)
+        
+        # VERY VERY IMPORTANT!
+        dp.feature_scale_data()
+        
+        nn = DrawNN(range(10))
+        nn.train_model(dp.x_train, dp.y_train)
+        
+        print("\nUsing sklearn...")
+        # Get best prediction.
+        y_p = nn.predict_model(dp.x_test)
+        
+        dt = DrawTest()
+        dt.GetResults(y_p, dp.y_test)
     
         
 
