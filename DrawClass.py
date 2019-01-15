@@ -201,15 +201,15 @@ class DrawTest:
         print(confusion_matrix(y_test, y_predicted))
         print("\n")
     
-    def testNN(self):     
-        dp = DataPrep(max_data_n=10000)
-        dp.load_data(range(10), 10000, 0, shuffle=True)
+    def testNN(self, cat_n=10, data_n=1000):     
+        dp = DataPrep(max_data_n=data_n)
+        dp.load_data(range(cat_n), data_n, 0, shuffle=True)
         dp.split_data(80)
         
         # VERY VERY IMPORTANT!
         dp.feature_scale_data()
         
-        nn = DrawNN(range(10))
+        nn = DrawNN(range(cat_n))
         nn.train_model(dp.x_train, dp.y_train)
         
         print("\nUsing sklearn...")
