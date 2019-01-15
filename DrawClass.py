@@ -13,7 +13,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from keras.models import Sequential
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Dropout, Activation
+from keras.optimizers import SGD
+from sklearn.preprocessing import StandardScaler  
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+
+
 
 
 # Contains methods that handle data prep for classification
@@ -132,34 +137,87 @@ class DataPrep:
         self.x_test = new_data
         labels = np.array(labels).reshape((len(labels),))
         self.y_test = labels
+    
+    def feature_scale_data(self):
+        # Taken from recommended practice for SKLearn.
+        scaler = StandardScaler()  
+        # Don't cheat - fit only on training data
+        scaler.fit(self.x_train)  
+        self.x_train = scaler.transform(self.x_train)  
+        # apply same transformation to test data
+        self.x_test = scaler.transform(self.x_test) 
         
     
 
 # Classifier using Keras based neural network model.
 # Note to self: Does keras tell apart y_label being (x,) and (x,1)? 
-class DrawNN:
-    def init(self):
-        print("Initializing sequential neural network.")
-        
+class DrawSVM:
+    def __init__(self):
+        print("\nInitializing c support vector machine.")        
 
 # Classifier using SKLearn-based C-SVM model.
-class DrawSVM:
-    def init(self, categories):
-        print("\nInitializing c support vector machine.")
+class DrawNN:
+    def __init__(self, categories):
+        print("Initializing sequential neural network.")
         self.cat = categories
         # Starting basic structure. Change as needed.
         self.model = Sequential()
-        self.model.add(Dense(100, input_dim=784))
-        self.model.add(Activation('relu'))
-        self.model.add(Dense(len(self.cat)))
-        self.model.add(Activation('softmax'))
+        self.model.add(Dense(100, activation='relu', input_dim=784))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(100, activation='relu', input_dim=784))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(50, activation='relu', input_dim=784))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(50, activation='relu', input_dim=784))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(len(self.cat), activation='softmax'))
+                
+        sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+        self.model.compile(loss='sparse_categorical_crossentropy',
+              optimizer=sgd,
+              metrics=['accuracy'])
     
-    def train(self):
+    def train_model(self, x_train, y_train):
         print("\nTraining with all the data.")
+        self.model.fit(x_train, y_train, epochs=50, batch_size=1000)
     
-    def trainBatch(self):
-        print("\nTraining with batch of data.")
+    def predict_model(self, x_test):
+        print("\nTesting model.")
+        y_pred = self.model.predict(x_test)
+        y_p = np.zeros((len(y_pred),), dtype=np.uint8)
+        for i in range(len(y_pred)):
+            max = 0;
+            for j in range(len(y_pred[i])):
+                if y_pred[i][max] < y_pred[i][j]:
+                    max = j
+            y_p[i] = max
         
+        return y_p
+    
+    
+dp = DataPrep(max_data_n=10000)
+dp.load_data(range(10), 10000, 0, shuffle=True)
+dp.split_data(80)
+
+# VERY VERY IMPORTANT!
+dp.feature_scale_data()
+
+nn = DrawNN(range(10))
+nn.train_model(dp.x_train, dp.y_train)
+
+print("\nUsing sklearn...")
+# Get best prediction.
+y_p = nn.predict_model(dp.x_test)
+
+print(y_p)
+
+print("Accuracy: "+str(accuracy_score(dp.y_test, y_p)))
+print('\n')
+print(classification_report(dp.y_test, y_p))
+
+print("Confusion matrix:")
+print(confusion_matrix(dp.y_test, y_p))
+print("\n")
     
         
 
