@@ -175,26 +175,32 @@ class TTTRoboAI:
         for c in circles[0]:
             if c[0] < self.corners[0][0][0]: # Left
                 if c[1] < self.corners[0][0][1]:   # Upper
-                    board[0][0] = '1'
+                    if board[0][0]==0:
+                        board[0][0] = '1'
                 elif c[1] < self.corners[1][0][1]: # Middle
-                    board[1][0] = '1'
-                else:                       # Lower
+                    if board[1][0]==0:
+                        board[1][0] = '1'
+                elif board[2][0]==0:               # Lower
                     board[2][0] = '1'
             
             elif c[0] < self.corners[0][1][0]: # Middle
                 if c[1] < self.corners[0][0][1]:   # Upper
-                    board[0][1] = '1'
+                    if board[0][1]==0:
+                        board[0][1] = '1'
                 elif c[1] < self.corners[1][0][1]: # Middle
-                    board[1][1] = '1'
-                else:                       # Lower
+                    if board[1][1]==0:
+                        board[1][1] = '1'
+                elif board[2][1]==0:               # Lower
                     board[2][1] = '1'
             
             else:
                 if c[1] < self.corners[0][0][1]:   # Upper
-                    board[0][2] = '1'
+                    if board[0][2]==0:
+                        board[0][2] = '1'
                 elif c[1] < self.corners[1][0][1]: # Middle
+                    if board[1][2]==0:
                     board[1][2] = '1'
-                else:                       # Lower
+                elif board[2][2]==0:                      # Lower
                     board[2][2] = '1'
         # End assignment of circle positions
         
