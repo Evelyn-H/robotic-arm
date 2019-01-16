@@ -372,9 +372,9 @@ class TTTRoboAI:
         print("Game Done.")
         
     
-gridFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTLines.txt"
-circleFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCircle.txt"
-crossFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCross.txt" 
+gridFile="ai/game/TTTLines.txt"
+circleFile="ai/game/TTTCircle.txt"
+crossFile="ai/game/TTTCross.txt" 
 
 
 # Testing purposes
