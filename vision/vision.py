@@ -68,8 +68,15 @@ class Vision(object):
         warpImg = self._warpImage(self.warp_coords, cutImg)
         return self._detectCircles(warpImg), self._detectCorners(self, warpImg)
 
-    def is_hand_in_the_way():
-        ...
+    def is_hand_in_the_way(self):
+        img = self._getImage(self.cam1)
+        #cutImg = self._cropImage(self.cut_coords, img)
+        #warpImg = self._warpImage(self.warp_coords, cutImg)
+        black, white, total = self._getBWPixels(self, img)
+        blackPercent = (black*100)/(total)
+        if blackPercent < 95:
+            return True
+        return False
 
     # Private
 
@@ -366,6 +373,24 @@ class Vision(object):
         thresh2 = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         height, width = thresh2.shape
         white = cv2.countNonZero(thresh2);
+        black = (height*width)-white;
+        return black, white, height*width
+
+    def _getHandPixels(self, img):
+        #convert image
+        ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)     
+        
+        #get bounds for skin color
+        smin = np.array((0, 133, 77))
+        smax = np.array((255, 173, 127))
+        
+        #find skin
+        mask = cv2.inRange(ycrcb, smin, smax)
+    
+        kernel = np.ones((7,7),np.uint8)
+        opens = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        height, width = opens.shape
+        white = cv2.countNonZero(opens);
         black = (height*width)-white;
         return black, white, height*width
 

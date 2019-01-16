@@ -84,7 +84,7 @@ class CategoryLoader:
         bm.shape = (len(bm), 28, 28)
         # Get all.
         if (n <= 0 or n >= len(bm)):
-            print("Loading all images...")
+            print("Loading all ", self.category[inst], " images...")
             if (random):
                 print("Shuffling.")
                 numpy.random.shuffle(bm)

@@ -10,8 +10,9 @@ on robot arm.
 import sys
 import cv2
 import numpy as np
+import time
 from matplotlib import pyplot as plt
-import ai.FormatConvert
+from ai import FormatConvert
 sys.path.insert(0, "ai")
 sys.path.insert(0, "vision")
 sys.path.insert(0, "ai/game")
@@ -283,6 +284,13 @@ class TTTRoboAI:
             print("Drawing board")
             # Draw grid, save what the location should be
             FormatConvert.drawFromFile(gridFile, self.arm)
+            then = time.time()
+            now = time.time()
+            print("Waiting a bit")
+            while now-then < 1:
+                now = time.time()
+            print("Done waiting")
+            
             # Robot Prep
             # Find corners.
             self.findCorners(self.vision.get_gamegrid())
@@ -351,11 +359,22 @@ class TTTRoboAI:
         cv2.imshow("img", img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+    
+    def game_loop(self):
+        last_time = time.time()
+        while self.game.gameover == -1:
+            now_time = time.time()
+            if (not self.vision.is_hand_in_the_way()
+                and now_time - last_time > 1):
+                self.gameTick()
+                last_time = time.time()
+        
+        print("Game Done.")
         
     
-gridFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTLines.txt"
-circleFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCircle.txt"
-crossFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTCross.txt" 
+gridFile="ai/game/TTTLines.txt"
+circleFile="ai/game/TTTCircle.txt"
+crossFile="ai/game/TTTCross.txt" 
 
 
 # Testing purposes
