@@ -10,6 +10,7 @@ on robot arm.
 import sys
 import cv2
 import numpy as np
+import time
 from matplotlib import pyplot as plt
 import ai.FormatConvert
 sys.path.insert(0, "ai")
@@ -351,6 +352,17 @@ class TTTRoboAI:
         cv2.imshow("img", img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+    
+    def game_loop(self):
+        last_time = time.time()
+        while self.game.gameover == -1:
+            now_time = time.time()
+            if (not self.vision.is_hand_in_the_way()
+                and now_time - last_time > 1):
+                self.gameTick()
+                last_time = time.time()
+        
+        print("Game Done.")
         
     
 gridFile="C:/Users/heier/Desktop/robotic-arm/ai/game/TTTLines.txt"

@@ -70,9 +70,9 @@ class Vision(object):
 
     def is_hand_in_the_way(self):
         img = self._getImage(self.cam1)
-        cutImg = self._cropImage(self.cut_coords, img)
-        warpImg = self._warpImage(self.warp_coords, cutImg)
-        black, white, total = self._getBWPixels(self, warpImg)
+        #cutImg = self._cropImage(self.cut_coords, img)
+        #warpImg = self._warpImage(self.warp_coords, cutImg)
+        black, white, total = self._getBWPixels(self, img)
         blackPercent = (black*100)/(total)
         if blackPercent < 95:
             return True
