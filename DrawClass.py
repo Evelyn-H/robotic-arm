@@ -7,16 +7,19 @@ Created on Mon Jan 14 13:50:39 2019
 
 # Imports
 import sys
+import cv2
 sys.path.insert(0, "ai/draw")
 from CategoryLoader import CategoryLoader 
 import numpy as np
 from matplotlib import pyplot as plt
+from ai import FormatConvert
 
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
 from sklearn.preprocessing import StandardScaler  
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from vision import Vision
 
 
 
@@ -192,6 +195,9 @@ class DrawNN:
 
 # Testing stuff in this.
 class DrawTest:
+    def __init__(self, arm):
+        self.arm = arm
+    
     def GetResults(self, y_predicted, y_test):
         print("Accuracy: "+str(accuracy_score(y_test, y_predicted)))
         print('\n')
@@ -218,6 +224,30 @@ class DrawTest:
         
         dt = DrawTest()
         dt.GetResults(y_p, dp.y_test)
+    
+    def saveImgFromCamera(self, n, cat, fname_start):
+        dp = DataPrep(max_data_n=100)
+        v = Vision()
+        print("Beginning saving doodles from image.")
+        print("First: Drawing bounds for doodle.")
+        boundFile="bounds.txt"
+        
+        print("Now for the drawing part!")
+        for a in range(n):
+            for i in cat:
+                FormatConvert.drawFromFile(boundFile, self.arm)
+                print("\nPlease draw ", dp.category_loader.category[i], ...)
+                input()
+                img = v._getImage(v.self.cam1)
+                name = fname_start + "_" +  + dp.category_loader.category[i]
+                name = name + "_" + a + ".png"
+                print("Saving name...")
+                cv2.imwrite(name, img)
+                print("Saved.")
+        
+        print("Done saving images.")
+                
+        
     
         
 
