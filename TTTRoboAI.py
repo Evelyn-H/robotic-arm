@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 import time
 from matplotlib import pyplot as plt
-import ai.FormatConvert
+from ai import FormatConvert
 sys.path.insert(0, "ai")
 sys.path.insert(0, "vision")
 sys.path.insert(0, "ai/game")
@@ -284,6 +284,13 @@ class TTTRoboAI:
             print("Drawing board")
             # Draw grid, save what the location should be
             FormatConvert.drawFromFile(gridFile, self.arm)
+            then = time.time()
+            now = time.time()
+            print("Waiting a bit")
+            while now-then < 1:
+                now = time.time()
+            print("Done waiting")
+            
             # Robot Prep
             # Find corners.
             self.findCorners(self.vision.get_gamegrid())
