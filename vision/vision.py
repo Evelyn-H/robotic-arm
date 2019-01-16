@@ -243,8 +243,8 @@ class Vision(object):
                     cv2.circle(img, paper_right, 5, (0, 0, 255), -1)
                     cv2.drawContours(img, contours, -1, (0,255,0), 3)
                     cv2.imshow('frame', img)
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        cv2.destroyAllWindows()
+                    while not cv2.waitKey(1) & 0xFF == ord('q'):
+                        pass
 
                 return [int(x), int(y), dmm]
 
@@ -259,24 +259,24 @@ class Vision(object):
         if circles is not None and len(circles) > 0:
             circles = np.uint16(np.around(circles))
         return circles
-    
+
     def _detectCorners(self, img):
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        
+
         gray = np.float32(gray)
-        
+
         # Find corners
         dst = cv2.cornerHarris(gray, 2, 3, 0.04)
-        
+
         # result is dilated for marking the corners, not important
         dst = cv2.dilate(dst, None)
-        
+
         # Threshold for an optimal value, it may vary depending on the image.
         ret, treshH = ret, thresh = cv2.threshold(dst, 0.1*dst.max(), 255, 0)
-        
+
         # Get an array with all points
         points = np.transpose(np.nonzero(treshH))
-        
+
         return points
 
 # =============================================================================

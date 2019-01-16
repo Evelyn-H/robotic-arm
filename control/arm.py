@@ -142,10 +142,14 @@ class Arm:
             time.sleep(1 / 1000)
         # print('returned')
 
-    def move_to(self, target, speed=1, blocking=True):
+    def move_to(self, target, speed=1, blocking=True, auto_height=True):
         if blocking:
             self._thread_queue.join()
-        target_h = self.h_for_pos(target) + 4 * self._pen_up
+        if auto_height:
+            target_h = self.h_for_pos(target) + 4 * self._pen_up
+        else:
+            target_h = target[2]
+
         current_pos = self._pos
         start = [current_pos[0], current_pos[1], current_pos[2]]
         target = [target[0], target[1], target_h]
