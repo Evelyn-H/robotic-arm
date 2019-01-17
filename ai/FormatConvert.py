@@ -29,21 +29,22 @@ class FormatConvert:
 
     # Draws a drawing from a text file. Allows for scaling and
     # shifting of what is drawn.
-    @staticmethod
-    def drawFromFile(file, arm, scale1=None, shift1=None, speed=1):
-        pl = FormatConvert.pointsToAr(file)
-        for l in pl:
-            print(l)
-        pl = FormatConvert.scaleShift(pl, scale=scale1, shift=shift1)
-        print()
-        for l in pl:
-            print(l)
+    @classmethod
+    def drawFromFile(cls, file, arm, scale1=None, shift1=None, speed=1):
+        pl = cls.pointsToAr(file)
+        # for l in pl:
+            # print(l)
+        pl = cls.scaleShift(pl, scale=scale1, shift=shift1)
+        # print()
+        # for l in pl:
+            # print(l)
         for line in pl:
             arm.up()
             arm.move_to([float(line[0][1]), float(line[0][0])], speed=speed)
             arm.down()
             for p in line:
                 arm.move_to([float(p[1]), float(p[0])], speed=speed)
+            arm.up()
 
         arm.up()
 
@@ -166,7 +167,7 @@ class FormatConvert:
                     pl=None):
         imgy = int(297.0*scale[0])
         imgx = int(420.0*scale[1])
-        
+
         # Only bother with file if there is not a point list given.
         if pl==None:
             # Get a list of lines to the right coordinate types.
@@ -175,7 +176,7 @@ class FormatConvert:
         # Then format to appropriate type
         pl = FormatConvert.convertToPixelCoordinates(pl, scale, offset)
         print(pl)
-        
+
         # Create image.
         img = np.zeros((imgy, imgx), dtype=np.uint8)
         # for each line
@@ -189,13 +190,13 @@ class FormatConvert:
             # Be aware: I flipped the coordinates at some point,
             # But don't care about that rn.
             x1, y1, x2, y2 = FormatConvert.findExtrema(pl, imgx, imgy)
-            
+
             if isinstance(borderWindow, int):
                 x1 -= borderWindow
                 x2 += borderWindow
                 y1 -= borderWindow
                 y2 += borderWindow
-                
+
             elif len(borderWindow)==2:
                 x1 -= borderWindow[0]
                 x2 += borderWindow[0]

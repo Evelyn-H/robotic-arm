@@ -38,7 +38,7 @@ class Vision(object):
         return None
 
     def get_pen_pos(self):
-        result = self._detectTape(self._getImage(self.cam1), False)
+        result = self._detectTape(self.get_image_top_camera(), False)
         if result:
             x, y = result
             return x, y
@@ -47,32 +47,24 @@ class Vision(object):
     # Game
 
     def is_paper_empty(self):
-        img = self._getImage(self.cam1)
-        cutImg = self._cropImage(self.cut_coords, img)
-        warpImg = self._warpImage(self.warp_coords, cutImg)
-        black, white, total = self._getBWPixels(self, warpImg)
+        img = self.get_image_top_camera()
+        black, white, total = self._getBWPixels(img)
         blackPercent = (black * 100) / total
         if blackPercent < 1:
             return True
         return False
 
     def get_gamegrid(self):
-        img = self._getImage(self.cam1)
-        cutImg = self._cropImage(self.cut_coords, img)
-        warpImg = self._warpImage(self.warp_coords, cutImg)
-        self._getGridPoints(self, warpImg)
+        img = self.get_image_top_camera()
+        self._getGridPoints(img)
 
     def get_gamestate(self):
-        img = self._getImage(self.cam1)
-        cutImg = self._cropImage(self.cut_coords, img)
-        warpImg = self._warpImage(self.warp_coords, cutImg)
-        return self._detectCircles(warpImg), self._detectCorners(self, warpImg)
+        img = self._get_image_top_camera()
+        return self._detectCircles(img), self._detectCorners(img)
 
     def is_hand_in_the_way(self):
-        img = self._getImage(self.cam1)
-        #cutImg = self._cropImage(self.cut_coords, img)
-        #warpImg = self._warpImage(self.warp_coords, cutImg)
-        black, white, total = self._getBWPixels(self, img)
+        img = self.get_image_top_camera()
+        black, white, total = self._getHandPixels(img)
         blackPercent = (black*100)/(total)
         if blackPercent < 95:
             return True
@@ -83,6 +75,17 @@ class Vision(object):
     def _getImage(self, camera):
         _, frame = camera.read()
         return frame
+
+    def get_image_top_camera(self):
+        img = self._getImage(self.cam1)
+        corners = np.array(((45, 45), (920, 50), (45, 665), (920, 670)))
+        img = self._warpImage(img, corners)
+        # for x, y in corners:
+        #     cv2.circle(img, (x, y), 5, (0, 0, 255), -1)
+        # cv2.imshow('frame', img)
+        # while not cv2.waitKey(1) & 0xFF == ord('q'):
+        #     pass
+        return img
 
     def _cutCoords(self, image):
 
@@ -190,9 +193,9 @@ class Vision(object):
 
         # Points for perspective transform
         pts1 = np.float32([TopLeft, TopRight, BottomLeft, BottomRight])
-        print(pts1)
+        # print(pts1)
         pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
-        print(pts2)
+        # print(pts2)
 
         # Matrix for perspective transform
         M = cv2.getPerspectiveTransform(pts1, pts2)
@@ -248,10 +251,10 @@ class Vision(object):
                 if os.environ.get('DEBUG', None):
                     cv2.circle(img, paper_left, 5, (0, 0, 255), -1)
                     cv2.circle(img, paper_right, 5, (0, 0, 255), -1)
-                    cv2.drawContours(img, contours, -1, (0,255,0), 3)
+                    cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
                     cv2.imshow('frame', img)
-                    while not cv2.waitKey(1) & 0xFF == ord('q'):
-                        pass
+                    # while not cv2.waitKey(1) & 0xFF == ord('q'):
+                    #     pass
 
                 return [int(x), int(y), dmm]
 
@@ -378,15 +381,15 @@ class Vision(object):
 
     def _getHandPixels(self, img):
         #convert image
-        ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)     
-        
+        ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+
         #get bounds for skin color
         smin = np.array((0, 133, 77))
         smax = np.array((255, 173, 127))
-        
+
         #find skin
         mask = cv2.inRange(ycrcb, smin, smax)
-    
+
         kernel = np.ones((7,7),np.uint8)
         opens = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         height, width = opens.shape
