@@ -248,6 +248,7 @@ class DrawTest:
                 print("\nPlease draw ", dp.category_loader.category[i], ...)
                 input()
                 img = v._getImage(v.self.cam1)
+                cv2.rotate(img, img, cv::ROTATE_90_COUNTERCLOCKWISE);
                 name = fname_start + "_" +  + dp.category_loader.category[i]
                 name = name + "_" + a + ".png"
                 print("Saving name...")
