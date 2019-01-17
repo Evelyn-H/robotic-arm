@@ -38,16 +38,9 @@ dist = np.array([[3.80986576e-01, -2.77544439e+00, -1.15708998e-03, 1.41828794e-
 avg_len = 5
 avg_buffer = deque(maxlen=avg_len)
 
-def find_pose(img, corners):
+def find_pose(img, objp, corners):
     axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 
-    # corner points of image
-    objp = np.array([
-        [0, 0, 0],
-        [0, 6, 0],
-        [6, 6, 0],
-        [6, 0, 0],
-    ], dtype=np.float32)
     # Find the rotation and translation vectors.
     _, rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, mtx, dist)
 
@@ -130,7 +123,19 @@ while True:
             dst = np.array(dst, dtype=np.float32)
             frame = cv2.polylines(frame,[np.int32(dst)],True,(255,0,255),3, cv2.LINE_AA)
             # print(repr(dst))
-            find_pose(frame, dst)
+
+            # corner points of image
+            objp = np.array([
+                [0, 0, 0],
+                [0, 6, 0],
+                [6, 6, 0],
+                [6, 0, 0],
+            ], dtype=np.float32)
+            find_pose(frame, objp, dst)
+
+            # src_pts = src_pts.reshape(-1,2)
+            # src_pts = np.pad(src_pts, ((0, 0), (0, 1)), 'constant', constant_values=(0))
+            # find_pose(frame, src_pts, dst_pts)
 
     else:
         print("Not enough matches are found - %d/%d" % (len(matches), MIN_MATCH_COUNT))

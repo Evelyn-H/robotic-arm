@@ -12,6 +12,14 @@ cam = cv2.VideoCapture(0)
 cam.set(3, 960); cam.set(4, 720)
 
 
+
+corners = np.array(((45, 45), (920, 50), (920, 670), (45, 665)))
+page_mask = np.zeros((720, 960), dtype=np.uint8)
+page_mask = cv2.fillConvexPoly(page_mask, corners, (255, 255, 255))
+def mask_background(img):
+    return cv2.bitwise_and(img, img, mask=page_mask)
+
+
 def find_centers(image):
     im2, contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     centers = []
@@ -43,6 +51,7 @@ while True:
 
     # read image from camera feed
     _, img = cam.read()
+    img = mask_background(img)
 
     #convert to hsv
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -60,23 +69,23 @@ while True:
     redmask = cv2.add(mask, mask2)
 
     #mask for green
-    lower = np.array([40, 65, 65])
+    lower = np.array([40, 65, 30])
     upper = np.array([80, 255, 255])
     greenmask = cv2.inRange(hsv, lower, upper)
 
     #mask for blue
-    lower = np.array([100, 60, 45])
+    lower = np.array([100, 60, 30])
     upper = np.array([140, 255, 255])
     bluemask = cv2.inRange(hsv, lower, upper)
 
 
     #blur
 
-    redblur = cv2.medianBlur(redmask, 5)
-    greenblur = cv2.medianBlur(greenmask, 5)
-    blueblur = cv2.medianBlur(bluemask, 5)
+    redblur = cv2.medianBlur(redmask, 11)
+    greenblur = cv2.medianBlur(greenmask, 11)
+    blueblur = cv2.medianBlur(bluemask, 11)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(10,10))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(11,11))
     redblur = cv2.morphologyEx(redblur, cv2.MORPH_OPEN, kernel)
     greenblur = cv2.morphologyEx(greenblur, cv2.MORPH_OPEN, kernel)
     blueblur = cv2.morphologyEx(blueblur, cv2.MORPH_OPEN, kernel)
