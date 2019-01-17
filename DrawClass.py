@@ -13,6 +13,8 @@ from CategoryLoader import CategoryLoader
 import numpy as np
 from matplotlib import pyplot as plt
 from ai import FormatConvert
+from ai.draw.HOGFinder import HOGFinder
+from sklearn import svm
 
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
@@ -155,8 +157,15 @@ class DataPrep:
 # Classifier using Keras based neural network model.
 # Note to self: Does keras tell apart y_label being (x,) and (x,1)? 
 class DrawSVM:
-    def __init__(self):
-        print("\nInitializing c support vector machine.")        
+    def __init__(self, categories):
+        print("\nInitializing c support vector machine.") 
+        self.svm = svm.SVC(C=5, gamma=0.05)
+        self.cat = categories
+        self.hf = HOGFinder()
+    
+    def train_model(self, x_train, y_train):
+        print("Extracting HOG features")
+        # TODO: THIS.
 
 # Classifier using SKLearn-based C-SVM model.
 class DrawNN:
