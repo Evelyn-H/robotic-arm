@@ -18,7 +18,7 @@ kp1, des1 = orb.detectAndCompute(img1,None)
 matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
 
 
-cam = cv2.VideoCapture(0)
+cam = cv2.VideoCapture(1)
 cam.set(3, 960); cam.set(4, 720)
 
 # mtx = np.array(
@@ -48,7 +48,7 @@ def find_pose(img, objp, corners):
     imgpts, jac = cv2.projectPoints(axis, rvecs, tvecs, mtx, dist)
 
     def draw(img, corners, imgpts):
-        corner = tuple(corners[0].ravel())
+        corner = tuple(np.uint16(np.around(corners))[0].ravel())
         img = cv2.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
         img = cv2.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
         img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
@@ -72,8 +72,40 @@ def find_pose(img, objp, corners):
     img = draw(img, corners, imgpts)
     img = put_position_orientation_value_to_frame(img, tvecs, rvecs)
 
+import circles
 while True:
     _, frame = cam.read()
+
+    # frame, redcenter, greencenter, bluecenter = circles.process_and_get_avg_centers(frame, render=True)
+    #
+    # if redcenter is None or greencenter is None or bluecenter is None:
+    #     continue
+    #
+    # objp = np.array([
+    #     [0,       0, 0],
+    #     [3.25,    0, 0],
+    #     [0,    3.25, 0],
+    #     [3.25, 3.25, 0],
+    # ], dtype=np.float32)
+    #
+    # fourth = redcenter + (greencenter - bluecenter)
+    # print(fourth)
+    #
+    # dst = np.array(
+    #     [
+    #         [redcenter],
+    #         [greencenter],
+    #         [fourth],
+    #         [bluecenter],
+    #     ]
+    # )
+    # print(dst)
+    # find_pose(frame, objp, dst)
+    #
+    # cv2.imshow('frame', frame)
+    # if cv2.waitKey(1) & 0xFF == ord('q'):
+    #     break
+
 
     img2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -131,6 +163,7 @@ while True:
                 [6, 6, 0],
                 [6, 0, 0],
             ], dtype=np.float32)
+            print(dst)
             find_pose(frame, objp, dst)
 
             # src_pts = src_pts.reshape(-1,2)
