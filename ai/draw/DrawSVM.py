@@ -18,7 +18,7 @@ from HOGFinder import HOGFinder
 class DrawSVM:
     
     def __init__(self):
-        self.svm = svm.SVC(C=5, gamma=0.05)
+        self.svm = svm.SVC(C=9, gamma=0.8)
         self.cl = CategoryLoader()
         self.hf = HOGFinder()
         
@@ -66,7 +66,10 @@ class DrawSVM:
         print("y_train: ", y_train.shape)
         print("x_test: ", x_test.shape)
         print("y_test: ", y_test.shape)
-        print("First y_train element: ", y_train[0])
+        print(x_train)
+        print(y_train)
+        print(x_test)
+        print(y_test)
         
         print("Training SVM")
         self.svm.fit(x_train, y_train)
