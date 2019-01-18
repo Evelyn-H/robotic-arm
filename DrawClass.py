@@ -15,6 +15,7 @@ from matplotlib import pyplot as plt
 from ai import FormatConvert
 from ai.draw.HOGFinder import HOGFinder
 from sklearn import svm
+from os import listdir
 
 # from keras.models import Sequential
 # from keras.layers import Dense, Dropout, Activation
@@ -87,19 +88,25 @@ class DataPrep:
     def split_data(self, split_percentage):
         print("\nSplit data into <x/y>_<train/test>")
         # Percentage training data
-        percentage = 66
-        partition = int(len(self.data) * percentage / 100)
-
-        # Split into training and test set
-        self.x_train = self.data[:partition, :-1]
-        self.x_test = self.data[partition:, :-1]
-        self.y_train = self.data[:partition, -1:].ravel()
-        self.y_test = self.data[partition:, -1:].ravel()
-
-        print("x_train: ", self.x_train.shape)
-        print("y_train: ", self.y_train.shape)
-        print("x_test: ", self.x_test.shape)
-        print("y_test: ", self.y_test.shape)
+        partition = int(len(self.data) * split_percentage / 100)
+        
+        if split_percentage < 100:
+            # Split into training and test set
+            self.x_train = self.data[:partition, :-1]
+            self.x_test = self.data[partition:, :-1]
+            self.y_train = self.data[:partition, -1:].ravel()
+            self.y_test = self.data[partition:, -1:].ravel()
+    
+            print("x_train: ", self.x_train.shape)
+            print("y_train: ", self.y_train.shape)
+            print("x_test: ", self.x_test.shape)
+            print("y_test: ", self.y_test.shape)
+        else:
+            self.x_train = self.data[:partition, :-1]
+            self.y_train = self.data[:partition, -1:].ravel()
+            print("x_train: ", self.x_train.shape)
+            print("y_train: ", self.y_train.shape)
+            
 
     # Loads data to be trained on directly. Does not update self.data.
     def load_training_data(self, cat, n, n_start):
@@ -155,6 +162,40 @@ class DataPrep:
 
         self.x_train = new_x_train
         self.x_test = new_x_test
+     
+        
+    def loadImgData(self):
+        size = 180
+#        size2 = size*size
+        folder = "drawn_images"
+        # Load data
+        imgList = listdir(folder)
+        imgAr = np.zeros((109, size, size), dtype=np.uint8)
+        imgCl = np.zeros((109,), dtype=np.uint8)
+        img28 = np.zeros((109, 28, 28), dtype=np.uint8)
+        
+        # Add image
+        for i,e, in enumerate(imgList):
+            file = folder + "/" +e
+            img = cv2.imread(file, 0)
+            imgAr[i,:,:] = img[:,:]
+        
+        # Get category.
+        for i, c, in enumerate(imgList):
+            for j, cat in enumerate(self.category_loader.category):
+                name = "_" + cat + "_"
+                if c.find(name) > -1:
+                    imgCl[i] = j
+        
+        # Preprocess The imgAr data into img28
+        for i, e in enumerate(imgAr):
+            imgAr[i] = cv2.blur(imgAr[i], (5,5))
+            img28[i] = cv2.resize(imgAr[i], (28,28))
+        
+        img28.shape = (109, 784)
+        
+        return img28, imgCl
+            
 
 
 # Classifier using Keras based neural network model.
@@ -259,6 +300,38 @@ class DrawTest:
 
         self.GetResults(y_p, dp.y_test)
 
+    # Data_n corresponds to training data.
+    def testOnReal(self, data_n=1000):
+        cat_n = 10
+        dp = DataPrep(max_data_n=data_n)
+        dp.load_data(range(cat_n), data_n)
+        dp.shuffle_data()
+        dp.split_data(100)
+        
+        # Prepare test data.
+        dp.x_test, dp.y_test = dp.loadImgData()
+#        dp.applyHOG()
+        dp.feature_scale_data()
+        
+        # Test on NN
+        nn = DrawNN(range(cat_n))
+        nn.train_model(dp.x_train, dp.y_train)
+        
+        # Print results
+        y_p_raw = nn.predict_model(dp.x_test)
+
+        self.GetResults(y_p_raw, dp.y_test)
+        
+        # Test on LinearSVC, Prep test data first
+#        svm = DrawSVM(range(cat_n))
+#        svm.train_model(dp.x_train, dp.y_train)
+#        y_p = svm.predict_model(dp.x_test)
+#
+#        self.GetResults(y_p, dp.y_test)
+        
+        
+        
+
     def saveImgFromCamera(self, n, cat, fname_start):
         # dp = DataPrep(max_data_n=100)
         categories = (
@@ -292,7 +365,7 @@ class DrawTest:
         print('.')
         print("Beginning saving doodles from image.")
         print("First: Drawing bounds for doodle.")
-        boundFile = "bounds.txt"
+#        boundFile = "bounds.txt"
 
         print("Now for the drawing part!")
         for a in range(n):
