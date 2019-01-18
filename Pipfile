@@ -12,6 +12,8 @@ numpy = "*"
 opencv-python = "*"
 matplotlib = "*"
 opencv-contrib-python = "*"
+scikit-image = "*"
+scikit-learn = "*"
 
 
 [dev-packages]
