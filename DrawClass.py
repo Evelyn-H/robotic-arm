@@ -106,6 +106,7 @@ class DataPrep:
         print("y_train: ", self.y_train.shape)
         print("x_test: ", self.x_test.shape)
         print("y_test: ", self.y_test.shape)
+            
     
     
     # Loads data to be trained on directly. Does not update self.data.
@@ -151,6 +152,18 @@ class DataPrep:
         self.x_train = scaler.transform(self.x_train)  
         # apply same transformation to test data
         self.x_test = scaler.transform(self.x_test) 
+    
+    # Applies HOG to x_train and x_test
+    def applyHOG(self):
+        print("Extracting HOG features")
+        self.x_train.shape = (len(self.x_train), 28, 28)
+        self.x_test.shape = (len(self.x_test), 28, 28)
+        hf = HOGFinder()
+        new_x_train = hf.findHOG2(self.x_train)
+        new_x_test = hf.findHOG2(self.x_test)
+        
+        self.x_train = new_x_train
+        self.x_test = new_x_test
         
     
 
@@ -159,13 +172,18 @@ class DataPrep:
 class DrawSVM:
     def __init__(self, categories):
         print("\nInitializing c support vector machine.") 
-        self.svm = svm.SVC(C=5, gamma=0.05)
+        self.svm = svm.LinearSVC(C=5)
         self.cat = categories
         self.hf = HOGFinder()
     
     def train_model(self, x_train, y_train):
-        print("Extracting HOG features")
-        # TODO: THIS.
+        print("\nTraining SVM")
+        self.svm.fit(x_train, y_train)
+        
+    def predict_model(self, x_test):
+        print("\nTesting model.")
+        return self.svm.predict(x_test)
+        
 
 # Classifier using SKLearn-based C-SVM model.
 class DrawNN:
@@ -174,9 +192,7 @@ class DrawNN:
         self.cat = categories
         # Starting basic structure. Change as needed.
         self.model = Sequential()
-        self.model.add(Dense(100, activation='relu', input_dim=784))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(100, activation='relu', input_dim=784))
+        self.model.add(Dense(500, activation='relu', input_dim=784))
         self.model.add(Dropout(0.5))
         self.model.add(Dense(len(self.cat), activation='softmax'))
                 
@@ -216,13 +232,16 @@ class DrawTest:
         print(confusion_matrix(y_test, y_predicted))
         print("\n")
     
+    
     def testNN(self, cat_n=10, data_n=1000):     
         dp = DataPrep(max_data_n=data_n)
-        dp.load_data(range(cat_n), data_n, 0, shuffle=True)
+        dp.load_data(range(cat_n), data_n, 0)
+        dp.shuffle_data()
         dp.split_data(80)
-        
-        # VERY VERY IMPORTANT!
+            
+        # Feature scaling fucks up the HOG. Use only one, but not both. 
         dp.feature_scale_data()
+#        dp.applyHOG()
         
         nn = DrawNN(range(cat_n))
         nn.train_model(dp.x_train, dp.y_train)
@@ -231,8 +250,26 @@ class DrawTest:
         # Get best prediction.
         y_p = nn.predict_model(dp.x_test)
         
-        dt = DrawTest()
-        dt.GetResults(y_p, dp.y_test)
+        self.GetResults(y_p, dp.y_test)
+        
+        
+    def testSVM(self, cat_n=10, data_n=1000):
+        dp = DataPrep(max_data_n=data_n)
+        dp.load_data(range(cat_n), data_n, 0)
+        dp.shuffle_data()
+        dp.split_data(80)
+
+        # Feature scaling fucks up the HOG. Use only one, but not both. 
+#        dp.feature_scale_data()
+        dp.applyHOG()
+                
+        svm = DrawSVM(range(cat_n))
+        svm.train_model(dp.x_train, dp.y_train)
+        y_p = svm.predict_model(dp.x_test)
+        
+        
+        self.GetResults(y_p, dp.y_test)
+        
     
     def saveImgFromCamera(self, n, cat, fname_start):
         dp = DataPrep(max_data_n=100)
@@ -248,12 +285,14 @@ class DrawTest:
                 print("\nPlease draw ", dp.category_loader.category[i], ...)
                 input()
                 img = v._getImage(v.self.cam1)
-                cv2.rotate(img, img, cv::ROTATE_90_COUNTERCLOCKWISE);
+                cv2.rotate(img, img, cv2.ROTATE_90_COUNTERCLOCKWISE);
                 name = fname_start + "_" +  + dp.category_loader.category[i]
                 name = name + "_" + a + ".png"
-                print("Saving name...")
-                cv2.imwrite(name, img)
-                print("Saved.")
+                plt.imshow(img)
+                input()
+#                print("Saving name...")
+#                cv2.imwrite(name, img)
+#                print("Saved.")
         
         print("Done saving images.")
                 

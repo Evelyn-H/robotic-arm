@@ -48,6 +48,26 @@ class HOGFinder:
         else:
             return hog_ftr
     
+    # Takes in np array, tries to be more efficient.
+    # Assumes it is currently nx28x28
+    def findHOG2(self, imgs):
+        # Get first dimension by testing.
+        hf = hog(imgs[0], 
+                 pixels_per_cell=(self.ppc, self.ppc),
+                 cells_per_block=(self.cpb,self.cpb), 
+                 block_norm="L2-Hys")
+        
+        hog_ftr = np.zeros((len(imgs), len(hf)), dtype=np.float64)
+        
+        for c, img in enumerate(imgs):
+            hog_ftr[c,:] = hog(img, 
+                 pixels_per_cell=(self.ppc, self.ppc),
+                 cells_per_block=(self.cpb,self.cpb), 
+                 block_norm="L2-Hys")
+        
+        return hog_ftr
+        
+    
     def testHOG():
         # Test script
         hogf = HOGFinder()
