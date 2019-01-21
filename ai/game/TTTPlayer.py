@@ -20,7 +20,7 @@ class TTTPlayer(Player):
         pass
 
     def queryAction(self, state):
-        actions = state.actionSpace(self.ID)
+        actions = state.actionSpace(self)
         legalAction = False
         choice = None
         while not legalAction:
