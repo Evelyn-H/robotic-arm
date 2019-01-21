@@ -21,8 +21,8 @@ class TTTMinMax(Player):
     def queryAction(self, state):
         print("Beginning MinMax.")
         best = self.MM.MinMaxGo(None, state, self.diff)
-        print("Best: ", best)
-        print("First best: ", best[0])
+#        print("Best: ", best)
+        print("Best: ", best[0])
         return best[0]
      
     # Heuristic used to evaluate a state.
