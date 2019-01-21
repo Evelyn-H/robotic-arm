@@ -55,9 +55,9 @@ class TTTRoboAI:
         self.minmax = TTTMinMax(self.rID, 1)
 
         # Assumed distance to shift where to draw things
-        self.drawShift = [[(-5,-5), (0,-5), (5,-5)],
-                           [(-5,0), (0,0), (5,0)],
-                           [(-5,5), (0,5), (5,5)]]
+        self.drawShift = [[(-5, -5), (0, -5), (5, -5)],
+                          [(-5, 0), (0, 0), (5, 0)],
+                          [(-5, 5), (0, 5), (5, 5)]]
 
         # Grid line intersections
         self.corners = []
@@ -82,55 +82,54 @@ class TTTRoboAI:
         self.corners = [head, tail]
         print("Corners sorted: ", self.corners)
 
-
     # Cross bounds given as (x1,y1, x2, y2)
     # where the the two xy's are the upper left
     # and lower right corner of a square, respectively.
     def compute_cross_bounds(self, border=10):
         # TODO: double check if width and height is calculated correctly.
-        width = (self.corners[0][1][0] - self.corners[0][0][0])-2*border
-        height = (self.corners[1][0][1] - self.corners[0][0][1])-2*border
+        width = (self.corners[0][1][0] - self.corners[0][0][0]) - 2 * border
+        height = (self.corners[1][0][1] - self.corners[0][0][1]) - 2 * border
 
         # Append appropriate bounds
         # Upper row
-        self.cross_bound[0].append( (self.corners[0][0][0]-width-border,
-                        self.corners[0][0][1]-height-border,
-                        self.corners[0][0][0]-border,
-                        self.corners[0][0][1]-border))
-        self.cross_bound[0].append( (self.corners[0][1][0]-width-border,
-                        self.corners[0][1][1]-height-border,
-                        self.corners[0][1][0]-border,
-                        self.corners[0][1][1]-border))
-        self.cross_bound[0].append( (self.corners[0][1][0]+border,
-                        self.corners[0][1][1]-height-border,
-                        self.corners[0][1][0]+width+border,
-                        self.corners[0][1][1]-border))
+        self.cross_bound[0].append((self.corners[0][0][0] - width - border,
+                                    self.corners[0][0][1] - height - border,
+                                    self.corners[0][0][0] - border,
+                                    self.corners[0][0][1] - border))
+        self.cross_bound[0].append((self.corners[0][1][0] - width - border,
+                                    self.corners[0][1][1] - height - border,
+                                    self.corners[0][1][0] - border,
+                                    self.corners[0][1][1] - border))
+        self.cross_bound[0].append((self.corners[0][1][0] + border,
+                                    self.corners[0][1][1] - height - border,
+                                    self.corners[0][1][0] + width + border,
+                                    self.corners[0][1][1] - border))
         # Middle row
-        self.cross_bound[1].append( (self.corners[1][0][0]-width-border,
-                        self.corners[1][0][1]-height-border,
-                        self.corners[1][0][0]-border,
-                        self.corners[1][0][1]-border))
-        self.cross_bound[1].append( (self.corners[1][1][0]-width-border,
-                        self.corners[1][1][1]-height-border,
-                        self.corners[1][1][0]-border,
-                        self.corners[1][1][1]-border))
-        self.cross_bound[1].append( (self.corners[1][1][0]+border,
-                        self.corners[1][1][1]-height-border,
-                        self.corners[1][1][0]+width+border,
-                        self.corners[1][1][1]-border))
+        self.cross_bound[1].append((self.corners[1][0][0] - width - border,
+                                    self.corners[1][0][1] - height - border,
+                                    self.corners[1][0][0] - border,
+                                    self.corners[1][0][1] - border))
+        self.cross_bound[1].append((self.corners[1][1][0] - width - border,
+                                    self.corners[1][1][1] - height - border,
+                                    self.corners[1][1][0] - border,
+                                    self.corners[1][1][1] - border))
+        self.cross_bound[1].append((self.corners[1][1][0] + border,
+                                    self.corners[1][1][1] - height - border,
+                                    self.corners[1][1][0] + width + border,
+                                    self.corners[1][1][1] - border))
         # Lower row
-        self.cross_bound[2].append( (self.corners[1][0][0]-width-border,
-                        self.corners[1][0][1]+border,
-                        self.corners[1][0][0]-border,
-                        self.corners[1][0][1]+height+border))
-        self.cross_bound[2].append( (self.corners[1][1][0]-width-border,
-                        self.corners[1][1][1]+border,
-                        self.corners[1][1][0]-border,
-                        self.corners[1][1][1]+height+border))
-        self.cross_bound[2].append( (self.corners[1][1][0]+border,
-                        self.corners[1][1][1]+border,
-                        self.corners[1][1][0]+width+border,
-                        self.corners[1][1][1]+height+border))
+        self.cross_bound[2].append((self.corners[1][0][0] - width - border,
+                                    self.corners[1][0][1] + border,
+                                    self.corners[1][0][0] - border,
+                                    self.corners[1][0][1] + height + border))
+        self.cross_bound[2].append((self.corners[1][1][0] - width - border,
+                                    self.corners[1][1][1] + border,
+                                    self.corners[1][1][0] - border,
+                                    self.corners[1][1][1] + height + border))
+        self.cross_bound[2].append((self.corners[1][1][0] + border,
+                                    self.corners[1][1][1] + border,
+                                    self.corners[1][1][0] + width + border,
+                                    self.corners[1][1][1] + height + border))
 
         print("Final bounds: ")
         print(self.cross_bound)
@@ -139,7 +138,7 @@ class TTTRoboAI:
         # Assign cross positions
         # First, filter out all crosses that are not within bounds.
         print("Filtering crosses (", len(crosses), ")")
-        i = 0;
+        i = 0
         while i < len(crosses):
             bounded = False
             # If a single boundary contains it, make it true.
@@ -148,7 +147,7 @@ class TTTRoboAI:
                     if (crosses[i][0] >= self.cross_bound[x][y][0]
                         and crosses[i][0] >= self.cross_bound[x][y][1]
                         and crosses[i][1] <= self.cross_bound[x][y][2]
-                        and crosses[i][1] <= self.cross_bound[x][y][3]):
+                            and crosses[i][1] <= self.cross_bound[x][y][3]):
                             bounded = True
             if bounded:
                 # Go to next
@@ -161,7 +160,7 @@ class TTTRoboAI:
         return crosses
 
     def constructBoard(self, circles, crosses):
-        crosses = crosses.tolist() # Convert to regular list
+        crosses = crosses.tolist()  # Convert to regular list
 #        print("Circles")
 #        print(circles)
 #        print("Crosses (unfiltered)")
@@ -174,37 +173,37 @@ class TTTRoboAI:
             print("No (unfiltered) crosses!")
             crosses = [[]]
 
-        board = [[0,0,0], [0,0,0], [0,0,0]]
+        board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         print("Adding circles to board")
         for c in circles[0]:
-            if c[0] < self.corners[0][0][0]: # Left
+            if c[0] < self.corners[0][0][0]:  # Left
                 if c[1] < self.corners[0][0][1]:   # Upper
-                    if board[0][0]==0:
+                    if board[0][0] == 0:
                         board[0][0] = 1
-                elif c[1] < self.corners[1][0][1]: # Middle
-                    if board[1][0]==0:
+                elif c[1] < self.corners[1][0][1]:  # Middle
+                    if board[1][0] == 0:
                         board[1][0] = 1
-                elif board[2][0]==0:               # Lower
+                elif board[2][0] == 0:               # Lower
                     board[2][0] = 1
 
-            elif c[0] < self.corners[0][1][0]: # Middle
+            elif c[0] < self.corners[0][1][0]:  # Middle
                 if c[1] < self.corners[0][0][1]:   # Upper
-                    if board[0][1]==0:
+                    if board[0][1] == 0:
                         board[0][1] = 1
-                elif c[1] < self.corners[1][0][1]: # Middle
-                    if board[1][1]==0:
+                elif c[1] < self.corners[1][0][1]:  # Middle
+                    if board[1][1] == 0:
                         board[1][1] = 1
-                elif board[2][1]==0:               # Lower
+                elif board[2][1] == 0:               # Lower
                     board[2][1] = 1
 
             else:
                 if c[1] < self.corners[0][0][1]:   # Upper
-                    if board[0][2]==0:
+                    if board[0][2] == 0:
                         board[0][2] = 1
-                elif c[1] < self.corners[1][0][1]: # Middle
-                    if board[1][2]==0:
+                elif c[1] < self.corners[1][0][1]:  # Middle
+                    if board[1][2] == 0:
                         board[1][2] = 1
-                elif board[2][2]==0:                      # Lower
+                elif board[2][2] == 0:                      # Lower
                     board[2][2] = 1
         # End assignment of circle positions
 
@@ -220,31 +219,31 @@ class TTTRoboAI:
             print(x)
 #            ic = img.copy()
 
-            if x[0] < self.corners[0][0][0]: # Left
+            if x[0] < self.corners[0][0][0]:  # Left
                 if x[1] < self.corners[0][0][1]:
-                    if board[0][0]==0:   # Upper
+                    if board[0][0] == 0:   # Upper
                         board[0][0] = 2
 #                        print('leftup')
                 elif x[1] < self.corners[1][0][1]:
-                    if board[1][0]==0: # Middle
+                    if board[1][0] == 0:  # Middle
                         board[1][0] = 2
 #                        print('leftmid')
-                elif board[2][0]==0:                       # Lower
+                elif board[2][0] == 0:                       # Lower
                     board[2][0] = 2
 #                    print('leftlow')
 #                else:
 #                    print("left...")
 
-            elif x[0] < self.corners[0][1][0]: # Middle
+            elif x[0] < self.corners[0][1][0]:  # Middle
                 if x[1] < self.corners[0][0][1]:
-                    if board[0][1]==0:   # Upper
+                    if board[0][1] == 0:   # Upper
                         board[0][1] = 2
 #                        print('midup')
                 elif x[1] < self.corners[1][0][1]:
-                    if board[1][1]==0: # Middle
+                    if board[1][1] == 0:  # Middle
                         board[1][1] = 2
 #                        print('midmid')
-                elif board[2][1]==0: # Lower
+                elif board[2][1] == 0:  # Lower
                     board[2][1] = 2
 #                    print('midlow')
 #                else:
@@ -252,14 +251,14 @@ class TTTRoboAI:
 
             else:
                 if x[1] < self.corners[0][0][1]:
-                    if board[0][2]==0:   # Upper
+                    if board[0][2] == 0:   # Upper
                         board[0][2] = 2
 #                        print('rightup')
                 elif x[1] < self.corners[1][0][1]:
-                    if board[1][2]==0: # Middle
+                    if board[1][2] == 0:  # Middle
                         board[1][2] = 2
 #                        print('rightmid')
-                elif board[2][2]==0: # Lower
+                elif board[2][2] == 0:  # Lower
                     board[2][2] = 2
 #                    print('rightlow')
 #                else:
@@ -272,16 +271,14 @@ class TTTRoboAI:
             # End assignment of cross positions
         return board
 
-
     # Returns the first difference in a board that is found.
     def firstNewFilledIn(self, new):
-        for i in range(0,3):
-            for j in range(0,3):
-                if self.game.board[i][j]==0 and new[i][j] == self.hID:
+        for i in range(0, 3):
+            for j in range(0, 3):
+                if self.game.board[i][j] == 0 and new[i][j] == self.hID:
                     return i, j
         # Boards are completely similar in this case
         return None
-
 
     # The game needs to run without taking breaks, in other words
     # It will be a method where the AI calls it multiple times when it feels
@@ -312,7 +309,7 @@ class TTTRoboAI:
             # Initiate game loop
             self.setup = False
 
-        else: # Setup over, game is running.
+        else:  # Setup over, game is running.
             print("Game loop")
             # While the game is not over
             if self.game.gameover() == -1:
@@ -334,22 +331,22 @@ class TTTRoboAI:
                     try:
                         x, y = self.firstNewFilledIn(newBoard)
                     except Exception as e:
-                        print("No observed change in state")
-                        print(e)
+                        print("No observed change in state", e)
                     else:
                         print("New move: ", x, ", ", y)
                         humanAction = TTTAction(self.hID, x, y)
                         self.game.update(humanAction)
                         # Next turn
                         self.humanTurn = False
+                        # self.ID = self.rID
                         # if robot turn
                     print('state', self.game, '\n cx', circles, crosses)
                 else:
                     print("Robot turn")
                     robotAction = self.minmax.queryAction(self.game)
-                    print('r', self.game.board)
+                    print('r', self.game)
                     self.game.update(robotAction)
-                    print('r', self.game.board)
+                    print('r', self.game)
                     # Execute move
                     self.arm.move_back()
                     FormatConvert.drawFromFile(crossFile, self.arm,
@@ -358,19 +355,21 @@ class TTTRoboAI:
                     self.arm.move_away()
                     # When done, signal next turn
                     self.humanTurn = True
+                    # self.ID = self.hID
+
             # Game over, signal winner
             else:
-                print("Game over! Result: ", self.game.gameover() )
+                print("Game over! Result: ", self.game.gameover())
 
     def drawCrossBounds(self, img):
         for row in range(3):
             for col in range(3):
-                n = 3*row + col
+                n = 3 * row + col
                 cv2.rectangle(img, (self.cross_bound[row][col][0],
                                     self.cross_bound[row][col][1]),
-                        (self.cross_bound[row][col][2],
-                         self.cross_bound[row][col][3]),
-                         (0,n*(255/9),0), 3 )
+                              (self.cross_bound[row][col][2],
+                               self.cross_bound[row][col][3]),
+                              (0, n * (255 / 9), 0), 3)
 
         cv2.imshow("img", img)
         cv2.waitKey(0)
@@ -420,7 +419,6 @@ if __name__ == '__main__':
 
     t = TTTRoboAI(arm, v, False)
     t.game_loop()
-
 
     #
     # # Testing purposes
