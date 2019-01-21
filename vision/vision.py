@@ -13,24 +13,24 @@ class Vision(object):
 
     def __init__(self):
         # start video capture
-        self.cam1 = cv2.VideoCapture(0)
+        self.cam1 = cv2.VideoCapture(2)
         self.cam1.set(3, 960)
         self.cam1.set(4, 720)
-        self.cam2 = cv2.VideoCapture(1)
+        self.cam2 = cv2.VideoCapture(3)
         self.cam2.set(3, 960)
         self.cam2.set(4, 720)
 
         self.cut_coords = []
         self.warp_coords = []
 
-        self.query_image= cv2.imread('image.png',0)
+        # self.query_image= cv2.imread('image.png',0)
     # Control
 
     def get_pen_height(self):
         i = self._getImage(self.cam2)
         # cv2.imshow('frame', i)
         # while not cv2.waitKey(1) & 0xFF == ord('q'):
-            # pass
+        # pass
         result = self._detectTape(i, True)
         if result:
             x, y, h = result
@@ -56,16 +56,20 @@ class Vision(object):
 
     def get_gamegrid(self):
         img = self.get_image_top_camera()
-        self._getGridPoints(img)
+        corners = self._getGridPoints(img)
+        # cv2.imshow('frame', img)
+        # while not cv2.waitKey(1) & 0xFF == ord('c'):
+        # pass
+        return corners
 
-    def get_gamestate(self):
-        img = self._get_image_top_camera()
-        return self._detectCircles(img), self._detectCorners(img)
+    def get_gamestate(self, cross_bound):
+        img = self.get_image_top_camera()
+        return self._detectCircles(img), self._detectCorners(img, cross_bound)
 
     def is_hand_in_the_way(self):
         img = self.get_image_top_camera()
         black, white, total = self._getHandPixels(img)
-        blackPercent = (black*100)/(total)
+        blackPercent = (black * 100) / (total)
         if blackPercent < 95:
             return True
         return False
@@ -74,14 +78,22 @@ class Vision(object):
 
     def _getImage(self, camera):
         _, frame = camera.read()
+        _, frame = camera.read()
+        _, frame = camera.read()
+        _, frame = camera.read()
+        _, frame = camera.read()
+        _, frame = camera.read()
+        _, frame = camera.read()
         return frame
 
     def get_image_top_camera(self):
         img = self._getImage(self.cam1)
         corners = np.array(((45, 45), (920, 50), (45, 665), (920, 670)))
-        img = self._warpImage(img, corners)
         # for x, y in corners:
-        #     cv2.circle(img, (x, y), 5, (0, 0, 255), -1)
+        # cv2.circle(img, (x, y), 5, (0, 0, 255), -1)
+        # img = self._warpImage(img, corners)
+        x, y, w, h = 60, 70, 840, 590
+        img = self._cropImage((x, y, w, h), img)
         # cv2.imshow('frame', img)
         # while not cv2.waitKey(1) & 0xFF == ord('q'):
         #     pass
@@ -265,29 +277,79 @@ class Vision(object):
     def _detectCircles(self, img):
         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         imgblur = cv2.GaussianBlur(imgray, (9, 9), 0)
-        circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=5, maxRadius=30)
+        circles = cv2.HoughCircles(imgblur, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=35, minRadius=5, maxRadius=30)
         if circles is not None and len(circles) > 0:
             circles = np.uint16(np.around(circles))
+
+        if circles is not None:
+            for c in circles[0]:
+                cv2.circle(imgblur, (int(c[0]), int(c[1])), c[2], (255, 0, 0), 2)
+
+        if os.environ.get('DEBUG', None):
+            cv2.imshow('circles', imgblur)
+            cv2.waitKey(1)
+        # while not cv2.waitKey(1) & 0xFF == ord('c'):
+        # pass
         return circles
 
-    def _detectCorners(self, img):
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    def _detectCorners(self, img, cross_bound):
+        corners = []
 
-        gray = np.float32(gray)
+        for x in range(3):
+            for y in range(3):
+                left = cross_bound[x][y][0]
+                top = cross_bound[x][y][1]
+                right = cross_bound[x][y][2]
+                bottom = cross_bound[x][y][3]
 
-        # Find corners
-        dst = cv2.cornerHarris(gray, 2, 3, 0.04)
+                sub_image = img[top:bottom, left:right]
 
-        # result is dilated for marking the corners, not important
-        dst = cv2.dilate(dst, None)
+                imgray = cv2.cvtColor(sub_image, cv2.COLOR_BGR2GRAY)
+                # imgray = cv2.GaussianBlur(imgray, (9, 9), 0)
+                # imgray = cv2.medianBlur(imgray, 5)
+                _, thresh = cv2.threshold(imgray, 100, 255, cv2.THRESH_BINARY_INV)
+                # thresh = cv2.adaptiveThreshold(imgray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 5, 2)
+                # thresh = cv2.Canny(imgray, 150, 200)
+                count = cv2.countNonZero(thresh)
 
-        # Threshold for an optimal value, it may vary depending on the image.
-        ret, treshH = ret, thresh = cv2.threshold(dst, 0.1*dst.max(), 255, 0)
+                if count > 150:
+                    corners.append([(left + right) / 2, (top + bottom) / 2])
 
-        # Get an array with all points
-        points = np.transpose(np.nonzero(treshH))
+                # if os.environ.get('DEBUG', None):
+                    # cv2.imshow('corners', imgray)
+                    # cv2.waitKey(0)
 
-        return points
+        return np.array(corners)
+
+        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # t = int(input("t?"))
+        # _, gray = cv2.threshold(gray, t, 255, cv2.THRESH_BINARY_INV)
+        # # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 5, 2)
+        # # img = cv2.medianBlur(img, 5)
+        #
+        # # gray = np.float32(gray)
+        #
+        # # Find corners
+        # dst = cv2.cornerHarris(gray, 2, 3, 0.04)
+        #
+        # # result is dilated for marking the corners, not important
+        # dst = cv2.dilate(dst, None)
+        #
+        # # Threshold for an optimal value, it may vary depending on the image.
+        # ret, treshH = ret, thresh = cv2.threshold(dst, 0.1 * dst.max(), 255, 0)
+        #
+        # # Get an array with all points
+        # points = np.transpose(np.nonzero(treshH))
+        #
+        # if points is not None:
+        #     for p in points:
+        #         cv2.circle(gray, (int(p[0]), int(p[1])), 3, (255, 0, 0), 2)
+#
+        # if os.environ.get('DEBUG', None):
+        #     cv2.imshow('corners', gray)
+        #     cv2.waitKey(1)
+#
+        # return points
 
 # =============================================================================
 #     def _detectLines(self, img):
@@ -356,28 +418,34 @@ class Vision(object):
                         if int(x) < width and int(x) > 0 and int(y) < height and int(y) > 0:
                             corners.append([int(x), int(y)])
 
-                        #cv2.circle(img, (int(x), int(y)), 3, (255, 0, 0), 1, 8, 0)
+                        cv2.circle(img, (int(x), int(y)), 3, (255, 0, 0), 1, 8, 0)
+
         for index, x in enumerate(corners):
             remove = []
             for index2, x2 in enumerate(corners):
                 if index != index2:
-                    distance = math.sqrt(((x[0]-x2[0])**2 + (x[1]-x2[1])**2))
-                    if distance < 5:
+                    distance = math.sqrt(((x[0] - x2[0])**2 + (x[1] - x2[1])**2))
+                    if distance < 10:
                         remove.append(index2)
             remove.sort(reverse=True)
             for x3 in remove:
                 del corners[x3]
+
+        if os.environ.get('DEBUG', None):
+            cv2.imshow('gridpoints', img)
+            cv2.waitKey(1)
+
         return corners
 
     def _getBWPixels(self, img):
         imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(imgray, 140, 255, 0)
-        kernel = np.ones((7,7),np.uint8)
+        kernel = np.ones((7, 7), np.uint8)
         thresh2 = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         height, width = thresh2.shape
-        white = cv2.countNonZero(thresh2);
-        black = (height*width)-white;
-        return black, white, height*width
+        white = cv2.countNonZero(thresh2)
+        black = (height * width) - white
+        return black, white, height * width
 
     def _getHandPixels(self, img):
         #convert image
@@ -390,12 +458,17 @@ class Vision(object):
         #find skin
         mask = cv2.inRange(ycrcb, smin, smax)
 
-        kernel = np.ones((7,7),np.uint8)
+        kernel = np.ones((7, 7), np.uint8)
         opens = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         height, width = opens.shape
-        white = cv2.countNonZero(opens);
-        black = (height*width)-white;
-        return black, white, height*width
+        white = cv2.countNonZero(opens)
+        black = (height * width) - white
+
+        if os.environ.get('DEBUG', None):
+            cv2.imshow('hand', opens)
+            cv2.waitKey(1)
+
+        return black, white, height * width
 
     def _detectFeatures(self, query_img, train_img):
         MIN_MATCH_COUNT = 5
@@ -405,8 +478,8 @@ class Vision(object):
         des1 = np.float32(des1)
 
         FLANN_INDEX_KDTREE = 0
-        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-        search_params = dict(checks = 50)
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=50)
 
         flann = cv2.FlannBasedMatcher(index_params, search_params)
         img2 = cv2.cvtColor(train_img, cv2.COLOR_BGR2GRAY)
@@ -414,24 +487,23 @@ class Vision(object):
         # img2 = cv2.imread('vlcsnap-2018-12-04-13h43m11s468.png',0) # trainImage
 
         # find the keypoints and descriptors with SIFT
-        kp2, des2 = orb.detectAndCompute(img2,None)
+        kp2, des2 = orb.detectAndCompute(img2, None)
         des2 = np.float32(des2)
 
-        matches = flann.knnMatch(des1,des2,k=2)
+        matches = flann.knnMatch(des1, des2, k=2)
 
         # store all the good matches as per Lowe's ratio test.
         good = []
-        for m,n in matches:
-            if m.distance < 0.7*n.distance:
+        for m, n in matches:
+            if m.distance < 0.7 * n.distance:
                 good.append(m)
 
+        if len(good) > MIN_MATCH_COUNT:
+            src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+            dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
 
-        if len(good)>MIN_MATCH_COUNT:
-            src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-            dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
-
-            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
             return M, mask
         else:
-            print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
+            print("Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT))
             return

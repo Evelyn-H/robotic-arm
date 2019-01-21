@@ -30,12 +30,14 @@ class TTTRoboAI:
         self.arm = arm
         # The Game State
         self.game = TTTState(self, self)
+
         # Who starts?
         self.humanTurn = humanTurn
         # Human ID
         self.hID = 1
         # Robot ID
         self.rID = 2
+        self.ID = self.rID
         # Reference to vision component
         self.vision = vision
 
@@ -158,7 +160,7 @@ class TTTRoboAI:
         print("Crosses left: ", len(crosses))
         return crosses
 
-    def constructBoard(self, circles, crosses, img):
+    def constructBoard(self, circles, crosses):
         crosses = crosses.tolist() # Convert to regular list
 #        print("Circles")
 #        print(circles)
@@ -178,32 +180,32 @@ class TTTRoboAI:
             if c[0] < self.corners[0][0][0]: # Left
                 if c[1] < self.corners[0][0][1]:   # Upper
                     if board[0][0]==0:
-                        board[0][0] = '1'
+                        board[0][0] = 1
                 elif c[1] < self.corners[1][0][1]: # Middle
                     if board[1][0]==0:
-                        board[1][0] = '1'
+                        board[1][0] = 1
                 elif board[2][0]==0:               # Lower
-                    board[2][0] = '1'
+                    board[2][0] = 1
 
             elif c[0] < self.corners[0][1][0]: # Middle
                 if c[1] < self.corners[0][0][1]:   # Upper
                     if board[0][1]==0:
-                        board[0][1] = '1'
+                        board[0][1] = 1
                 elif c[1] < self.corners[1][0][1]: # Middle
                     if board[1][1]==0:
-                        board[1][1] = '1'
+                        board[1][1] = 1
                 elif board[2][1]==0:               # Lower
-                    board[2][1] = '1'
+                    board[2][1] = 1
 
             else:
                 if c[1] < self.corners[0][0][1]:   # Upper
                     if board[0][2]==0:
-                        board[0][2] = '1'
+                        board[0][2] = 1
                 elif c[1] < self.corners[1][0][1]: # Middle
                     if board[1][2]==0:
-                        board[1][2] = '1'
+                        board[1][2] = 1
                 elif board[2][2]==0:                      # Lower
-                    board[2][2] = '1'
+                    board[2][2] = 1
         # End assignment of circle positions
 
         crosses = self.filterCrosses(crosses)
@@ -221,14 +223,14 @@ class TTTRoboAI:
             if x[0] < self.corners[0][0][0]: # Left
                 if x[1] < self.corners[0][0][1]:
                     if board[0][0]==0:   # Upper
-                        board[0][0] = '2'
+                        board[0][0] = 2
 #                        print('leftup')
                 elif x[1] < self.corners[1][0][1]:
                     if board[1][0]==0: # Middle
-                        board[1][0] = '2'
+                        board[1][0] = 2
 #                        print('leftmid')
                 elif board[2][0]==0:                       # Lower
-                    board[2][0] = '2'
+                    board[2][0] = 2
 #                    print('leftlow')
 #                else:
 #                    print("left...")
@@ -236,14 +238,14 @@ class TTTRoboAI:
             elif x[0] < self.corners[0][1][0]: # Middle
                 if x[1] < self.corners[0][0][1]:
                     if board[0][1]==0:   # Upper
-                        board[0][1] = '2'
+                        board[0][1] = 2
 #                        print('midup')
                 elif x[1] < self.corners[1][0][1]:
                     if board[1][1]==0: # Middle
-                        board[1][1] = '2'
+                        board[1][1] = 2
 #                        print('midmid')
                 elif board[2][1]==0: # Lower
-                    board[2][1] = '2'
+                    board[2][1] = 2
 #                    print('midlow')
 #                else:
 #                    print("mid...")
@@ -251,14 +253,14 @@ class TTTRoboAI:
             else:
                 if x[1] < self.corners[0][0][1]:
                     if board[0][2]==0:   # Upper
-                        board[0][2] = '2'
+                        board[0][2] = 2
 #                        print('rightup')
                 elif x[1] < self.corners[1][0][1]:
                     if board[1][2]==0: # Middle
-                        board[1][2] = '2'
+                        board[1][2] = 2
 #                        print('rightmid')
                 elif board[2][2]==0: # Lower
-                    board[2][2] = '2'
+                    board[2][2] = 2
 #                    print('rightlow')
 #                else:
 #                    print('right...')
@@ -275,7 +277,7 @@ class TTTRoboAI:
     def firstNewFilledIn(self, new):
         for i in range(0,3):
             for j in range(0,3):
-                if self.TTTState.board[i][j]==0 and new[i][j]!=0:
+                if self.game.board[i][j]==0 and new[i][j] == self.hID:
                     return i, j
         # Boards are completely similar in this case
         return None
@@ -291,12 +293,11 @@ class TTTRoboAI:
             # Assume board starts out blank.
             print("Drawing board")
             # Draw grid, save what the location should be
-            FormatConvert.drawFromFile(gridFile, self.arm, speed=4)
-            then = time.time()
-            now = time.time()
+            # FormatConvert.drawFromFile(gridFile, self.arm, speed=4)
+            self.arm.move_away()
+
             print("Waiting a bit")
-            while now-then < 1:
-                now = time.time()
+            time.sleep(1)
             print("Done waiting")
 
             # Robot Prep
@@ -326,13 +327,15 @@ class TTTRoboAI:
                     # and logically returns null...
                     # Either that, or we must never allow it to fail.
                     # TODO: GET RIGHT METHODS BELOW.
-                    circles, crosses = self.vision.get_gamestate()
+                    circles, crosses = self.vision.get_gamestate(self.cross_bound)
                     newBoard = self.constructBoard(circles, crosses)
+                    print('new', newBoard)
                     # if game state changes
                     try:
                         x, y = self.firstNewFilledIn(newBoard)
-                    except:
+                    except Exception as e:
                         print("No observed change in state")
+                        print(e)
                     else:
                         print("New move: ", x, ", ", y)
                         humanAction = TTTAction(self.hID, x, y)
@@ -340,14 +343,19 @@ class TTTRoboAI:
                         # Next turn
                         self.humanTurn = False
                         # if robot turn
+                    print('state', self.game, '\n cx', circles, crosses)
                 else:
                     print("Robot turn")
-                    robotAction = self.minmax.queryAction(self.game.board)
+                    robotAction = self.minmax.queryAction(self.game)
+                    print('r', self.game.board)
                     self.game.update(robotAction)
+                    print('r', self.game.board)
                     # Execute move
+                    self.arm.move_back()
                     FormatConvert.drawFromFile(crossFile, self.arm,
                                                shift1=(self.drawShift[robotAction.x][robotAction.y][0],
-                                                       self.drawShift[robotAction.x][robotAction.y][1]))
+                                                       self.drawShift[robotAction.x][robotAction.y][1]), speed=4)
+                    self.arm.move_away()
                     # When done, signal next turn
                     self.humanTurn = True
             # Game over, signal winner
@@ -372,8 +380,7 @@ class TTTRoboAI:
         last_time = time.time()
         while self.game.gameover() == -1:
             now_time = time.time()
-            if (not self.vision.is_hand_in_the_way()
-                and now_time - last_time > 1):
+            if (not self.vision.is_hand_in_the_way() and now_time - last_time > 1):
                 self.gameTick()
                 last_time = time.time()
 
@@ -392,6 +399,25 @@ if __name__ == '__main__':
         arm = Arm('/dev/ttyACM1')
 
     v = Vision()
+
+    # for i in range(100):
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     img = v.get_image_top_camera()
+    #     # _, img = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY_INV)
+    #     # img = np.rot90(img, 3)
+    #     # img = img[630:810, 260:440]
+    #     name = "TTT" + "_" + str(i) + ".png"
+    #     cv2.imwrite(name, img)
+    #     cv2.imshow('frame', img)
+    #     while not cv2.waitKey(1) & 0xFF == ord('c'):
+    #         pass
+
     t = TTTRoboAI(arm, v, False)
     t.game_loop()
 
