@@ -13,7 +13,7 @@ class TTTMinMax(Player):
     def __init__(self, playerID, difficulty):
         self.ID = playerID
         self.diff = difficulty
-        self.MM = MinMax(self.ID, self)
+        self.MM = MinMax(self, self)
     
     def readyPlayer(self):
         pass
@@ -21,15 +21,11 @@ class TTTMinMax(Player):
     def queryAction(self, state):
         print("Beginning MinMax.")
         best = self.MM.MinMaxGo(None, state, self.diff)
-        print("Best: ", best)
-        print("First best: ", best[0])
         return best[0]
      
     # Heuristic used to evaluate a state.
     def evaluate(self, state):
-        print("Evaluating state.")
         result = state.gameover()
-#        print("Result: " + str(state.gameover()))        
         
         if result == -1: # Game not over
             # Count number of possible 3s in a row to get
@@ -94,7 +90,8 @@ class TTTMinMax(Player):
             # possible results
             score += self.singleScore(ours, theirs, neither)
             
-#            print("Score after diags (Final): " + str(score))
+#            print("Score after diags: " + str(score))
+            
             return score
         elif result == 0: # Tie
             return 0
