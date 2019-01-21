@@ -29,7 +29,10 @@ class TTTRoboAI:
     def __init__(self, arm, vision, humanTurn=False):
         self.arm = arm
         # The Game State
-        self.game = TTTState(self, self)
+        if humanTurn:
+            self.game = TTTState(1, 2)
+        else:
+            self.game = TTTState(2, 1)
 
         # Who starts?
         self.humanTurn = humanTurn
@@ -37,7 +40,6 @@ class TTTRoboAI:
         self.hID = 1
         # Robot ID
         self.rID = 2
-        self.ID = self.rID
         # Reference to vision component
         self.vision = vision
 

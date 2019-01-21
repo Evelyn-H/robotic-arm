@@ -303,7 +303,11 @@ class DrawNN:
         self.cat = categories
         # Starting basic structure. Change as needed.
         self.model = Sequential()
-        self.model.add(Dense(700, activation='relu', input_dim=784))
+        self.model.add(Dense(200, activation='relu', input_dim=784))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(100, activation='relu', input_dim=784))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(50, activation='relu', input_dim=784))
         self.model.add(Dropout(0.5))
         self.model.add(Dense(len(self.cat), activation='softmax'))
 
@@ -362,7 +366,7 @@ class DrawTest:
                 'zebra',
                 )
 
-    def GetResults(self, y_predicted, y_test):
+    def GetResults(self, y_predicted, y_test, opt_msg="", fname=""):
         print("Accuracy: " + str(accuracy_score(y_test, y_predicted)))
         print('\n')
         print(classification_report(y_test, y_predicted))
@@ -382,7 +386,10 @@ class DrawTest:
             norm_c_matrix, 
             interpolation='nearest', 
             cmap=plt.cm.Blues)
-        plt.title("Confusion matrix \n(normalised to % of total test data)")
+        title = "Confusion matrix \n(normalised to % of total test data)"
+        if opt_msg:
+            title = opt_msg + ", " + title
+        plt.title(title)
         plt.colorbar()
         tick_marks = np.arange(n_classes)
         plt.xticks(tick_marks, Labels, rotation=90)
@@ -390,9 +397,14 @@ class DrawTest:
         plt.tight_layout()
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
-        plt.show()
+        
+        if fname:
+            plt.savefig(fname)
+        else:
+            plt.show()
+            
 
-    def testNN(self, cat_n=10, data_n=100):
+    def testNN(self, cat_n=10, data_n=2000):
         dp = DataPrep(max_data_n=data_n)
         dp.load_data(range(cat_n), data_n, 0)
         dp.shuffle_data()
@@ -429,7 +441,7 @@ class DrawTest:
         self.GetResults(y_p, dp.y_test)
 
     def testSVM_C_param(self, cat_n=10, data_n=2000):
-        C_param = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        C_param = [5, 6, 7, 8, 9]
         
         # Prep all Data
         dp = DataPrep(max_data_n=data_n)
@@ -448,8 +460,10 @@ class DrawTest:
             svm.train_model(dp.x_train, dp.y_train)
             y_p = svm.predict_model(dp.x_test)
     
-            self.GetResults(y_p, dp.y_test)
-            input("Press enter to continue...")
+            msg_text = "C = " + str(c)
+            file = "test" + str(c) + ".png"
+            self.GetResults(y_p, dp.y_test, fname=file, 
+                            opt_msg=msg_text)
             
 
     # Data_n corresponds to training data.

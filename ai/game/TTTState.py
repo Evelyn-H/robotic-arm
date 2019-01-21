@@ -32,12 +32,12 @@ class TTTState(State):
         s += str(list(map(str, self.history))) + '\n'
         return s
 
-    def actionSpace(self, player):
+    def actionSpace(self, playerID):
         actions = []
         for i in range(0, 3):
             for j in range(0, 3):
                 if self.board[i][j] == 0:
-                    actions.append(TTTAction(player.ID, i, j))
+                    actions.append(TTTAction(playerID,i,j))
 
         return actions
 
