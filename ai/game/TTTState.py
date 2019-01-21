@@ -23,7 +23,7 @@ class TTTState(State):
     def __str__(self):
 
         s = "Current Board:\n"
-        s += "Player: " + str(self.current.ID) + "\n"
+        s += "Player: " + str(self.current) + "\n"
         for i in range(0,3):
             for j in range(0,3):
                 s

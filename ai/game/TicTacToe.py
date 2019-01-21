@@ -9,13 +9,14 @@ TicTacToe game! Ensures right turn ordering, etc.
 
 from TTTState import TTTState
 from TTTPlayer import TTTPlayer
+from TTTMinMax import TTTMinMax
 
 class TicTacToe:
     
     def __init__(self, player1, player2):
         self.p1 = player1
         self.p2 = player2
-        self.state = TTTState(self.p1, self.p2)
+        self.state = TTTState(self.p1.ID, self.p2.ID)
         self.currentPlayer = self.p1
         self.winner = None
         
@@ -50,7 +51,11 @@ class TicTacToe:
         else:
             print("Error.")
             
-            
+hp = TTTPlayer(1)
+rp = TTTMinMax(2,2)
+ttt = TicTacToe(rp, hp)
+ttt.runGame()
+
             
             
             
