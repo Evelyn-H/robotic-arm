@@ -10,22 +10,22 @@ TicTacToe state.
 from TTTAction import TTTAction
 from State import State
 
+
 class TTTState(State):
 
     # Methods
     def __init__(self, p1, p2):
-        self.board = [[0,0,0], [0,0,0], [0,0,0]]
+        self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self.history = []
         self.p1 = p1
         self.p2 = p2
         self.current = self.p1
 
     def __str__(self):
-
         s = "Current Board:\n"
         s += "Player: " + str(self.current.ID) + "\n"
-        for i in range(0,3):
-            for j in range(0,3):
+        for i in range(0, 3):
+            for j in range(0, 3):
                 s
                 s += str(self.board[i][j]) + " "
             s += "\n"
@@ -34,10 +34,10 @@ class TTTState(State):
 
     def actionSpace(self, player):
         actions = []
-        for i in range(0,3):
-            for j in range(0,3):
+        for i in range(0, 3):
+            for j in range(0, 3):
                 if self.board[i][j] == 0:
-                    actions.append(TTTAction(player.ID,i,j))
+                    actions.append(TTTAction(player.ID, i, j))
 
         return actions
 
@@ -104,7 +104,6 @@ class TTTState(State):
 
         # No threes in a row.
         return None
-
 
     def gameover(self):
         win = self.threeInRow()
