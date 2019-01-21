@@ -17,9 +17,9 @@ from ai.draw.HOGFinder import HOGFinder
 from sklearn import svm
 from os import listdir
 
-# from keras.models import Sequential
-# from keras.layers import Dense, Dropout, Activation
-# from keras.optimizers import SGD
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation
+from keras.optimizers import SGD
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from vision import Vision
@@ -189,6 +189,86 @@ class DataPrep:
         
         # Preprocess The imgAr data into img28
         for i, e in enumerate(imgAr):
+            # Close to make smaller
+#            kernel = np.ones((3, 3), np.uint8)
+#            imgAr[i] = cv2.erode(imgAr[i], kernel, iterations = 1)
+            # Reduce edge space?
+#            x1, y1 = 0, 0
+#            x2, y2 = 180, 180
+#            
+#            x1_done, x2_done, y1_done, y2_done = False, False, False, False
+#            
+#            
+#            for j in range(180):
+#                if not (x1_done and x2_done and y1_done and y2_done):
+#                    if not x1_done:
+#                        for k in range(180):
+#                            if imgAr[i,k,j] > 0:
+#                                x1 = k
+#                                x1_done = True
+#                                break
+#                    if not x2_done:
+#                        for k in range(179,-1,-1):
+#                            if imgAr[i,k,j] > 0:
+#                                x2 = k
+#                                x2_done = True
+#                                break
+#                    if not y1_done:
+#                        for k in range(180):
+#                            if imgAr[i,j,k] > 0:
+#                                y1 = k
+#                                y1_done = True
+#                                break
+#                    if not y2_done:
+#                        for k in range(179,-1,-1):
+#                            if imgAr[i,j,k] > 0:
+#                                y2 = k
+#                                y2_done = True
+#                                break
+#                else:
+#                    break
+#            print("\n(i,j,k) = (", i, ", ", j, ", ", k, ")")
+#            print("x1: ", x1, "\tx2: ", x2)
+#            print("y1: ", y1, "\ty2: ", y2)
+#            print(imgAr[i])
+#            input()
+#            # Have defined margin.
+#            margin = 10
+#            if x1 < margin:
+#                x1 = 0
+#            else:
+#                x1 -= margin
+#            
+#            if x2 > 180-margin:
+#                x2 = 180
+#            else:
+#                x2 += margin
+#            
+#            if y1 < margin:
+#                y1 = 0
+#            else:
+#                y1 -= margin
+#                
+#            if y2 > 180-margin:
+#                y2 = 180
+#            else:
+#                y2 += margin
+#            
+#            dx = x2 - x1
+#            dy = y2 - y1
+#            
+#            if dx < 180 or dy < 180:
+#                if dx > dy:
+#                    diff = (dx-dy)/2
+#                    y1 = max((y1-diff, 0))
+#                    y2 = min((y2+diff, 180))
+#                if dy > dx:
+#                    diff = (dy-dx)/2
+#                    x1 = max((x1-diff, 0))
+#                    x2 = min((x2+diff, 0))
+#            img2 = imgAr[i, x1:x2, y1:y2]
+#            img2 = cv2.blur(img2, (5,5))
+            
             imgAr[i] = cv2.blur(imgAr[i], (5,5))
             img28[i] = cv2.resize(imgAr[i], (28,28))
         
@@ -203,7 +283,7 @@ class DataPrep:
 class DrawSVM:
     def __init__(self, categories):
         print("\nInitializing c support vector machine.")
-        self.svm = svm.LinearSVC(C=5)
+        self.svm = svm.LinearSVC()
         self.cat = categories
         self.hf = HOGFinder()
 
@@ -223,7 +303,7 @@ class DrawNN:
         self.cat = categories
         # Starting basic structure. Change as needed.
         self.model = Sequential()
-        self.model.add(Dense(500, activation='relu', input_dim=784))
+        self.model.add(Dense(700, activation='relu', input_dim=784))
         self.model.add(Dropout(0.5))
         self.model.add(Dense(len(self.cat), activation='softmax'))
 
@@ -234,7 +314,7 @@ class DrawNN:
 
     def train_model(self, x_train, y_train):
         print("\nTraining with all the data.")
-        self.model.fit(x_train, y_train, epochs=20, batch_size=1000)
+        self.model.fit(x_train, y_train, epochs=30, batch_size=100)
 
     def predict_model(self, x_test):
         print("\nTesting model.")
@@ -255,6 +335,32 @@ class DrawNN:
 class DrawTest:
     def __init__(self, arm):
         self.arm = arm
+        self.categories = (
+                'airplane',
+                'backpack',
+                'cactus',
+                'dog',
+                'ear',
+                'face',
+                'garden',
+                'hamburger',
+                'icecream',
+                'jacket',
+                'kangaroo',
+                'ladder',
+                'mailbox',
+                'nail',
+                'ocean',
+                'paintbrush',
+                'rabbit',
+                'sailboat',
+                'table',
+                'underwear',
+                'vase',
+                'windmill',
+                'yoga',
+                'zebra',
+                )
 
     def GetResults(self, y_predicted, y_test):
         print("Accuracy: " + str(accuracy_score(y_test, y_predicted)))
@@ -262,18 +368,39 @@ class DrawTest:
         print(classification_report(y_test, y_predicted))
 
         print("Confusion matrix:")
-        print(confusion_matrix(y_test, y_predicted))
-        print("\n")
+        c_matrix = confusion_matrix(y_test, y_predicted)
+        norm_c_matrix = np.array(c_matrix, dtype=np.float64)
+        norm_sum = np.sum(norm_c_matrix)
+        norm_c_matrix = np.divide(norm_c_matrix, norm_sum)
+        norm_c_matrix = np.multiply(norm_c_matrix, 100)
+        size = 12
+        n_classes = len(c_matrix)
+        Labels = self.categories[0:n_classes]
+        
+        plt.figure(figsize=(size, size))
+        plt.imshow(
+            norm_c_matrix, 
+            interpolation='nearest', 
+            cmap=plt.cm.Blues)
+        plt.title("Confusion matrix \n(normalised to % of total test data)")
+        plt.colorbar()
+        tick_marks = np.arange(n_classes)
+        plt.xticks(tick_marks, Labels, rotation=90)
+        plt.yticks(tick_marks, Labels)
+        plt.tight_layout()
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.show()
 
-    def testNN(self, cat_n=10, data_n=1000):
+    def testNN(self, cat_n=10, data_n=100):
         dp = DataPrep(max_data_n=data_n)
         dp.load_data(range(cat_n), data_n, 0)
         dp.shuffle_data()
         dp.split_data(80)
 
         # Feature scaling fucks up the HOG. Use only one, but not both.
-        dp.feature_scale_data()
 #        dp.applyHOG()
+        dp.feature_scale_data()
 
         nn = DrawNN(range(cat_n))
         nn.train_model(dp.x_train, dp.y_train)
@@ -284,21 +411,46 @@ class DrawTest:
 
         self.GetResults(y_p, dp.y_test)
 
-    def testSVM(self, cat_n=10, data_n=1000):
+    def testSVM(self, cat_n=10, data_n=1000, C_val=0.5):
         dp = DataPrep(max_data_n=data_n)
         dp.load_data(range(cat_n), data_n, 0)
         dp.shuffle_data()
         dp.split_data(80)
 
         # Feature scaling fucks up the HOG. Use only one, but not both.
-#        dp.feature_scale_data()
         dp.applyHOG()
+        dp.feature_scale_data()
 
         svm = DrawSVM(range(cat_n))
+        svm.svm.C = C_val
         svm.train_model(dp.x_train, dp.y_train)
         y_p = svm.predict_model(dp.x_test)
 
         self.GetResults(y_p, dp.y_test)
+
+    def testSVM_C_param(self, cat_n=10, data_n=2000):
+        C_param = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        
+        # Prep all Data
+        dp = DataPrep(max_data_n=data_n)
+        dp.load_data(range(cat_n), data_n, 0)
+        dp.shuffle_data()
+        dp.split_data(80)
+
+        dp.applyHOG()
+        dp.feature_scale_data()
+        
+        svm = DrawSVM(range(cat_n))
+        
+        for c in C_param:
+            print("\nc is: ", c)
+            svm.svm.C = c
+            svm.train_model(dp.x_train, dp.y_train)
+            y_p = svm.predict_model(dp.x_test)
+    
+            self.GetResults(y_p, dp.y_test)
+            input("Press enter to continue...")
+            
 
     # Data_n corresponds to training data.
     def testOnReal(self, data_n=1000):
@@ -310,7 +462,7 @@ class DrawTest:
         
         # Prepare test data.
         dp.x_test, dp.y_test = dp.loadImgData()
-#        dp.applyHOG()
+        dp.applyHOG()
         dp.feature_scale_data()
         
         # Test on NN
