@@ -9,18 +9,19 @@ class Window(tk.Frame):
         self.y_bias = 10
         self.x_bias = 10
         self.linewidth = 2
+        table_dims = [29.7, 42]
 
-        self.tabletopleftx = -20
-        self.tabletoplefty= 3
+        self.tabletopleftx = -table_dims[1]/2
+        self.tabletoplefty= 5.15
 
-        self.tabletoprightx = 20
-        self.tabletoprighty = 3
+        self.tabletoprightx = table_dims[1]/2
+        self.tabletoprighty = 5.15
 
-        self.tablebottomleftx = -20
-        self.tablebottomlefty = 40
+        self.tablebottomleftx = -table_dims[1]/2
+        self.tablebottomlefty = 5.15+table_dims[0]
 
-        self.tablebottomrightx = 20
-        self.tablebottomrighty = 40
+        self.tablebottomrightx = table_dims[1]/2
+        self.tablebottomrighty = 5.15+table_dims[0]
 
         # Table
         self.table = None
@@ -85,21 +86,27 @@ class Window(tk.Frame):
 
         self.master = master
         self.master.title("Simulation")
-        self.master.geometry("1010x650")
+        self.master.geometry("1000x530")
         self.master.resizable(width=tk.TRUE, height=tk.TRUE)
         self.callback = callback
+
+        self.posJ1 = self.callback.getJoint1Pos()
+        self.posJ2 = self.callback.getJoint2Pos()
+        self.posJ3 = self.callback.getJoint3Pos()
+        self.posJ4 = self.callback.getJoint4Pos()
+        self.posEE = self.callback.getEEPos()
 
         self.canvas_dims = [500, 500]
         self.mainframe = self.createMainContainer(master)
         self.canvascontainer = self.createCanvasContainer(self.mainframe)
-        self.informationContainer = self.createInformationContainer(self.mainframe)
+        #self.informationContainer = self.createInformationContainer(self.mainframe)
         self.menucontainer = self.createMenuContainer(self.mainframe)
         self.topviewcanvas = self.createTopViewCanvas(self.canvascontainer)
         self.sideviewcanvas = self.createSideViewCanvas(self.canvascontainer)
 
         self.createMenuBar(self.menucontainer)
         self.createControlButtons(self.menucontainer)
-        self.createInformationLabels(self.informationContainer)
+        #self.createInformationLabels(self.informationContainer)
 
         self.tablex0 = self.canvas_dims[0]/2+self.x_bias+self.tabletopleftx*10
         self.tabley0 = self.y_bias+self.tabletoplefty*10
@@ -150,7 +157,6 @@ class Window(tk.Frame):
             pass
 
         # LABEL JOINT 1
-        self.posJ1 = self.callback.getJoint1Pos()
         self.j1l = tk.Label(parent, text="Joint 1")
         self.j1l.grid(column=0, row=0, sticky="N")
 
@@ -167,7 +173,6 @@ class Window(tk.Frame):
         self.j1z.grid(column=0, row=4, sticky="N W")
 
         # LABEL Joint 2
-        self.posJ2 = self.callback.getJoint2Pos()
         self.j2l = tk.Label(parent, text="Joint 2")
         self.j2l.grid(column=1, row=0, sticky="N", padx=15)
 
@@ -187,7 +192,6 @@ class Window(tk.Frame):
         self.j2Kappa.grid(column=1, row=5, sticky="N W", padx=15)
 
         # LABEL JOINT 3
-        self.posJ3 = self.callback.getJoint3Pos()
         self.j3l = tk.Label(parent, text="Joint 3")
         self.j3l.grid(column=2, row=0, sticky="N", padx=15)
 
@@ -207,7 +211,6 @@ class Window(tk.Frame):
         self.j3Kappa.grid(column=2, row=5, sticky="N W", padx=15)
 
         # LABEL JOINT 4
-        self.posJ4 = self.callback.getJoint4Pos()
         self.j4l = tk.Label(parent, text="Joint 4")
         self.j4l.grid(column=3, row=0, sticky="N", padx=15)
 
@@ -227,7 +230,6 @@ class Window(tk.Frame):
         self.j4Kappa.grid(column=3, row=5, sticky="N W", padx=15)
 
         # LABEL EE
-        self.posEE = self.callback.getEEPos()
         self.eel = tk.Label(parent, text="EE")
         self.eel.grid(column=4, row=0, sticky="N", padx=15)
 
@@ -273,6 +275,12 @@ class Window(tk.Frame):
         frame.pack(side="top", fill="both", expand=True)
         return frame
 
+    def clearDrawing(self):
+        self.topviewcanvas = self.createTopViewCanvas(self.canvascontainer)
+        self.drawTable()
+        self._refreshTopDownView()
+        self._refreshSideView()
+
     def createMenuBar(self, parent):
         tk.Label(parent, text=".draw file:", background="light grey").pack(side="left", fill="y")
         tk.Button(parent, text="Browse...", command=self.browseFiles).pack(side="left", fill="y", padx=10)
@@ -282,11 +290,12 @@ class Window(tk.Frame):
     def browseFiles(self):
         self.filewrapper = filedialog.askopenfile(parent=self.master, initialdir="C:", title="Select file",
                                                   filetypes=(("draw files", "*.draw"), ("all files", "*.*")))
+        self.callback.setDrawFile(self.filewrapper)
         #self.filenamelabel.config(text=self.filepath)
 
     def createControlButtons(self, parent):
-        tk.Button(parent, text="Draw", command=self.callback.draw).pack(side="left", fill="y", padx=15)
         tk.Button(parent, text="Pause/Continue", command=self.callback.pause).pack(side="left", fill="y", padx=15)
+        tk.Button(parent, text="Clear", command=self.clearDrawing).pack(side="left", fill="y", padx=15)
 
     def drawTable(self):
         self.table = self.topviewcanvas.create_rectangle(self.tablex0,
@@ -300,9 +309,16 @@ class Window(tk.Frame):
                                         self.canvas_dims[1] - self.y_bias -(self.callback.getJoint2Pos())[2]*10)
 
     def refresh(self):
+        self.posJ1 = self.callback.getJoint1Pos()
+        self.posJ2 = self.callback.getJoint2Pos()
+        self.posJ3 = self.callback.getJoint3Pos()
+        self.posJ4 = self.callback.getJoint4Pos()
+        self.posEE = self.callback.getEEPos()
+
         self.callback.test()
+        #self.callback.draw()
         self._drawOnTable()
-        self._refreshInformation()
+        #self._refreshInformation()
         self._refreshTopDownView()
         self._refreshSideView()
 
@@ -310,8 +326,8 @@ class Window(tk.Frame):
         collision = self._checkCollisionEE_Table()
 
         if collision[0]:
-            self.topviewcanvas.create_oval(collision[1]-1,collision[2]-1,
-                                           collision[1]+1,collision[2]+1,
+            self.topviewcanvas.create_oval(collision[1]-1, collision[2]-1,
+                                           collision[1]+1, collision[2]+1,
                                            fill="black")
 
     def _checkCollisionEE_Table(self):
