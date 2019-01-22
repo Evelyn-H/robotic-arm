@@ -326,7 +326,7 @@ class TTTRoboAI:
                     # and logically returns null...
                     # Either that, or we must never allow it to fail.
                     # TODO: GET RIGHT METHODS BELOW.
-                    circles, crosses = self.vision.get_gamestate(self.cross_bound)
+                    circles, crosses = self.vision.get_gamestate(self.cross_bound, self.corners)
                     newBoard = self.constructBoard(circles, crosses)
                     print('new', newBoard)
                     # if game state changes
@@ -345,6 +345,7 @@ class TTTRoboAI:
                     print('state', self.game, '\n cx', circles, crosses)
                 else:
                     print("Robot turn")
+                    print('r', self.game)
                     robotAction = self.minmax.queryAction(self.game)
                     print('r', self.game)
                     self.game.update(robotAction)
@@ -352,8 +353,8 @@ class TTTRoboAI:
                     # Execute move
                     self.arm.move_back()
                     FormatConvert.drawFromFile(crossFile, self.arm,
-                                               shift1=(self.drawShift[robotAction.x][robotAction.y][0],
-                                                       self.drawShift[robotAction.x][robotAction.y][1]), speed=4)
+                                               shift1=(self.drawShift[robotAction.x][robotAction.y][1],
+                                                       self.drawShift[robotAction.x][robotAction.y][0]), speed=4)
                     self.arm.move_away()
                     # When done, signal next turn
                     self.humanTurn = True
@@ -419,7 +420,7 @@ if __name__ == '__main__':
     #     while not cv2.waitKey(1) & 0xFF == ord('c'):
     #         pass
 
-    t = TTTRoboAI(arm, v, False)
+    t = TTTRoboAI(arm, v, True)
     t.game_loop()
 
     #

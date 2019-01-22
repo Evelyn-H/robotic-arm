@@ -25,7 +25,7 @@ class Arm:
 
     def _move_to_position(self, target, duration=1000):
         angles, _ = self._ik.find_angles(target)
-        print(target, duration)
+        # print(target, duration)
         if not angles:
             raise solver.NotReachable('Can\'t reach this point')
             # print('no solution found')

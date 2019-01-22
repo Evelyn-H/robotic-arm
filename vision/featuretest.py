@@ -18,7 +18,7 @@ kp1, des1 = orb.detectAndCompute(img1,None)
 matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
 
 
-cam = cv2.VideoCapture(1)
+cam = cv2.VideoCapture(0)
 cam.set(3, 960); cam.set(4, 720)
 
 # mtx = np.array(

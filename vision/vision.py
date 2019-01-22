@@ -62,9 +62,38 @@ class Vision(object):
         # pass
         return corners
 
-    def get_gamestate(self, cross_bound):
+    def get_gamestate(self, cross_bound, grid):
         img = self.get_image_top_camera()
-        return self._detectCircles(img), self._detectCorners(img, cross_bound)
+        cimg, o = self._detectCircles(img)
+        x = self._detectCorners(img, cross_bound)
+
+        if os.environ.get('DEBUG', None):
+            def draw(img, corner):
+                x, y = tuple(np.uint16(np.around(corner)).ravel())
+                for c in o[0]:
+                    d = math.sqrt(((int(c[0]) - int(x))**2 + (int(c[1]) - int(y))**2))
+                    print('distance', d)
+                    # print('d', c[0], x, c[1], y,, (int(c[1]) - int(y))**2, (c[0] - x)**2 + (c[1] - y)**2)
+                    if d < 50:
+                        return img
+
+                img = cv2.line(img, (x - 20, y - 20), (x + 20, y + 20), (255, 0, 0), 5)
+                img = cv2.line(img, (x - 20, y + 20), (x + 20, y - 20), (255, 0, 0), 5)
+                # img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
+                return img
+
+            for one_x in x:
+                draw(cimg, one_x)
+
+            cimg = cv2.line(cimg, (grid[0][0][0], grid[0][0][1]), (grid[0][1][0], grid[0][1][1]), (255, 0, 0), 5)
+            cimg = cv2.line(cimg, (grid[1][0][0], grid[1][0][1]), (grid[1][1][0], grid[1][1][1]), (255, 0, 0), 5)
+            cimg = cv2.line(cimg, (grid[0][0][0], grid[0][0][1]), (grid[1][0][0], grid[1][0][1]), (255, 0, 0), 5)
+            cimg = cv2.line(cimg, (grid[0][1][0], grid[0][1][1]), (grid[1][1][0], grid[1][1][1]), (255, 0, 0), 5)
+
+            cv2.imshow('board state', cimg)
+            cv2.waitKey(1)
+
+        return o, x
 
     def is_hand_in_the_way(self):
         img = self.get_image_top_camera()
@@ -95,6 +124,7 @@ class Vision(object):
         x, y, w, h = 60, 70, 840, 590
         img = self._cropImage((x, y, w, h), img)
         # cv2.imshow('frame', img)
+
         # while not cv2.waitKey(1) & 0xFF == ord('q'):
         #     pass
         return img
@@ -290,7 +320,7 @@ class Vision(object):
             cv2.waitKey(1)
         # while not cv2.waitKey(1) & 0xFF == ord('c'):
         # pass
-        return circles
+        return imgblur, circles
 
     def _detectCorners(self, img, cross_bound):
         corners = []
@@ -465,6 +495,9 @@ class Vision(object):
         black = (height * width) - white
 
         if os.environ.get('DEBUG', None):
+            opens = cv2.cvtColor(opens ,cv2.COLOR_GRAY2RGB)
+            opens[:, :, 1] = np.zeros((opens.shape[0], opens.shape[1]), dtype=np.float32)
+            opens = cv2.add(opens, img)
             cv2.imshow('hand', opens)
             cv2.waitKey(1)
 
