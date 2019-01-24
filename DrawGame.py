@@ -40,7 +40,8 @@ class DrawGame:
 
             # When human is finished, detect category
             img = self.flush_and_get()
-
+            img_to_predict =
+            
             # Get drawing of a category
 
             # Robot draws the category
@@ -48,7 +49,12 @@ class DrawGame:
             # Tiny wait
             time.sleep(1)
         print("Game over!")
-
+        
+    
+    def preprocessing(self, img):
+        print("Preprocessing img")
+    
+        
     def flush_and_get(self):
         img = self.v._getImage(self.v.cam1)
         img = self.v._getImage(self.v.cam1)
