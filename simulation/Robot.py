@@ -1,6 +1,6 @@
 class Robot(object):
 
-    def __init__(self, links, angleRanges, currentPosition, initialAngles, initEEorientation, ee_dims, link_masses, spring_constants, com):
+    def __init__(self, links, angleRanges, currentPosition, initialAngles, initEEorientation, ee_dims, link_masses, spring_constants, com, maximum_sag):
         self. links = links
         self.angleRanges = angleRanges
         self.currentPosition = currentPosition
@@ -10,3 +10,4 @@ class Robot(object):
         self.link_masses = link_masses
         self.spring_constants = spring_constants
         self.com = com
+        self.maximum_sag = maximum_sag
