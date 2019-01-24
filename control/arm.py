@@ -71,6 +71,10 @@ class Arm:
         self._serial.move_to(0, 0, 90, -20, 2000)
         while self._serial.is_done() < 0.9:
             time.sleep(10 / 1000)
+        self._pos = [0, 0, 0]
+        self._pen_up = True
+        self._move_to_position(self._pos, duration=1000)
+        time.sleep(0.5)
 
     def move_to(self, target, speed=1, auto_height=True):
         if auto_height:
