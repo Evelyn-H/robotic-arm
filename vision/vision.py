@@ -70,12 +70,13 @@ class Vision(object):
         if os.environ.get('DEBUG', None):
             def draw(img, corner):
                 x, y = tuple(np.uint16(np.around(corner)).ravel())
-                for c in o[0]:
-                    d = math.sqrt(((int(c[0]) - int(x))**2 + (int(c[1]) - int(y))**2))
-                    print('distance', d)
-                    # print('d', c[0], x, c[1], y,, (int(c[1]) - int(y))**2, (c[0] - x)**2 + (c[1] - y)**2)
-                    if d < 50:
-                        return img
+                if o is not None:
+                    for c in o[0]:
+                        d = math.sqrt(((int(c[0]) - int(x))**2 + (int(c[1]) - int(y))**2))
+                        print('distance', d)
+                        # print('d', c[0], x, c[1], y,, (int(c[1]) - int(y))**2, (c[0] - x)**2 + (c[1] - y)**2)
+                        if d < 50:
+                            return img
 
                 img = cv2.line(img, (x - 20, y - 20), (x + 20, y + 20), (255, 0, 0), 5)
                 img = cv2.line(img, (x - 20, y + 20), (x + 20, y - 20), (255, 0, 0), 5)
@@ -342,12 +343,13 @@ class Vision(object):
                 # thresh = cv2.Canny(imgray, 150, 200)
                 count = cv2.countNonZero(thresh)
 
-                if count > 150:
+                if count > 300:
                     corners.append([(left + right) / 2, (top + bottom) / 2])
 
                 # if os.environ.get('DEBUG', None):
-                    # cv2.imshow('corners', imgray)
-                    # cv2.waitKey(0)
+                #     cv2.imshow('corners', thresh)
+                #     print(count)
+                #     cv2.waitKey(0)
 
         return np.array(corners)
 
@@ -406,7 +408,7 @@ class Vision(object):
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
         dilation = cv2.dilate(thresh, kernel)
         imgflip = cv2.bitwise_not(dilation)
-        lines = cv2.HoughLines(imgflip, 1, np.pi / 180, 100)
+        lines = cv2.HoughLines(imgflip, 1, np.pi / 64, 100)
 
         corners = []
 
@@ -432,7 +434,7 @@ class Vision(object):
 
                     angleDif = abs(theta - theta2)
 
-                    if angleDif > 0.1:
+                    if angleDif > 0.8:
                         a1 = np.array([x1_1, y1_1])
                         a2 = np.array([x1_2, y1_2])
                         b1 = np.array([x2_1, y2_1])
@@ -448,6 +450,8 @@ class Vision(object):
                         if int(x) < width and int(x) > 0 and int(y) < height and int(y) > 0:
                             corners.append([int(x), int(y)])
 
+                        cv2.line(img, (x1_1, y1_1), (x1_2, y1_2), (0, 0, 255), 2)
+                        cv2.line(img, (x2_1, y2_1), (x2_2, y2_2), (0, 0, 255), 2)
                         cv2.circle(img, (int(x), int(y)), 3, (255, 0, 0), 1, 8, 0)
 
         for index, x in enumerate(corners):
@@ -495,7 +499,7 @@ class Vision(object):
         black = (height * width) - white
 
         if os.environ.get('DEBUG', None):
-            opens = cv2.cvtColor(opens ,cv2.COLOR_GRAY2RGB)
+            opens = cv2.cvtColor(opens, cv2.COLOR_GRAY2RGB)
             opens[:, :, 1] = np.zeros((opens.shape[0], opens.shape[1]), dtype=np.float32)
             opens = cv2.add(opens, img)
             cv2.imshow('hand', opens)
