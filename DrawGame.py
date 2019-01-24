@@ -9,6 +9,7 @@ import sys
 import time
 from vision import Vision
 from ai.FormatConvert import FormatConvert, gridFile, crossFile
+from keras.models import load_model
 
 
 
@@ -22,6 +23,7 @@ class DrawGame:
     def __init__(self):
         print("Begginging drawing recognition game!")
         self.v = Vision()
+        self.model = load_model("nn_hog.h5")
 
     def run_game(self, times=3):
         current = 0
@@ -40,7 +42,7 @@ class DrawGame:
 
             # When human is finished, detect category
             img = self.flush_and_get()
-            img_to_predict =
+            img_to_predict = self.preprocessing(img)
             
             # Get drawing of a category
 
