@@ -27,7 +27,7 @@ class TTTMinMax(Player):
      
     # Heuristic used to evaluate a state.
     def evaluate(self, state):
-        print("Evaluating state.")
+#        print("Evaluating state.")
         result = state.gameover()
 #        print("Result: " + str(state.gameover()))        
         
