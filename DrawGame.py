@@ -16,7 +16,6 @@ from matplotlib import pyplot as plt
 from control.arm import Arm
 
 
-
 class DrawGame:
     def __init__(self, arm):
         self.arm = arm
@@ -66,12 +65,17 @@ class DrawGame:
     def preprocessing(self, img):
         print("Preprocessing img")
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.medianBlur(img, 5)
         _, img = cv2.threshold(img, 100, 255, cv2.THRESH_BINARY_INV)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        img = cv2.dilate(img, kernel)
         img = np.rot90(img, 1)
         img = img[605:795, 280:470]
+        img = cv2.resize(img, (28, 28))
         cv2.imshow('frame', img)
         cv2.waitKey(1)
         return img
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
