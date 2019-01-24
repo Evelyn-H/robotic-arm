@@ -34,9 +34,9 @@ class DataPrep:
         # Note: the last element of data is its category.
         self.instances = max_data_n
         self.all_data = np.array(
-            self.category_loader.load1D(range(24),
+            self.category_loader.load1D(range(10),
                                         self.instances, 0, False))
-        self.all_data.shape = (24, self.instances, 784)
+        self.all_data.shape = (10, self.instances, 784)
         self.data = None
         self.x_train = None
         self.y_train = None
@@ -149,19 +149,28 @@ class DataPrep:
         scaler.fit(self.x_train)
         self.x_train = scaler.transform(self.x_train)
         # apply same transformation to test data
-        self.x_test = scaler.transform(self.x_test)
+        if self.x_test:
+            self.x_test = scaler.transform(self.x_test)
 
     # Applies HOG to x_train and x_test
-    def applyHOG(self):
+    def applyHOG(self, ppc=4, cpb=2):
         print("Extracting HOG features")
         self.x_train.shape = (len(self.x_train), 28, 28)
-        self.x_test.shape = (len(self.x_test), 28, 28)
+        
+        if self.x_test:
+            self.x_test.shape = (len(self.x_test), 28, 28)
         hf = HOGFinder()
+        hf.ppc = ppc
+        hf.cpb = cpb
         new_x_train = hf.findHOG2(self.x_train)
-        new_x_test = hf.findHOG2(self.x_test)
+        
+        if self.x_test:
+            new_x_test = hf.findHOG2(self.x_test)
 
         self.x_train = new_x_train
-        self.x_test = new_x_test
+        
+        if self.x_test:
+            self.x_test = new_x_test
      
         
     def loadImgData(self):
@@ -304,6 +313,7 @@ class DrawNN:
         # Starting basic structure. Change as needed.
         self.model = Sequential()
         self.model.add(Dense(250, activation='relu', input_dim=inp_size))
+        self.model.add(Dropout(0.5))
         self.model.add(Dense(len(self.cat), activation='softmax'))
 
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
@@ -417,7 +427,7 @@ class DrawTest:
 #        y_p = nn.predict_model(dp.x_test)
 #
 #        self.GetResults(y_p, dp.y_test)
-        nn.save("nn_hog.h5")
+        nn.model.save("nn_hog.h5")
         
 
     def testSVM(self, cat_n=10, data_n=1000, C_val=0.5):
