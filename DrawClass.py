@@ -298,17 +298,12 @@ class DrawSVM:
 
 # Classifier using SKLearn-based C-SVM model.
 class DrawNN:
-    def __init__(self, categories):
+    def __init__(self, categories, inp_size=784):
         print("Initializing sequential neural network.")
         self.cat = categories
         # Starting basic structure. Change as needed.
         self.model = Sequential()
-        self.model.add(Dense(200, activation='relu', input_dim=784))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(100, activation='relu', input_dim=784))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(50, activation='relu', input_dim=784))
-        self.model.add(Dropout(0.5))
+        self.model.add(Dense(250, activation='relu', input_dim=inp_size))
         self.model.add(Dense(len(self.cat), activation='softmax'))
 
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
@@ -408,20 +403,22 @@ class DrawTest:
         dp = DataPrep(max_data_n=data_n)
         dp.load_data(range(cat_n), data_n, 0)
         dp.shuffle_data()
-        dp.split_data(80)
+        dp.split_data(100)
 
         # Feature scaling fucks up the HOG. Use only one, but not both.
-#        dp.applyHOG()
+        dp.applyHOG(ppc=7, cpb=2)
         dp.feature_scale_data()
 
-        nn = DrawNN(range(cat_n))
+        nn = DrawNN(range(cat_n), inp_size=len(dp.x_train[0]))
         nn.train_model(dp.x_train, dp.y_train)
 
-        print("\nUsing sklearn...")
+#        print("\nUsing sklearn...")
         # Get best prediction.
-        y_p = nn.predict_model(dp.x_test)
-
-        self.GetResults(y_p, dp.y_test)
+#        y_p = nn.predict_model(dp.x_test)
+#
+#        self.GetResults(y_p, dp.y_test)
+        nn.save("nn_hog.h5")
+        
 
     def testSVM(self, cat_n=10, data_n=1000, C_val=0.5):
         dp = DataPrep(max_data_n=data_n)
