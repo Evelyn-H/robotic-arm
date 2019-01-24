@@ -343,13 +343,13 @@ class Vision(object):
                 # thresh = cv2.Canny(imgray, 150, 200)
                 count = cv2.countNonZero(thresh)
 
-                if count > 300:
+                if count > 200:
                     corners.append([(left + right) / 2, (top + bottom) / 2])
 
-                # if os.environ.get('DEBUG', None):
-                #     cv2.imshow('corners', thresh)
-                #     print(count)
-                #     cv2.waitKey(0)
+                if os.environ.get('DEBUG', None):
+                    cv2.imshow('corners', thresh)
+                    print(count)
+                    cv2.waitKey(0)
 
         return np.array(corners)
 

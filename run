@@ -1,0 +1,2 @@
+python TTTRoboAI.py 3>&1 1>&2 2>&3 3>&- | sed '/^\(QObject\|Cannot move\).*$/d' | sed '/^$/d'
+

@@ -54,12 +54,13 @@ class TTTRoboAI:
         self.paperBlank = False
 
         # Robot minmax method.
-        self.minmax = TTTMinMax(self.rID, 1)
+        self.minmax = TTTMinMax(self.rID, 2)
 
         # Assumed distance to shift where to draw things
-        self.drawShift = [[(-5, -5), (0, -5), (5, -5)],
-                          [(-5, 0), (0, 0), (5, 0)],
-                          [(-5, 5), (0, 5), (5, 5)]]
+        d = 4.5
+        self.drawShift = [[(-d, -d), (0, -d), (d, -d)],
+                          [(-d, 0), (0, 0), (d, 0)],
+                          [(-d, d), (0, d), (d, d)]]
 
         # Grid line intersections
         self.corners = []
@@ -87,7 +88,7 @@ class TTTRoboAI:
     # Cross bounds given as (x1,y1, x2, y2)
     # where the the two xy's are the upper left
     # and lower right corner of a square, respectively.
-    def compute_cross_bounds(self, border=10):
+    def compute_cross_bounds(self, border=20):
         # TODO: double check if width and height is calculated correctly.
         width = (self.corners[0][1][0] - self.corners[0][0][0]) - 2 * border
         height = (self.corners[1][0][1] - self.corners[0][0][1]) - 2 * border
@@ -292,7 +293,7 @@ class TTTRoboAI:
             # Assume board starts out blank.
             print("Drawing board")
             # Draw grid, save what the location should be
-            # FormatConvert.drawFromFile(gridFile, self.arm, speed=4)
+            FormatConvert.drawFromFile(gridFile, self.arm, speed=4)
             self.arm.move_away()
 
             print("Waiting a bit")
