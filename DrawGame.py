@@ -10,6 +10,9 @@ import time
 from vision import Vision
 from ai.FormatConvert import FormatConvert, gridFile, crossFile
 from keras.models import load_model
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
 
 
 
@@ -24,6 +27,18 @@ class DrawGame:
         print("Begginging drawing recognition game!")
         self.v = Vision()
         self.model = load_model("nn_hog.h5")
+        self.categories = (
+                'airplane',
+                'backpack',
+                'cactus',
+                'dog',
+                'ear',
+                'face',
+                'garden',
+                'hamburger',
+                'icecream',
+                'jacket'
+                )
 
     def run_game(self, times=3):
         current = 0
@@ -41,7 +56,7 @@ class DrawGame:
             input("Press enter when finished...")
 
             # When human is finished, detect category
-            img = self.flush_and_get()
+            img = self.v._getImage(self.v.cam1)
             img_to_predict = self.preprocessing(img)
             
             # Get drawing of a category
@@ -55,19 +70,25 @@ class DrawGame:
     
     def preprocessing(self, img):
         print("Preprocessing img")
-    
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, img = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY_INV)
+        img = np.rot90(img, 3)
+        img = img[630:810, 260:440]
+        plt.imshow(img)
         
-    def flush_and_get(self):
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-        img = self.v._getImage(self.v.cam1)
-
-        return img
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
