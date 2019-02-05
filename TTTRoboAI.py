@@ -8,10 +8,10 @@ All the utility/control needed to run Tic Tac Toe
 on robot arm.
 """
 import sys
+import os
 import cv2
 import numpy as np
 import time
-from matplotlib import pyplot as plt
 from ai import FormatConvert
 sys.path.insert(0, "ai")
 sys.path.insert(0, "vision")
@@ -291,9 +291,10 @@ class TTTRoboAI:
         if self.setup:
             print("Setup")
             # Assume board starts out blank.
-            print("Drawing board")
-            # Draw grid, save what the location should be
-            FormatConvert.drawFromFile(gridFile, self.arm, speed=4)
+            if os.environ.get("GRID", "1") == "1":
+                print("Drawing board")
+                # Draw grid, save what the location should be
+                FormatConvert.drawFromFile(gridFile, self.arm, speed=4)
             self.arm.move_away()
 
             print("Waiting a bit")

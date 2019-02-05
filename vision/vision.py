@@ -349,7 +349,7 @@ class Vision(object):
                 if os.environ.get('DEBUG', None):
                     cv2.imshow('corners', thresh)
                     print(count)
-                    cv2.waitKey(0)
+                    cv2.waitKey(1)
 
         return np.array(corners)
 
